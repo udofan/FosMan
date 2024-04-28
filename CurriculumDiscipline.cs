@@ -32,6 +32,10 @@ namespace FosMan {
         /// </summary>
         public string Department { get; set; }
         /// <summary>
+        /// Код закрепленной кафедры
+        /// </summary>
+        public string DepartmentCode { get; set; }
+        /// <summary>
         /// Компетенции (коды)
         /// </summary>
         public List<string> CompetenceList { get; set; }
@@ -39,5 +43,9 @@ namespace FosMan {
         /// Формы контроля
         /// </summary>
         public List<EControlForm> ControlForms { get; set; }
+        public int? ControlFormExamHours { get; set; } = 0;
+        public int? ControlFormTestHours { get; set; } = 0;
+        public int ?ControlFormTestWithAGradeHours { get; set; } = 0;
+        public int? ControlFormControlWorkHours { get; set; } = 0;
     }
 }
