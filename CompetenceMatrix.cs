@@ -10,21 +10,21 @@ namespace FosMan {
     /// <summary>
     /// Описание матрицы компетенций
     /// </summary>
-    internal class CompetenceMatrix {
+    public static class CompetenceMatrix {
         /// <summary>
         /// Элементы матрицы
         /// </summary>
-        public List<CompetenceMatrixItem> Items { get; set; }
+        public static List<CompetenceMatrixItem> Items { get; set; }
+
+        public static bool IsLoaded { get => Items?.Any() ?? false; }
 
         /// <summary>
         /// Загрузка матрицы из файла
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static CompetenceMatrix LoadFromFile(string fileName, out List<string> errors) {
-            var matrix  = new CompetenceMatrix() { 
-                Items = [] 
-            };
+        public static void LoadFromFile(string fileName, out List<string> errors) {
+            Items = [];
             errors = [];
 
             try {
@@ -47,7 +47,7 @@ namespace FosMan {
                                     if (!currItem.InitFromText(text)) {
                                         errors.Add($"Не удалось распарсить текст [{text}].");
                                     }
-                                    matrix.Items.Add(currItem);
+                                    Items.Add(currItem);
                                 }
 
                                 var achievement = new CompetenceAchievement();
@@ -76,7 +76,7 @@ namespace FosMan {
             //    matrix = null;
             //}
 
-            return matrix;
+            return;
         }
     }
 }

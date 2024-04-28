@@ -1,6 +1,7 @@
+using BrightIdeasSoftware;
+
 namespace FosMan {
     public partial class FormMain : Form {
-        CompetenceMatrix m_matrix = null;
         string m_matrixFileName = null;
 
         public FormMain() {
@@ -24,22 +25,22 @@ namespace FosMan {
 
         private void buttonLoadCompetenceMatrix_Click(object sender, EventArgs e) {
             var loadMatrix = true;
-            
+
             if (string.IsNullOrEmpty(textBoxMatrixFileName.Text) || !File.Exists(textBoxMatrixFileName.Text)) {
                 MessageBox.Show("Файл матрицы компетенций не задан.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 loadMatrix = false;
             }
 
-            if (loadMatrix && m_matrix != null) {
+            if (loadMatrix && CompetenceMatrix.IsLoaded) {
                 if (MessageBox.Show("Матрица уже загружена.\r\nОбновить?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation) != DialogResult.Yes) {
                     loadMatrix = false;
                 }
             }
 
             if (loadMatrix) {
-                m_matrix = CompetenceMatrix.LoadFromFile(textBoxMatrixFileName.Text, out var errors);
+                CompetenceMatrix.LoadFromFile(textBoxMatrixFileName.Text, out var errors);
 
-                if (m_matrix != null) {
+                if (CompetenceMatrix.IsLoaded) {
                     m_matrixFileName = textBoxMatrixFileName.Text;
 
                     ShowMatrix(errors);
@@ -71,7 +72,7 @@ namespace FosMan {
             html += $"<tr><th {tdStyle}><b>Код и наименование компетенций</b></th>" +
                         $"<th {tdStyle}><b>Коды и индикаторы достижения компетенций\r\n</b></tdh>" +
                         $"<th {tdStyle}><b>Коды и результаты обучения</b></td></th></tr>";
-            foreach (var item in m_matrix.Items) {
+            foreach (var item in CompetenceMatrix.Items) {
                 html += "<tr>";
                 html += $"<td {tdStyle} rowspan='{item.Achievements.Count}'><b>{item.Code}</b>. {item.Title}</td>";
                 var firstAchi = true;
@@ -94,6 +95,132 @@ namespace FosMan {
 
             await webView21.EnsureCoreWebView2Async();
             webView21.NavigateToString(html);
+        }
+
+        private void FormMain_Load(object sender, EventArgs e) {
+            var olvColumnCurriculumIndex = new OLVColumn("Код", "ProgramCode") {
+                Width = 80,
+                IsEditable = false
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumIndex);
+            var olvColumnCurriculumName = new OLVColumn("Программа", "ProgramName") {
+                Width = 200,
+                IsEditable = false
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumName);
+            var olvColumnCurriculumProfile = new OLVColumn("Программа", "Profile") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumProfile);
+            var olvColumnCurriculumDepartment = new OLVColumn("Программа", "Department") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumDepartment);
+            var olvColumnCurriculumFaculty = new OLVColumn("Программа", "Faculty") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumFaculty);
+            var olvColumnCurriculumAcademicYear = new OLVColumn("Программа", "AcademicYear") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumAcademicYear);
+            var olvColumnCurriculumFormOfStudy = new OLVColumn("Программа", "FormOfStudy") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumFormOfStudy);
+            olvColumnCurriculumFormOfStudy.AspectGetter = (x) => {
+                var value = x?.ToString();
+                var curriculum = x as Curriculum;
+                if (curriculum != null) {
+                    if (curriculum.FormOfStudy == EFormOfStudy.FullTime) {
+                        value = "очная";
+                    }
+                    else if (curriculum.FormOfStudy == EFormOfStudy.PartTime) {
+                        value = "заочная";
+                    }
+                    else if (curriculum.FormOfStudy == EFormOfStudy.FullTimeAndPartTime) {
+                        value = "очно-заочная";
+                    }
+                    else {
+                        value = "НЕИЗВЕСТНО";
+                    }
+                }
+
+                return value;
+            };
+            var olvColumnCurriculumErrors = new OLVColumn("Ошибки", "Errors") {
+                Width = 50,
+                IsEditable = false
+            };
+            olvColumnCurriculumErrors.AspectGetter = (x) => {
+                var value = x?.ToString();
+                var curriculum = x as Curriculum;
+                if (curriculum != null) {
+                    if (curriculum.Errors?.Any() ?? false) {
+                        value = "есть";
+                    }
+                    else {
+                        value = "нет";
+                    }
+                }
+
+                return value;
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumErrors);
+            var olvColumnCurriculumFileName = new OLVColumn("Файл", "SourceFileName") {
+                Width = 200,
+                IsEditable = false,
+                FillsFreeSpace = true
+            };
+            fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumFileName);
+        }
+
+        private void buttonSelectExcelFiles_Click(object sender, EventArgs e) {
+            if (openFileDialog2.ShowDialog(this) == DialogResult.OK) {
+                var files = openFileDialog2.FileNames.Where(x => !Curricula.HasFile(x)).ToArray();
+
+                labelExcelFileLoading.Visible = true;
+                Application.UseWaitCursor = true;
+                labelExcelFileLoading.Text = "";
+
+                var idx = 1;
+                foreach (var file in files) {
+                    labelExcelFileLoading.Text = $"Загрузка файлов ({idx} из {files.Length})...";
+                    var curriculum = Curriculum.LoadFromFile(file);
+                    Curricula.AddCurriculum(curriculum);
+
+                    fastObjectListViewCurricula.AddObject(curriculum);
+                    idx++;
+                    Application.DoEvents();
+                }
+                if (idx > 1) {
+                    labelExcelFileLoading.Text += " завершено.";
+                }
+                Application.UseWaitCursor = false;
+            }
+        }
+
+        private void fastObjectListViewCurricula_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
+            if (e.Model is Curriculum curriculum) {
+                if (e.Column.AspectName.Equals("Errors")) {
+                    e.Text = string.Join("\r\n", curriculum.Errors);
+                    e.StandardIcon = ToolTipControl.StandardIcons.Error;
+                    e.IsBalloon = true;
+                }
+            }
+        }
+
+        private void fastObjectListViewCurricula_FormatRow(object sender, FormatRowEventArgs e) {
+            if (e.Model is Curriculum curriculum) {
+                if (curriculum.Errors?.Any() ?? false) {
+                    e.Item.BackColor = Color.Pink;
+                }
+            }
         }
     }
 }

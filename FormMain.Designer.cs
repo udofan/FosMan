@@ -24,27 +24,33 @@
         ///  Required method for Designer support - do not modify
         ///  the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
-        {
+        private void InitializeComponent() {
             buttonSelectFosDir = new Button();
             textBoxFosDir = new TextBox();
             fastObjectListViewFosList = new BrightIdeasSoftware.FastObjectListView();
             tabControl1 = new TabControl();
-            tabPage1 = new TabPage();
-            tabPage2 = new TabPage();
-            label1 = new Label();
             tabPageCompetenceMatrix = new TabPage();
             webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             buttonLoadCompetenceMatrix = new Button();
             buttonSelectMatrixFile = new Button();
             label2 = new Label();
             textBoxMatrixFileName = new TextBox();
+            tabPageСurriculum = new TabPage();
+            labelExcelFileLoading = new Label();
+            fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
+            buttonSelectExcelFiles = new Button();
+            tabPage1 = new TabPage();
+            tabPage2 = new TabPage();
+            label1 = new Label();
             openFileDialog1 = new OpenFileDialog();
+            openFileDialog2 = new OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
-            tabPage2.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
+            tabPageСurriculum.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).BeginInit();
+            tabPage2.SuspendLayout();
             SuspendLayout();
             // 
             // buttonSelectFosDir
@@ -76,48 +82,16 @@
             // 
             // tabControl1
             // 
+            tabControl1.Controls.Add(tabPageCompetenceMatrix);
+            tabControl1.Controls.Add(tabPageСurriculum);
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
-            tabControl1.Controls.Add(tabPageCompetenceMatrix);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(1047, 644);
             tabControl1.TabIndex = 1;
-            // 
-            // tabPage1
-            // 
-            tabPage1.Location = new Point(4, 23);
-            tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1039, 617);
-            tabPage1.TabIndex = 0;
-            tabPage1.Text = "РПД";
-            tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // tabPage2
-            // 
-            tabPage2.Controls.Add(label1);
-            tabPage2.Controls.Add(fastObjectListViewFosList);
-            tabPage2.Controls.Add(textBoxFosDir);
-            tabPage2.Controls.Add(buttonSelectFosDir);
-            tabPage2.Location = new Point(4, 24);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1039, 616);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "ФОС";
-            tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Location = new Point(21, 24);
-            label1.Name = "label1";
-            label1.Size = new Size(96, 14);
-            label1.TabIndex = 2;
-            label1.Text = "Расположение:";
             // 
             // tabPageCompetenceMatrix
             // 
@@ -183,9 +157,101 @@
             textBoxMatrixFileName.TabIndex = 0;
             textBoxMatrixFileName.Text = "c:\\FosMan\\Матрицы_компетенций\\1. Индикаторы и компетенции_37.03.01 _Пс  3++.docx";
             // 
+            // tabPageСurriculum
+            // 
+            tabPageСurriculum.Controls.Add(labelExcelFileLoading);
+            tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
+            tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
+            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Name = "tabPageСurriculum";
+            tabPageСurriculum.Padding = new Padding(3);
+            tabPageСurriculum.Size = new Size(1039, 617);
+            tabPageСurriculum.TabIndex = 3;
+            tabPageСurriculum.Text = "Учебные планы";
+            tabPageСurriculum.UseVisualStyleBackColor = true;
+            // 
+            // labelExcelFileLoading
+            // 
+            labelExcelFileLoading.AutoSize = true;
+            labelExcelFileLoading.Location = new Point(200, 23);
+            labelExcelFileLoading.Name = "labelExcelFileLoading";
+            labelExcelFileLoading.Size = new Size(66, 14);
+            labelExcelFileLoading.TabIndex = 2;
+            labelExcelFileLoading.Text = "Загрузка...";
+            labelExcelFileLoading.Visible = false;
+            // 
+            // fastObjectListViewCurricula
+            // 
+            fastObjectListViewCurricula.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            fastObjectListViewCurricula.FullRowSelect = true;
+            fastObjectListViewCurricula.GridLines = true;
+            fastObjectListViewCurricula.Location = new Point(8, 57);
+            fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
+            fastObjectListViewCurricula.ShowGroups = false;
+            fastObjectListViewCurricula.Size = new Size(1023, 560);
+            fastObjectListViewCurricula.TabIndex = 1;
+            fastObjectListViewCurricula.UseFilterIndicator = true;
+            fastObjectListViewCurricula.UseFiltering = true;
+            fastObjectListViewCurricula.UseHotItem = true;
+            fastObjectListViewCurricula.UseTranslucentHotItem = true;
+            fastObjectListViewCurricula.UseTranslucentSelection = true;
+            fastObjectListViewCurricula.View = View.Details;
+            fastObjectListViewCurricula.VirtualMode = true;
+            fastObjectListViewCurricula.CellToolTipShowing += fastObjectListViewCurricula_CellToolTipShowing;
+            fastObjectListViewCurricula.FormatRow += fastObjectListViewCurricula_FormatRow;
+            // 
+            // buttonSelectExcelFiles
+            // 
+            buttonSelectExcelFiles.Location = new Point(23, 19);
+            buttonSelectExcelFiles.Name = "buttonSelectExcelFiles";
+            buttonSelectExcelFiles.Size = new Size(143, 23);
+            buttonSelectExcelFiles.TabIndex = 0;
+            buttonSelectExcelFiles.Text = "Выбор файлов...";
+            buttonSelectExcelFiles.UseVisualStyleBackColor = true;
+            buttonSelectExcelFiles.Click += buttonSelectExcelFiles_Click;
+            // 
+            // tabPage1
+            // 
+            tabPage1.Location = new Point(4, 24);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(1039, 616);
+            tabPage1.TabIndex = 0;
+            tabPage1.Text = "РПД";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            tabPage2.Controls.Add(label1);
+            tabPage2.Controls.Add(fastObjectListViewFosList);
+            tabPage2.Controls.Add(textBoxFosDir);
+            tabPage2.Controls.Add(buttonSelectFosDir);
+            tabPage2.Location = new Point(4, 24);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Padding = new Padding(3);
+            tabPage2.Size = new Size(1039, 616);
+            tabPage2.TabIndex = 1;
+            tabPage2.Text = "ФОС";
+            tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(21, 24);
+            label1.Name = "label1";
+            label1.Size = new Size(96, 14);
+            label1.TabIndex = 2;
+            label1.Text = "Расположение:";
+            // 
             // openFileDialog1
             // 
             openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // openFileDialog2
+            // 
+            openFileDialog2.FileName = "openFileDialog2";
+            openFileDialog2.Filter = "Excel-файлы|*.xlsx|Все файлы|*.*";
+            openFileDialog2.Multiselect = true;
             // 
             // FormMain
             // 
@@ -197,13 +263,17 @@
             Name = "FormMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Менеджер РПД и ФОС";
+            Load += FormMain_Load;
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).EndInit();
             tabControl1.ResumeLayout(false);
-            tabPage2.ResumeLayout(false);
-            tabPage2.PerformLayout();
             tabPageCompetenceMatrix.ResumeLayout(false);
             tabPageCompetenceMatrix.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
+            tabPageСurriculum.ResumeLayout(false);
+            tabPageСurriculum.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).EndInit();
+            tabPage2.ResumeLayout(false);
+            tabPage2.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -223,5 +293,10 @@
         private TextBox textBoxMatrixFileName;
         private OpenFileDialog openFileDialog1;
         private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
+        private TabPage tabPageСurriculum;
+        private BrightIdeasSoftware.FastObjectListView fastObjectListViewCurricula;
+        private Button buttonSelectExcelFiles;
+        private OpenFileDialog openFileDialog2;
+        private Label labelExcelFileLoading;
     }
 }

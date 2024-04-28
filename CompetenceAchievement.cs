@@ -9,7 +9,7 @@ namespace FosMan {
     /// <summary>
     /// Достижение компетенции
     /// </summary>
-    internal class CompetenceAchievement {
+    public class CompetenceAchievement {
         //УК-1.1. Определяет и ранжиру-ет информацию, требуемую для решения поставленных задач.
         Regex m_regexParseIndicator = new(@"(.+\d{1})\. (.+)", RegexOptions.Compiled);
 

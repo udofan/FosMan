@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FosMan {
-    internal class CompetenceMatrixItem {
+    public class CompetenceMatrixItem {
         //УК-1. Способен осуществлять поиск, критический анализ и синтез информации, применять системный подход для решения поставленных задач
         Regex m_parseText = new(@"(.*\d{1})\. (.*)", RegexOptions.Compiled);
 
