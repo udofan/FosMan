@@ -436,6 +436,98 @@ namespace FosMan {
                 SubProperty = "ControlHours",
                 TargetType = typeof(int)
             },
+            //Семестр 9
+            new CurriculumDisciplineHeader() {
+                Text = "Итого",
+                MatchNumber = 8,
+                TestFunction = EPropertyTestFunction.Equals,
+                TargetProperty = "Semesters",
+                TargetType = typeof(int),
+                SubProperty = "TotalHours",
+                PropertyIndex = 8
+            },
+            new CurriculumDisciplineHeader() {
+                Text = "Лек",
+                MatchNumber = 8,
+                TestFunction = EPropertyTestFunction.Equals,
+                TargetProperty = "Semesters",
+                PropertyIndex = 8,
+                SubProperty = "LectureHours",
+                TargetType = typeof(int)
+            },
+            new CurriculumDisciplineHeader() {
+                Text = "Пр",
+                MatchNumber = 8,
+                TestFunction = EPropertyTestFunction.Equals,
+                TargetProperty = "Semesters",
+                PropertyIndex = 8,
+                SubProperty = "PracticalHours",
+                TargetType = typeof(int)
+            },
+            new CurriculumDisciplineHeader() {
+                Text = "Ср",
+                MatchNumber = 8,
+                TestFunction = EPropertyTestFunction.Equals,
+                TargetProperty = "Semesters",
+                PropertyIndex = 8,
+                SubProperty = "SelfStudyHours",
+                TargetType = typeof(int)
+            },
+            new CurriculumDisciplineHeader() {
+                Text = "Конт",
+                MatchNumber = 9,
+                TestFunction = EPropertyTestFunction.StartsWith,
+                TargetProperty = "Semesters",
+                PropertyIndex = 8,
+                SubProperty = "ControlHours",
+                TargetType = typeof(int)
+            },
+            //Семестр 10
+            new CurriculumDisciplineHeader() {
+                Text = "Итого",
+                MatchNumber = 9,
+                TestFunction = EPropertyTestFunction.Equals,
+                TargetProperty = "Semesters",
+                TargetType = typeof(int),
+                SubProperty = "TotalHours",
+                PropertyIndex = 9
+            },
+            new CurriculumDisciplineHeader() {
+                Text = "Лек",
+                MatchNumber = 9,
+                TestFunction = EPropertyTestFunction.Equals,
+                TargetProperty = "Semesters",
+                PropertyIndex = 9,
+                SubProperty = "LectureHours",
+                TargetType = typeof(int)
+            },
+            new CurriculumDisciplineHeader() {
+                Text = "Пр",
+                MatchNumber = 9,
+                TestFunction = EPropertyTestFunction.Equals,
+                TargetProperty = "Semesters",
+                PropertyIndex = 9,
+                SubProperty = "PracticalHours",
+                TargetType = typeof(int)
+            },
+            new CurriculumDisciplineHeader() {
+                Text = "Ср",
+                MatchNumber = 9,
+                TestFunction = EPropertyTestFunction.Equals,
+                TargetProperty = "Semesters",
+                PropertyIndex = 9,
+                SubProperty = "SelfStudyHours",
+                TargetType = typeof(int)
+            },
+            new CurriculumDisciplineHeader() {
+                Text = "Конт",
+                MatchNumber = 10,
+                TestFunction = EPropertyTestFunction.StartsWith,
+                TargetProperty = "Semesters",
+                PropertyIndex = 9,
+                SubProperty = "ControlHours",
+                TargetType = typeof(int)
+            },
 
             new CurriculumDisciplineHeader() {
                 Text = "КОД",

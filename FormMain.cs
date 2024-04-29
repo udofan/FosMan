@@ -3,6 +3,7 @@ using System.Text;
 
 namespace FosMan {
     public partial class FormMain : Form {
+        CompetenceMatrix m_competenceMatrix = null;
         string m_matrixFileName = null;
 
         public FormMain() {
@@ -32,23 +33,24 @@ namespace FosMan {
                 loadMatrix = false;
             }
 
-            if (loadMatrix && CompetenceMatrix.IsLoaded) {
+            if (loadMatrix && m_competenceMatrix != null && m_competenceMatrix.IsLoaded) {
                 if (MessageBox.Show("Матрица уже загружена.\r\nОбновить?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation) != DialogResult.Yes) {
                     loadMatrix = false;
                 }
             }
 
             if (loadMatrix) {
-                CompetenceMatrix.LoadFromFile(textBoxMatrixFileName.Text, out var errors);
+                m_competenceMatrix = new();
+                m_competenceMatrix.LoadFromFile(textBoxMatrixFileName.Text);
 
-                if (CompetenceMatrix.IsLoaded) {
+                if (m_competenceMatrix.IsLoaded) {
                     m_matrixFileName = textBoxMatrixFileName.Text;
 
-                    ShowMatrix(errors);
+                    ShowMatrix(m_competenceMatrix);
                     MessageBox.Show("Матрица компетенций успешно загружена.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else {
-                    var errorList = string.Join("\r\n", errors);
+                    var errorList = string.Join("\r\n", m_competenceMatrix.Errors);
                     MessageBox.Show($"Обнаружены ошибки:\r\n{errorList}", "Загрузка матрицы", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 }
             }
@@ -58,14 +60,14 @@ namespace FosMan {
         /// Покажем матрицу компетенций в WebView2
         /// </summary>
         /// <param name="errors"></param>
-        async void ShowMatrix(List<string> errors) {
+        async void ShowMatrix(CompetenceMatrix matrix) {
             var html = "<html><body>";
             var tdStyle = " style='border: 1px solid; vertical-align: top'";
 
             //если есть ошибки
-            if (errors.Any()) {
+            if (matrix.Errors?.Any() ?? false) {
                 html += "<div style='color: red'><b>ОШИБКИ:</b></div>";
-                html += string.Join("", errors.Select(e => $"<div style='color: red'>{e}</div>"));
+                html += string.Join("", matrix.Errors.Select(e => $"<div style='color: red'>{e}</div>"));
             }
 
             //формирование матрицы
@@ -73,7 +75,7 @@ namespace FosMan {
             html += $"<tr><th {tdStyle}><b>Код и наименование компетенций</b></th>" +
                         $"<th {tdStyle}><b>Коды и индикаторы достижения компетенций\r\n</b></tdh>" +
                         $"<th {tdStyle}><b>Коды и результаты обучения</b></td></th></tr>";
-            foreach (var item in CompetenceMatrix.Items) {
+            foreach (var item in matrix.Items) {
                 html += "<tr>";
                 html += $"<td {tdStyle} rowspan='{item.Achievements.Count}'><b>{item.Code}</b>. {item.Title}</td>";
                 var firstAchi = true;
@@ -99,12 +101,12 @@ namespace FosMan {
         }
 
         void TuneCurriculumList() {
-            var olvColumnCurriculumIndex = new OLVColumn("Код", "ProgramCode") {
+            var olvColumnCurriculumIndex = new OLVColumn("Код", "DirectionCode") {
                 Width = 80,
                 IsEditable = false
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumIndex);
-            var olvColumnCurriculumName = new OLVColumn("Программа", "ProgramName") {
+            var olvColumnCurriculumName = new OLVColumn("Направление подготовки", "DirectionName") {
                 Width = 200,
                 IsEditable = false
             };
@@ -254,7 +256,7 @@ namespace FosMan {
             };
             fastObjectListViewDisciplines.Columns.Add(olvColumnTotalControlHours);
             var colWidth = 55;
-            for (var i = 0; i < 8; i++) {
+            for (var i = 0; i < CurriculumDiscipline.SEMESTER_COUNT; i++) {
                 var colIdx = i;
                 var semTitle = $"Сем. {i + 1}: ";
                 var olvColumnSemTotal = new OLVColumn($"{semTitle}Итого", "") {
@@ -337,14 +339,105 @@ namespace FosMan {
             }
         }
 
+        void TuneRpdList() {
+            var olvColumnDisciplineName = new OLVColumn("Дисциплина", "DisciplineName") {
+                Width = 200,
+                IsEditable = false
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnDisciplineName);
+            var olvColumnDirectionCode = new OLVColumn("Код", "DirectionCode") {
+                Width = 80,
+                IsEditable = false
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnDirectionCode);
+            var olvColumnDirectionName = new OLVColumn("Направление подготовки", "DirectionName") {
+                Width = 200,
+                IsEditable = false
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnDirectionName);
+            var olvColumnProfile = new OLVColumn("Профиль", "Profile") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnProfile);
+            var olvColumnDepartment = new OLVColumn("Кафедра", "Department") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnDepartment);
+            var olvColumnFaculty = new OLVColumn("Факультет", "Faculty") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnFaculty);
+            //var olvColumnCurriculumAcademicYear = new OLVColumn("Учебный год", "AcademicYear") {
+            //    Width = 100,
+            //    IsEditable = false
+            //};
+            //fastObjectListViewRpdList.Columns.Add(olvColumnCurriculumAcademicYear);
+            var olvColumnFormsOfStudy = new OLVColumn("Формы обучения", "FormOfStudy") {
+                Width = 190,
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    var value = x?.ToString();
+                    var rpd = x as Rpd;
+                    if (rpd != null) {
+                        var items = new List<string>();
+                        foreach (var item in rpd.FormsOfStudy) {
+                            if (item == EFormOfStudy.FullTime) {
+                                items.Add("очная");
+                            }
+                            else if (item == EFormOfStudy.PartTime) {
+                                items.Add("заочная");
+                            }
+                            else if (item == EFormOfStudy.FullTimeAndPartTime) {
+                                items.Add("очно-заочная");
+                            }
+                            else {
+                                items.Add("НЕИЗВЕСТНО");
+                            }
+                        }
+                        value = string.Join(", ", items);
+                    }
+                    return value;
+                }
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnFormsOfStudy);
+            var olvColumnErrors = new OLVColumn("Ошибки", "Errors") {
+                Width = 50,
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    var value = x?.ToString();
+                    var rpd = x as Rpd;
+                    if (rpd != null) {
+                        if (rpd.Errors?.Any() ?? false) {
+                            value = "есть";
+                        }
+                        else {
+                            value = "нет";
+                        }
+                    }
+                    return value;
+                }
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnErrors);
+            var olvColumnFileName = new OLVColumn("Файл", "SourceFileName") {
+                Width = 200,
+                IsEditable = false,
+                FillsFreeSpace = true
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnFileName);
+        }
+
         private void FormMain_Load(object sender, EventArgs e) {
             TuneCurriculumList();
             TuneDisciplineList();
+            TuneRpdList();
         }
 
         private void buttonSelectExcelFiles_Click(object sender, EventArgs e) {
             if (openFileDialog2.ShowDialog(this) == DialogResult.OK) {
-                var files = openFileDialog2.FileNames.Where(x => !Curricula.HasFile(x)).ToArray();
+                var files = openFileDialog2.FileNames.Where(x => !LoadedData.HasCurriculumFile(x)).ToArray();
 
                 labelExcelFileLoading.Visible = true;
                 Application.UseWaitCursor = true;
@@ -355,7 +448,7 @@ namespace FosMan {
                 foreach (var file in files) {
                     labelExcelFileLoading.Text = $"Загрузка файлов ({idx} из {files.Length})...";
                     var curriculum = Curriculum.LoadFromFile(file);
-                    Curricula.AddCurriculum(curriculum);
+                    LoadedData.AddCurriculum(curriculum);
 
                     fastObjectListViewCurricula.AddObject(curriculum);
                     idx++;
@@ -376,7 +469,7 @@ namespace FosMan {
                         Directory.CreateDirectory(logDir);
                     }
                     var dt = DateTime.Now;
-                    var reportFile = Path.Combine(logDir, $"{dt:yyyy-MM-hh_HH-mm-ss}.log");
+                    var reportFile = Path.Combine(logDir, $"{dt:yyyy-MM-dd_HH-mm-ss}.log");
                     File.WriteAllLines(reportFile, report, Encoding.UTF8);
                     MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -435,6 +528,68 @@ namespace FosMan {
         private void fastObjectListViewDisciplines_FormatRow(object sender, FormatRowEventArgs e) {
             if (e.Model is CurriculumDiscipline discipline) {
                 if (discipline.Errors?.Any() ?? false) {
+                    e.Item.BackColor = Color.Pink;
+                }
+            }
+        }
+
+        private void buttonSelectRpdFiles_Click(object sender, EventArgs e) {
+            if (openFileDialog3.ShowDialog(this) == DialogResult.OK) {
+                var files = openFileDialog3.FileNames.Where(x => !LoadedData.HasRpdFile(x)).ToArray();
+
+                labelLoadRpd.Visible = true;
+                Application.UseWaitCursor = true;
+                labelLoadRpd.Text = "";
+
+                var report = new List<string>();
+                var idx = 1;
+                foreach (var file in files) {
+                    labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})...";
+                    var rpd = Rpd.LoadFromFile(file);
+                    LoadedData.AddRpd(rpd);
+
+                    fastObjectListViewRpdList.AddObject(rpd);
+                    idx++;
+                    Application.DoEvents();
+
+                    if (rpd.Errors.Any()) {
+                        if (report.Count > 0) report.Add(new string('-', 30));
+                        report.Add(file);
+                        report.AddRange(rpd.Errors);
+                    }
+                }
+                if (idx > 1) {
+                    labelLoadRpd.Text += " завершено.";
+                }
+                if (report.Any()) {
+                    var logDir = Path.Combine(Environment.CurrentDirectory, "Logs");
+                    if (!Directory.Exists(logDir)) {
+                        Directory.CreateDirectory(logDir);
+                    }
+                    var dt = DateTime.Now;
+                    var reportFile = Path.Combine(logDir, $"{dt:yyyy-MM-dd_HH-mm-ss}.log");
+                    File.WriteAllLines(reportFile, report, Encoding.UTF8);
+                    MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+                Application.UseWaitCursor = false;
+            }
+        }
+
+        private void fastObjectListViewRpdList_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
+            if (e.Model is Rpd rpd) {
+                if (e.Column.AspectName.Equals("Errors")) {
+                    e.Text = string.Join("\r\n", rpd.Errors);
+                    e.StandardIcon = ToolTipControl.StandardIcons.Error;
+                    e.IsBalloon = true;
+                }
+            }
+        }
+
+        private void fastObjectListViewRpdList_FormatRow(object sender, FormatRowEventArgs e) {
+            if (e.Model is Rpd rpd) {
+                if (rpd.Errors?.Any() ?? false) {
                     e.Item.BackColor = Color.Pink;
                 }
             }

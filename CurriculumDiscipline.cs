@@ -35,6 +35,8 @@ namespace FosMan {
     /// Описание дисциплины
     /// </summary>
     internal class CurriculumDiscipline {
+        public const int SEMESTER_COUNT = 10;
+
         static TypeAccessor m_typeAccesor = TypeAccessor.Create(typeof(CurriculumDiscipline));
         static Dictionary<Type, TypeAccessor> m_extraTypeAccessors = new();
         static Regex m_regexTestTypeRequired = new(@"^[^\.]+\.О\.", RegexOptions.Compiled);
@@ -125,7 +127,7 @@ namespace FosMan {
         /// <summary>
         /// Описание семестров
         /// </summary>
-        public CurriculumDisciplineSemester[] Semesters { get; set; } = new CurriculumDisciplineSemester[8];
+        public CurriculumDisciplineSemester[] Semesters { get; set; } = new CurriculumDisciplineSemester[SEMESTER_COUNT];
 
         /// <summary>
         /// Выявленные ошибки

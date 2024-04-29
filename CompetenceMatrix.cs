@@ -10,22 +10,26 @@ namespace FosMan {
     /// <summary>
     /// Описание матрицы компетенций
     /// </summary>
-    public static class CompetenceMatrix {
+    public class CompetenceMatrix {
         /// <summary>
         /// Элементы матрицы
         /// </summary>
-        public static List<CompetenceMatrixItem> Items { get; set; }
+        public List<CompetenceMatrixItem> Items { get; set; }
 
-        public static bool IsLoaded { get => Items?.Any() ?? false; }
+        public bool IsLoaded { get => Items?.Any() ?? false; }
+        /// <summary>
+        /// Выявленные ошибки
+        /// </summary>
+        public List<string> Errors { get; set; }
 
         /// <summary>
         /// Загрузка матрицы из файла
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static void LoadFromFile(string fileName, out List<string> errors) {
+        public void LoadFromFile(string fileName) {
             Items = [];
-            errors = [];
+            Errors = [];
 
             try {
                 using (var docx = DocX.Load(fileName)) {
@@ -45,7 +49,7 @@ namespace FosMan {
                                         Achievements = []
                                     };
                                     if (!currItem.InitFromText(text)) {
-                                        errors.Add($"Не удалось распарсить текст [{text}].");
+                                        Errors.Add($"Не удалось распарсить текст [{text}].");
                                     }
                                     Items.Add(currItem);
                                 }
@@ -59,22 +63,19 @@ namespace FosMan {
                                 achievement.SetResult(text2);
                             }
                             else {
-                                errors.Add("В таблице должно быть не менее 3 колонок.");
+                                Errors.Add("В таблице должно быть не менее 3 колонок.");
                                 break;
                             }
                         }
                     }
                     else {
-                        errors.Add("В документе не найдено таблиц.");
+                        Errors.Add("В документе не найдено таблиц.");
                     }
                 }
             }
             catch (Exception ex) {
-                errors.Add(ex.Message);
+                Errors.Add($"{ex.Message}\r\n{ex.StackTrace}");
             }
-            //if (errors.Any()) {
-            //    matrix = null;
-            //}
 
             return;
         }

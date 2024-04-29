@@ -42,10 +42,15 @@
             fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
             buttonSelectExcelFiles = new Button();
             tabPage1 = new TabPage();
+            labelLoadRpd = new Label();
+            fastObjectListViewRpdList = new BrightIdeasSoftware.FastObjectListView();
+            buttonSelectRpdFiles = new Button();
             tabPage2 = new TabPage();
             label1 = new Label();
             openFileDialog1 = new OpenFileDialog();
             openFileDialog2 = new OpenFileDialog();
+            openFileDialog3 = new OpenFileDialog();
+            openFileDialog4 = new OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
@@ -54,6 +59,8 @@
             groupBoxDisciplines.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplines).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).BeginInit();
+            tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).BeginInit();
             tabPage2.SuspendLayout();
             SuspendLayout();
             // 
@@ -167,10 +174,10 @@
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Location = new Point(4, 24);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1039, 617);
+            tabPageСurriculum.Size = new Size(1039, 616);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -179,7 +186,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 358);
+            groupBoxDisciplines.Location = new Point(8, 364);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(1023, 257);
             groupBoxDisciplines.TabIndex = 3;
@@ -225,7 +232,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1023, 295);
+            fastObjectListViewCurricula.Size = new Size(1023, 301);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -250,13 +257,56 @@
             // 
             // tabPage1
             // 
-            tabPage1.Location = new Point(4, 24);
+            tabPage1.Controls.Add(labelLoadRpd);
+            tabPage1.Controls.Add(fastObjectListViewRpdList);
+            tabPage1.Controls.Add(buttonSelectRpdFiles);
+            tabPage1.Location = new Point(4, 23);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1039, 616);
+            tabPage1.Size = new Size(1039, 617);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "РПД";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // labelLoadRpd
+            // 
+            labelLoadRpd.AutoSize = true;
+            labelLoadRpd.Location = new Point(198, 22);
+            labelLoadRpd.Name = "labelLoadRpd";
+            labelLoadRpd.Size = new Size(66, 14);
+            labelLoadRpd.TabIndex = 5;
+            labelLoadRpd.Text = "Загрузка...";
+            labelLoadRpd.Visible = false;
+            // 
+            // fastObjectListViewRpdList
+            // 
+            fastObjectListViewRpdList.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            fastObjectListViewRpdList.FullRowSelect = true;
+            fastObjectListViewRpdList.GridLines = true;
+            fastObjectListViewRpdList.Location = new Point(8, 57);
+            fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
+            fastObjectListViewRpdList.ShowGroups = false;
+            fastObjectListViewRpdList.Size = new Size(1023, 563);
+            fastObjectListViewRpdList.TabIndex = 4;
+            fastObjectListViewRpdList.UseFilterIndicator = true;
+            fastObjectListViewRpdList.UseFiltering = true;
+            fastObjectListViewRpdList.UseHotItem = true;
+            fastObjectListViewRpdList.UseTranslucentHotItem = true;
+            fastObjectListViewRpdList.UseTranslucentSelection = true;
+            fastObjectListViewRpdList.View = View.Details;
+            fastObjectListViewRpdList.VirtualMode = true;
+            fastObjectListViewRpdList.CellToolTipShowing += fastObjectListViewRpdList_CellToolTipShowing;
+            fastObjectListViewRpdList.FormatRow += fastObjectListViewRpdList_FormatRow;
+            // 
+            // buttonSelectRpdFiles
+            // 
+            buttonSelectRpdFiles.Location = new Point(24, 18);
+            buttonSelectRpdFiles.Name = "buttonSelectRpdFiles";
+            buttonSelectRpdFiles.Size = new Size(143, 23);
+            buttonSelectRpdFiles.TabIndex = 3;
+            buttonSelectRpdFiles.Text = "Выбор файлов...";
+            buttonSelectRpdFiles.UseVisualStyleBackColor = true;
+            buttonSelectRpdFiles.Click += buttonSelectRpdFiles_Click;
             // 
             // tabPage2
             // 
@@ -291,6 +341,18 @@
             openFileDialog2.Filter = "Excel-файлы|*.xlsx|Все файлы|*.*";
             openFileDialog2.Multiselect = true;
             // 
+            // openFileDialog3
+            // 
+            openFileDialog3.FileName = "openFileDialog2";
+            openFileDialog3.Filter = "Word-файлы|*.docx|Все файлы|*.*";
+            openFileDialog3.Multiselect = true;
+            // 
+            // openFileDialog4
+            // 
+            openFileDialog4.FileName = "openFileDialog2";
+            openFileDialog4.Filter = "Excel-файлы|*.xlsx|Все файлы|*.*";
+            openFileDialog4.Multiselect = true;
+            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
@@ -312,6 +374,9 @@
             groupBoxDisciplines.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplines).EndInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).EndInit();
+            tabPage1.ResumeLayout(false);
+            tabPage1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).EndInit();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
             ResumeLayout(false);
@@ -340,5 +405,10 @@
         private Label labelExcelFileLoading;
         private GroupBox groupBoxDisciplines;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewDisciplines;
+        private Label labelLoadRpd;
+        private BrightIdeasSoftware.FastObjectListView fastObjectListViewRpdList;
+        private Button buttonSelectRpdFiles;
+        private OpenFileDialog openFileDialog3;
+        private OpenFileDialog openFileDialog4;
     }
 }

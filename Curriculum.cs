@@ -23,18 +23,18 @@ namespace FosMan {
     /// Учебный план [kəˈrɪkjʊləm]
     /// </summary>
     internal class Curriculum {
-        static Regex m_regexTestProgramName = new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled);
+        static Regex m_regexTestDirectionName = new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled);
         static Regex m_regexParseSemester = new(@"Семестр\s+(\d)", RegexOptions.Compiled);
         //static bool m_programIsDetected = false;
 
         /// <summary>
-        /// Название программы
+        /// Направление подготовки
         /// </summary>
-        public string ProgramName { get; set; }
+        public string DirectionName { get; set; }
         /// <summary>
-        /// Код программы
+        /// Код направления
         /// </summary>
-        public string ProgramCode { get; set; }
+        public string DirectionCode { get; set; }
         /// <summary>
         /// Профиль
         /// </summary>
@@ -147,11 +147,11 @@ namespace FosMan {
                     var cellValue = (row[colIdx] as string)?.ToUpper();
                     if (cellValue != null) {
                         if (!programIsDetected) {
-                            var match = m_regexTestProgramName.Match(cellValue);
+                            var match = m_regexTestDirectionName.Match(cellValue);
                             if (match.Success) {
                                 programIsDetected = true;
-                                curriculum.ProgramCode = string.Join("", match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
-                                curriculum.ProgramName = match.Groups[2].Value.Trim();
+                                curriculum.DirectionCode = string.Join("", match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+                                curriculum.DirectionName = match.Groups[2].Value.Trim();
                             }
                         }
                         if (cellValue.Contains("ПРОФИЛЬ")) {
