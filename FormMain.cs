@@ -1,4 +1,5 @@
 using BrightIdeasSoftware;
+using System.Text;
 
 namespace FosMan {
     public partial class FormMain : Form {
@@ -228,6 +229,7 @@ namespace FosMan {
                 Application.UseWaitCursor = true;
                 labelExcelFileLoading.Text = "";
 
+                var report = new List<string>();
                 var idx = 1;
                 foreach (var file in files) {
                     labelExcelFileLoading.Text = $"Загрузка файлов ({idx} из {files.Length})...";
@@ -237,10 +239,28 @@ namespace FosMan {
                     fastObjectListViewCurricula.AddObject(curriculum);
                     idx++;
                     Application.DoEvents();
+
+                    if (curriculum.Errors.Any()) {
+                        if (report.Count > 0) report.Add(new string('-', 30));
+                        report.Add(file);
+                        report.AddRange(curriculum.Errors);
+                    }
                 }
                 if (idx > 1) {
                     labelExcelFileLoading.Text += " завершено.";
                 }
+                if (report.Any()) {
+                    var logDir = Path.Combine(Environment.CurrentDirectory, "Logs");
+                    if (!Directory.Exists(logDir)) {
+                        Directory.CreateDirectory(logDir);
+                    }
+                    var dt = DateTime.Now;
+                    var reportFile = Path.Combine(logDir, $"{dt:yyyy-MM-hh_HH-mm-ss}.log");
+                    File.WriteAllLines(reportFile, report, Encoding.UTF8);
+                    MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание", 
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
                 Application.UseWaitCursor = false;
             }
         }

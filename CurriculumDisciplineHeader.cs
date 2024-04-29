@@ -7,9 +7,13 @@ using System.Threading.Tasks;
 namespace FosMan {
     public enum EPropertyTestFunction {
         Contains,
-        Equals
+        Equals,
+        StartsWith
     }
 
+    /// <summary>
+    /// Описание заголовка таблицы дисциплин (лист План)
+    /// </summary>
     internal class CurriculumDisciplineHeader {
         /// <summary>
         /// Тестовый текст для выявления колонки свойства
@@ -31,6 +35,14 @@ namespace FosMan {
         /// Номер совпадения (для одинаковых заголовков)
         /// </summary>
         public int MatchNumber { get; set; } = 0;
+        /// <summary>
+        /// Свойство элемента списка (исп. с парой PropertyIndex)
+        /// </summary>
+        public string SubProperty { get; set; } = null;
+        /// <summary>
+        /// Индекс для свойства типа Array
+        /// </summary>
+        public int PropertyIndex { get; set; } = -1;
 
         /// <summary>
         /// Проверка: является ли текст подходящим для заголовка
@@ -47,6 +59,9 @@ namespace FosMan {
             }
             else if (TestFunction == EPropertyTestFunction.Equals) {
                 match = text.Equals(Text, StringComparison.CurrentCultureIgnoreCase);
+            }
+            else if (TestFunction == EPropertyTestFunction.StartsWith) {
+                match = text.StartsWith(Text, StringComparison.CurrentCultureIgnoreCase);
             }
 
             return match;
