@@ -97,7 +97,7 @@ namespace FosMan {
             webView21.NavigateToString(html);
         }
 
-        private void FormMain_Load(object sender, EventArgs e) {
+        void TuneCurriculumList() {
             var olvColumnCurriculumIndex = new OLVColumn("Код", "ProgramCode") {
                 Width = 80,
                 IsEditable = false
@@ -130,46 +130,44 @@ namespace FosMan {
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumAcademicYear);
             var olvColumnCurriculumFormOfStudy = new OLVColumn("Программа", "FormOfStudy") {
                 Width = 100,
-                IsEditable = false
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    var value = x?.ToString();
+                    var curriculum = x as Curriculum;
+                    if (curriculum != null) {
+                        if (curriculum.FormOfStudy == EFormOfStudy.FullTime) {
+                            value = "очная";
+                        }
+                        else if (curriculum.FormOfStudy == EFormOfStudy.PartTime) {
+                            value = "заочная";
+                        }
+                        else if (curriculum.FormOfStudy == EFormOfStudy.FullTimeAndPartTime) {
+                            value = "очно-заочная";
+                        }
+                        else {
+                            value = "НЕИЗВЕСТНО";
+                        }
+                    }
+                    return value;
+                }
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumFormOfStudy);
-            olvColumnCurriculumFormOfStudy.AspectGetter = (x) => {
-                var value = x?.ToString();
-                var curriculum = x as Curriculum;
-                if (curriculum != null) {
-                    if (curriculum.FormOfStudy == EFormOfStudy.FullTime) {
-                        value = "очная";
-                    }
-                    else if (curriculum.FormOfStudy == EFormOfStudy.PartTime) {
-                        value = "заочная";
-                    }
-                    else if (curriculum.FormOfStudy == EFormOfStudy.FullTimeAndPartTime) {
-                        value = "очно-заочная";
-                    }
-                    else {
-                        value = "НЕИЗВЕСТНО";
-                    }
-                }
-
-                return value;
-            };
             var olvColumnCurriculumErrors = new OLVColumn("Ошибки", "Errors") {
                 Width = 50,
-                IsEditable = false
-            };
-            olvColumnCurriculumErrors.AspectGetter = (x) => {
-                var value = x?.ToString();
-                var curriculum = x as Curriculum;
-                if (curriculum != null) {
-                    if (curriculum.Errors?.Any() ?? false) {
-                        value = "есть";
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    var value = x?.ToString();
+                    var curriculum = x as Curriculum;
+                    if (curriculum != null) {
+                        if (curriculum.Errors?.Any() ?? false) {
+                            value = "есть";
+                        }
+                        else {
+                            value = "нет";
+                        }
                     }
-                    else {
-                        value = "нет";
-                    }
+                    return value;
                 }
-
-                return value;
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumErrors);
             var olvColumnCurriculumFileName = new OLVColumn("Файл", "SourceFileName") {
@@ -178,6 +176,48 @@ namespace FosMan {
                 FillsFreeSpace = true
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumFileName);
+        }
+
+        void TuneDisciplineList() {
+            var olvColumnIndex = new OLVColumn("Индекс", "Index") {
+                Width = 100,
+                IsEditable = false
+            };
+            fastObjectListViewDisciplines.Columns.Add(olvColumnIndex);
+            var olvColumnName = new OLVColumn("Наименование", "Name") {
+                Width = 300,
+                IsEditable = false
+            };
+            fastObjectListViewDisciplines.Columns.Add(olvColumnName);
+            var olvColumnType = new OLVColumn("Тип", "Type") {
+                Width = 100,
+                IsEditable = false, 
+                AspectGetter = (x) => {
+                    var value = x?.ToString();
+                    var discipline = x as CurriculumDiscipline;
+                    if (discipline != null) {
+                        if (discipline.Type == EDisciplineType.Required) {
+                            value = "обязательная";
+                        }
+                        else if (discipline.Type == EDisciplineType.ByChoice) {
+                            value = "по выбору";
+                        }
+                        else if (discipline.Type == EDisciplineType.Optional) {
+                            value = "факультативная";
+                        }
+                        else {
+                            value = "НЕИЗВЕСТНО";
+                        }
+                    }
+                    return value;
+                }
+            };
+            fastObjectListViewDisciplines.Columns.Add(olvColumnType);
+        }
+
+        private void FormMain_Load(object sender, EventArgs e) {
+            TuneCurriculumList();
+            TuneDisciplineList();
         }
 
         private void buttonSelectExcelFiles_Click(object sender, EventArgs e) {
@@ -220,6 +260,24 @@ namespace FosMan {
                 if (curriculum.Errors?.Any() ?? false) {
                     e.Item.BackColor = Color.Pink;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Показать список дисциплин учебного плана
+        /// </summary>
+        /// <param name="curriculum"></param>
+        void ShowCurriculumDisciplines(Curriculum curriculum) {
+            fastObjectListViewDisciplines.BeginUpdate();
+            fastObjectListViewDisciplines.ClearObjects();
+            fastObjectListViewDisciplines.SetObjects(curriculum.Disciplines.Values);
+            fastObjectListViewDisciplines.EndUpdate();
+        }
+
+        private void fastObjectListViewCurricula_ItemActivate(object sender, EventArgs e) {
+            var curriculum = fastObjectListViewCurricula.FocusedObject as Curriculum;
+            if (curriculum != null) {
+                ShowCurriculumDisciplines(curriculum);
             }
         }
     }

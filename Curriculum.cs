@@ -193,43 +193,18 @@ namespace FosMan {
                     return;
                 }
 
-                var semesterColIdx = new Dictionary<int, int>();
-
-                //вернуть значение следующей значащей ячейки
-                Func<DataRow, int, string> getNextCellValue = (row, colIdx) => {
-                    string value = null;
-
-                    for (int col = colIdx + 1; col < tablePlan.Columns.Count; col++) {
-                        value = row[col] as string;
-                        if (!string.IsNullOrEmpty(value)) {
-                            break;
-                        }
-                    }
-
-                    return value?.Trim();
-                };
-
-                var colIndex = -1;
-                var colName = -1;
-                var colControlFormExam = -1;
-                var colControlFormTest = -1;
-                var colControlFormTestWithAGrade = -1;
-                var colControlFormControlWork = -1;
-                var colDepartmentCode = -1;
-                var colDepartment = -1;
-                var colCompetenceList = -1;
-
-                var semesterRowIsParsed = false;
-                var semesterRow = false;
-                var headerRowIsParsed = false;
-                var headerRow = false;
-
                 //обработка Плана
-                CurriculumDiscipline discipline = null;
+                Dictionary<int, CurriculumDisciplineHeader> headers = null;
+
                 for (int rowIdx = 0; rowIdx < tablePlan.Rows.Count; rowIdx++) {
                     var row = tablePlan.Rows[rowIdx];
-                    var valuedRow = colIndex >= 0 && !string.IsNullOrEmpty(row[colIndex] as string);
-
+                    if (headers?.Any() ?? false) {
+                        CurriculumDisciplineReader.ProcessRow(tablePlan, rowIdx, headers, curriculum);
+                    }
+                    else {
+                        CurriculumDisciplineReader.TestHeaderRow(tablePlan, rowIdx, curriculum, out headers);
+                    }
+                    /*
                     if (valuedRow) {
                         discipline = new() {
                             CompetenceList = []
@@ -353,6 +328,7 @@ namespace FosMan {
                             headerRowIsParsed = true;
                         }
                     }
+                    */
                 }
             }
             catch (Exception ex) {

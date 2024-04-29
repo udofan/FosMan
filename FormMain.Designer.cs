@@ -36,6 +36,8 @@
             label2 = new Label();
             textBoxMatrixFileName = new TextBox();
             tabPageСurriculum = new TabPage();
+            groupBoxDisciplines = new GroupBox();
+            fastObjectListViewDisciplines = new BrightIdeasSoftware.FastObjectListView();
             labelExcelFileLoading = new Label();
             fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
             buttonSelectExcelFiles = new Button();
@@ -49,6 +51,8 @@
             tabPageCompetenceMatrix.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
             tabPageСurriculum.SuspendLayout();
+            groupBoxDisciplines.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplines).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).BeginInit();
             tabPage2.SuspendLayout();
             SuspendLayout();
@@ -159,6 +163,7 @@
             // 
             // tabPageСurriculum
             // 
+            tabPageСurriculum.Controls.Add(groupBoxDisciplines);
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
@@ -169,6 +174,35 @@
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
+            // 
+            // groupBoxDisciplines
+            // 
+            groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
+            groupBoxDisciplines.Location = new Point(8, 338);
+            groupBoxDisciplines.Name = "groupBoxDisciplines";
+            groupBoxDisciplines.Size = new Size(1023, 275);
+            groupBoxDisciplines.TabIndex = 3;
+            groupBoxDisciplines.TabStop = false;
+            groupBoxDisciplines.Text = "Дисциплины программы";
+            // 
+            // fastObjectListViewDisciplines
+            // 
+            fastObjectListViewDisciplines.Dock = DockStyle.Fill;
+            fastObjectListViewDisciplines.FullRowSelect = true;
+            fastObjectListViewDisciplines.GridLines = true;
+            fastObjectListViewDisciplines.Location = new Point(3, 18);
+            fastObjectListViewDisciplines.Name = "fastObjectListViewDisciplines";
+            fastObjectListViewDisciplines.ShowGroups = false;
+            fastObjectListViewDisciplines.Size = new Size(1017, 254);
+            fastObjectListViewDisciplines.TabIndex = 4;
+            fastObjectListViewDisciplines.UseFilterIndicator = true;
+            fastObjectListViewDisciplines.UseFiltering = true;
+            fastObjectListViewDisciplines.UseHotItem = true;
+            fastObjectListViewDisciplines.UseTranslucentHotItem = true;
+            fastObjectListViewDisciplines.UseTranslucentSelection = true;
+            fastObjectListViewDisciplines.View = View.Details;
+            fastObjectListViewDisciplines.VirtualMode = true;
             // 
             // labelExcelFileLoading
             // 
@@ -188,7 +222,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1023, 560);
+            fastObjectListViewCurricula.Size = new Size(1023, 275);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -199,6 +233,7 @@
             fastObjectListViewCurricula.VirtualMode = true;
             fastObjectListViewCurricula.CellToolTipShowing += fastObjectListViewCurricula_CellToolTipShowing;
             fastObjectListViewCurricula.FormatRow += fastObjectListViewCurricula_FormatRow;
+            fastObjectListViewCurricula.ItemActivate += fastObjectListViewCurricula_ItemActivate;
             // 
             // buttonSelectExcelFiles
             // 
@@ -271,6 +306,8 @@
             ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             tabPageСurriculum.ResumeLayout(false);
             tabPageСurriculum.PerformLayout();
+            groupBoxDisciplines.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplines).EndInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).EndInit();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
@@ -298,5 +335,7 @@
         private Button buttonSelectExcelFiles;
         private OpenFileDialog openFileDialog2;
         private Label labelExcelFileLoading;
+        private GroupBox groupBoxDisciplines;
+        private BrightIdeasSoftware.FastObjectListView fastObjectListViewDisciplines;
     }
 }
