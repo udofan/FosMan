@@ -179,9 +179,9 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 347);
+            groupBoxDisciplines.Location = new Point(8, 358);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
-            groupBoxDisciplines.Size = new Size(1023, 275);
+            groupBoxDisciplines.Size = new Size(1023, 257);
             groupBoxDisciplines.TabIndex = 3;
             groupBoxDisciplines.TabStop = false;
             groupBoxDisciplines.Text = "Дисциплины программы";
@@ -191,10 +191,11 @@
             fastObjectListViewDisciplines.Dock = DockStyle.Fill;
             fastObjectListViewDisciplines.FullRowSelect = true;
             fastObjectListViewDisciplines.GridLines = true;
+            fastObjectListViewDisciplines.HeaderWordWrap = true;
             fastObjectListViewDisciplines.Location = new Point(3, 18);
             fastObjectListViewDisciplines.Name = "fastObjectListViewDisciplines";
             fastObjectListViewDisciplines.ShowGroups = false;
-            fastObjectListViewDisciplines.Size = new Size(1017, 254);
+            fastObjectListViewDisciplines.Size = new Size(1017, 236);
             fastObjectListViewDisciplines.TabIndex = 4;
             fastObjectListViewDisciplines.UseFilterIndicator = true;
             fastObjectListViewDisciplines.UseFiltering = true;
@@ -203,6 +204,8 @@
             fastObjectListViewDisciplines.UseTranslucentSelection = true;
             fastObjectListViewDisciplines.View = View.Details;
             fastObjectListViewDisciplines.VirtualMode = true;
+            fastObjectListViewDisciplines.CellToolTipShowing += fastObjectListViewDisciplines_CellToolTipShowing;
+            fastObjectListViewDisciplines.FormatRow += fastObjectListViewDisciplines_FormatRow;
             // 
             // labelExcelFileLoading
             // 
@@ -222,7 +225,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1023, 284);
+            fastObjectListViewCurricula.Size = new Size(1023, 295);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;

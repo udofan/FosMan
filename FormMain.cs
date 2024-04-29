@@ -109,27 +109,27 @@ namespace FosMan {
                 IsEditable = false
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumName);
-            var olvColumnCurriculumProfile = new OLVColumn("Программа", "Profile") {
+            var olvColumnCurriculumProfile = new OLVColumn("Профиль", "Profile") {
                 Width = 100,
                 IsEditable = false
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumProfile);
-            var olvColumnCurriculumDepartment = new OLVColumn("Программа", "Department") {
+            var olvColumnCurriculumDepartment = new OLVColumn("Кафедра", "Department") {
                 Width = 100,
                 IsEditable = false
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumDepartment);
-            var olvColumnCurriculumFaculty = new OLVColumn("Программа", "Faculty") {
+            var olvColumnCurriculumFaculty = new OLVColumn("Факультет", "Faculty") {
                 Width = 100,
                 IsEditable = false
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumFaculty);
-            var olvColumnCurriculumAcademicYear = new OLVColumn("Программа", "AcademicYear") {
+            var olvColumnCurriculumAcademicYear = new OLVColumn("Учебный год", "AcademicYear") {
                 Width = 100,
                 IsEditable = false
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumAcademicYear);
-            var olvColumnCurriculumFormOfStudy = new OLVColumn("Программа", "FormOfStudy") {
+            var olvColumnCurriculumFormOfStudy = new OLVColumn("Форма обучения", "FormOfStudy") {
                 Width = 100,
                 IsEditable = false,
                 AspectGetter = (x) => {
@@ -192,7 +192,7 @@ namespace FosMan {
             fastObjectListViewDisciplines.Columns.Add(olvColumnName);
             var olvColumnType = new OLVColumn("Тип", "Type") {
                 Width = 100,
-                IsEditable = false, 
+                IsEditable = false,
                 AspectGetter = (x) => {
                     var value = x?.ToString();
                     var discipline = x as CurriculumDiscipline;
@@ -214,6 +214,127 @@ namespace FosMan {
                 }
             };
             fastObjectListViewDisciplines.Columns.Add(olvColumnType);
+            var olvColumnErrors = new OLVColumn("Ошибки", "Errors") {
+                Width = 50,
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    var value = x?.ToString();
+                    var discipline = x as CurriculumDiscipline;
+                    if (discipline != null) {
+                        if (discipline.Errors?.Any() ?? false) {
+                            value = "есть";
+                        }
+                        else {
+                            value = "нет";
+                        }
+                    }
+                    return value;
+                }
+            };
+            fastObjectListViewDisciplines.Columns.Add(olvColumnErrors);
+            //
+            var olvColumnTotalByPlanHours = new OLVColumn("Итого: По плану", "TotalByPlanHours") {
+                Width = 50,
+                IsEditable = false
+            };
+            fastObjectListViewDisciplines.Columns.Add(olvColumnTotalByPlanHours);
+            var olvColumnTotalContactWorkHours = new OLVColumn("Итого: Конт. раб.", "TotalContactWorkHours") {
+                Width = 50,
+                IsEditable = false
+            };
+            fastObjectListViewDisciplines.Columns.Add(olvColumnTotalContactWorkHours);
+            var olvColumnTotalSelfStudyHours = new OLVColumn("Итого: СР", "TotalSelfStudyHours") {
+                Width = 50,
+                IsEditable = false
+            };
+            fastObjectListViewDisciplines.Columns.Add(olvColumnTotalSelfStudyHours);
+            var olvColumnTotalControlHours = new OLVColumn("Итого: КР", "TotalControlHours") {
+                Width = 50,
+                IsEditable = false
+            };
+            fastObjectListViewDisciplines.Columns.Add(olvColumnTotalControlHours);
+            var colWidth = 55;
+            for (var i = 0; i < 8; i++) {
+                var colIdx = i;
+                var semTitle = $"Сем. {i + 1}: ";
+                var olvColumnSemTotal = new OLVColumn($"{semTitle}Итого", "") {
+                    Width = colWidth,
+                    IsEditable = false,
+                    AspectGetter = (x) => {
+                        var value = "";
+                        var discipline = x as CurriculumDiscipline;
+                        if (discipline != null) {
+                            value = discipline.Semesters[colIdx].TotalHours?.ToString() ?? "";
+                        }
+                        return value;
+                    }
+                };
+                var olvColumnSemLec = new OLVColumn($"{semTitle}Лек", "") {
+                    Width = colWidth,
+                    IsEditable = false,
+                    AspectGetter = (x) => {
+                        var value = "";
+                        var discipline = x as CurriculumDiscipline;
+                        if (discipline != null) {
+                            value = discipline.Semesters[colIdx].LectureHours?.ToString() ?? "";
+                        }
+                        return value;
+                    }
+                };
+                fastObjectListViewDisciplines.Columns.Add(olvColumnSemLec);
+                var olvColumnSemLab = new OLVColumn($"{semTitle}Лаб", "") {
+                    Width = colWidth,
+                    IsEditable = false,
+                    AspectGetter = (x) => {
+                        var value = "";
+                        var discipline = x as CurriculumDiscipline;
+                        if (discipline != null) {
+                            value = discipline.Semesters[colIdx].LabHours?.ToString() ?? "";
+                        }
+                        return value;
+                    }
+                };
+                fastObjectListViewDisciplines.Columns.Add(olvColumnSemLab);
+                var olvColumnSemPractical = new OLVColumn($"{semTitle}Пр", "") {
+                    Width = colWidth,
+                    IsEditable = false,
+                    AspectGetter = (x) => {
+                        var value = "";
+                        var discipline = x as CurriculumDiscipline;
+                        if (discipline != null) {
+                            value = discipline.Semesters[colIdx].PracticalHours?.ToString() ?? "";
+                        }
+                        return value;
+                    }
+                };
+                fastObjectListViewDisciplines.Columns.Add(olvColumnSemPractical);
+                var olvColumnSemSelfStudy = new OLVColumn($"{semTitle}СР", "") {
+                    Width = colWidth,
+                    IsEditable = false,
+                    AspectGetter = (x) => {
+                        var value = "";
+                        var discipline = x as CurriculumDiscipline;
+                        if (discipline != null) {
+                            value = discipline.Semesters[colIdx].SelfStudyHours?.ToString() ?? "";
+                        }
+                        return value;
+                    }
+                };
+                fastObjectListViewDisciplines.Columns.Add(olvColumnSemSelfStudy);
+                var olvColumnSemControl = new OLVColumn($"{semTitle}Контроль", "") {
+                    Width = colWidth,
+                    IsEditable = false,
+                    AspectGetter = (x) => {
+                        var value = "";
+                        var discipline = x as CurriculumDiscipline;
+                        if (discipline != null) {
+                            value = discipline.Semesters[colIdx].ControlHours?.ToString() ?? "";
+                        }
+                        return value;
+                    }
+                };
+                fastObjectListViewDisciplines.Columns.Add(olvColumnSemControl);
+            }
         }
 
         private void FormMain_Load(object sender, EventArgs e) {
@@ -257,7 +378,7 @@ namespace FosMan {
                     var dt = DateTime.Now;
                     var reportFile = Path.Combine(logDir, $"{dt:yyyy-MM-hh_HH-mm-ss}.log");
                     File.WriteAllLines(reportFile, report, Encoding.UTF8);
-                    MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание", 
+                    MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
@@ -298,6 +419,24 @@ namespace FosMan {
             var curriculum = fastObjectListViewCurricula.FocusedObject as Curriculum;
             if (curriculum != null) {
                 ShowCurriculumDisciplines(curriculum);
+            }
+        }
+
+        private void fastObjectListViewDisciplines_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
+            if (e.Model is CurriculumDiscipline discipline) {
+                if (e.Column.AspectName.Equals("Errors")) {
+                    e.Text = string.Join("\r\n", discipline.Errors);
+                    e.StandardIcon = ToolTipControl.StandardIcons.Error;
+                    e.IsBalloon = true;
+                }
+            }
+        }
+
+        private void fastObjectListViewDisciplines_FormatRow(object sender, FormatRowEventArgs e) {
+            if (e.Model is CurriculumDiscipline discipline) {
+                if (discipline.Errors?.Any() ?? false) {
+                    e.Item.BackColor = Color.Pink;
+                }
             }
         }
     }

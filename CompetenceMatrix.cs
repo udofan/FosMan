@@ -37,9 +37,9 @@ namespace FosMan {
                         for (var rowIdx = 1; rowIdx < table.Rows.Count; rowIdx++) {
                             var row = table.Rows[rowIdx];
                             if (row.Cells.Count >= 3) {
-                                var cell0 = row.Cells[0];
+                                //var cell0 = row.Cells[0];
 
-                                var text = cell0.Paragraphs[0].Text;
+                                var text = string.Join(" ", row.Cells[0].Paragraphs.Select(p => p.Text));
                                 if (!string.IsNullOrEmpty(text)) { //ряд с очередной компетенцией
                                     currItem = new CompetenceMatrixItem() {
                                         Achievements = []

@@ -69,7 +69,7 @@ namespace FosMan {
             if (match.Success) {
                 var code = string.Join("", match.Groups[1].Value.Trim(' ', ':', '\r', '\n').Split(' '));
 
-                ResultCode = code.Insert(3, " ");
+                ResultCode = $"{code[..3]} {Code}"; // code.Insert(3, " ");
                 ResultDescription = match.Groups[2].Value.Trim();
             }
         }

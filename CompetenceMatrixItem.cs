@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 namespace FosMan {
     public class CompetenceMatrixItem {
         //УК-1. Способен осуществлять поиск, критический анализ и синтез информации, применять системный подход для решения поставленных задач
-        Regex m_parseText = new(@"(.*\d{1})\. (.*)", RegexOptions.Compiled);
+        //УК-1
+        //Способен осуществлять поиск, критический анализ и синтез информации, применять системный подход для решения поставленных задач.
+        Regex m_parseText = new(@"(.*\d+)[\.\r\n\s{1}](.*)", RegexOptions.Compiled);
 
         /// <summary>
         /// Код компетенции

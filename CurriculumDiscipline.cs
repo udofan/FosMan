@@ -200,6 +200,31 @@ namespace FosMan {
                 curriculum.Errors.Add(err);
                 Errors.Add(err);
             }
+            //проверка часов семестров
+            var allSemTotal = 0;
+            var allSemContact = 0;
+            for (var i = 0; i < Semesters.Length; i++) {
+                var sem = Semesters[i];
+                var semTotal = (sem.LectureHours ?? 0) + (sem.LabHours ?? 0) + (sem.SelfStudyHours ?? 0) + (sem.PracticalHours ?? 0) + (sem.ControlHours ?? 0);
+                if (sem.TotalHours != semTotal) {
+                    var err = $"Дисциплина [{Name}] (строка {rowIdx}): обнаружено неверное значение в поле [Итого] Семестра {i + 1}";
+                    curriculum.Errors.Add(err);
+                    Errors.Add(err);
+                }
+                allSemTotal += semTotal;
+                var semContact = (sem.LectureHours ?? 0) + (sem.LabHours ?? 0) + (sem.PracticalHours ?? 0);
+                allSemContact += semContact;
+            }
+            if (TotalByPlanHours != allSemTotal) {
+                var err = $"Дисциплина [{Name}] (строка {rowIdx}): сумма итогового времени по семестрам не сходится с полем [Итого]";
+                curriculum.Errors.Add(err);
+                Errors.Add(err);
+            }
+            if (TotalContactWorkHours != allSemContact) {
+                var err = $"Дисциплина [{Name}] (строка {rowIdx}): сумма контактного времени по семестрам не сходится с полем [Конт. раб.]";
+                curriculum.Errors.Add(err);
+                Errors.Add(err);
+            }
 
             return true;
         }
