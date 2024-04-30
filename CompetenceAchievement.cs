@@ -11,11 +11,12 @@ namespace FosMan {
     /// </summary>
     public class CompetenceAchievement {
         //УК-1.1. Определяет и ранжиру-ет информацию, требуемую для решения поставленных задач.
-        Regex m_regexParseIndicator = new(@"(.+\d{1})\. (.+)", RegexOptions.Compiled);
+        Regex m_regexParseIndicator = new(@"(.+\d{1})\.\s*([^\d{1}].+)$", RegexOptions.Compiled);
 
         //РОЗ УК-1.1:
         //- знать состав, структуру тре-буемых данных и информа-ции, процессы их сбора, обра-ботки и интерпретации; раз-личные варианты решения задачи.
-        Regex m_regexParseResult = new(@"(.+)[:\r\n]+(.+)", RegexOptions.Multiline | RegexOptions.Compiled);
+        //Regex m_regexParseResult = new(@"(.+)[:\r\n]+(.+)", RegexOptions.Multiline | RegexOptions.Compiled);
+        Regex m_regexParseResult2 = new(@"(.+\.\d{1,})([:\.\r\n ]|$)+(.*)", RegexOptions.Multiline | RegexOptions.Compiled);
 
         /// <summary>
         /// Код
@@ -47,31 +48,35 @@ namespace FosMan {
         /// </summary>
         /// <param name="text1"></param>
         /// <exception cref="NotImplementedException"></exception>
-        internal void SetIndicator(string text) {
+        internal bool TryParseIndicator(string text) {
             SourceIndicator = text;
 
             var match = m_regexParseIndicator.Match(text);
             if (match.Success) {
-                Code = string.Join("", match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+                Code = string.Join("", match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries)).ToUpper();
                 Indicator = match.Groups[2].Value.Trim();
             }
+
+            return match.Success;
         }
 
         /// <summary>
         /// Установка результата
         /// </summary>
         /// <param name="text2"></param>
-        internal void SetResult(string text) {
+        internal bool TryParseResult(string text) {
             SourceResult = text;
 
-            var match = m_regexParseResult.Match(text);
+            var match = m_regexParseResult2.Match(text);
 
             if (match.Success) {
-                var code = string.Join("", match.Groups[1].Value.Trim(' ', ':', '\r', '\n').Split(' '));
+                var code = string.Join("", match.Groups[1].Value.Trim(' ', ':', '\r', '\n').Split(' ')).ToUpper();
 
-                ResultCode = $"{code[..3]} {Code}"; // code.Insert(3, " ");
-                ResultDescription = match.Groups[2].Value.Trim();
+                ResultCode = $"{code[..3]} {Code}";
+                ResultDescription = match.Groups[3].Value.Trim();
             }
+            
+            return match.Success;
         }
     }
 }

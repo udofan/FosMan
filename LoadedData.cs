@@ -9,8 +9,8 @@ namespace FosMan {
     /// Загруженные данные
     /// </summary>
     static internal class LoadedData {
-        static Dictionary<string, Curriculum> m_curriculumDic = new();
-        static Dictionary<string, Rpd> m_rpdDic = new();
+        static Dictionary<string, Curriculum> m_curriculumDic = [];
+        static Dictionary<string, Rpd> m_rpdDic = [];
 
         public static bool HasCurriculumFile(string fileName) => m_curriculumDic.ContainsKey(fileName);
 

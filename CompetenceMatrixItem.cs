@@ -11,7 +11,7 @@ namespace FosMan {
         //УК-1. Способен осуществлять поиск, критический анализ и синтез информации, применять системный подход для решения поставленных задач
         //УК-1
         //Способен осуществлять поиск, критический анализ и синтез информации, применять системный подход для решения поставленных задач.
-        Regex m_parseText = new(@"(.*\d+)[\.\r\n\s{1}](.*)", RegexOptions.Compiled);
+        static Regex m_parseText = new(@"(.*\d+)([\.\r\n\s{1}$]|$)(.*)$", RegexOptions.Compiled);
 
         /// <summary>
         /// Код компетенции
@@ -33,18 +33,21 @@ namespace FosMan {
         public List<CompetenceAchievement> Achievements { get; set; }
 
         /// <summary>
-        /// Инициализация базовых свойств по тексту
+        /// Попытка отпарсить текст с кодом компетенции и описанием
         /// </summary>
         /// <param name="text"></param>
-        public bool InitFromText(string text) {
-            SourceText = text;
+        public static bool TryParse(string text, out CompetenceMatrixItem matrixItem) {
+            matrixItem = new CompetenceMatrixItem() {
+                SourceText = text, 
+                Achievements = []
+            };
 
             var match = m_parseText.Match(text);
             var result = match.Success;
 
             if (match.Success) {
-                Code = string.Join("", match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
-                Title = match.Groups[2].Value.Trim();
+                matrixItem.Code = string.Join("", match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries)).ToUpper();
+                matrixItem.Title = match.Groups[3].Value.Trim();
             }
 
             return result;

@@ -18,7 +18,8 @@ namespace FosMan {
         Exam,           //экзамен
         Test,           //зачет
         TestWithAGrade, //зачет с оценкой
-        ControlWork     //контрольная работа
+        ControlWork,    //контрольная работа
+        Unknown         //определить НЕ УДАЛОСЬ
     }
 
     /// <summary>
@@ -125,9 +126,9 @@ namespace FosMan {
         /// </summary>
         public int? TotalControlHours { get; set; } = 0;
         /// <summary>
-        /// Описание семестров
+        /// Описание учебных работ по семестрам
         /// </summary>
-        public CurriculumDisciplineSemester[] Semesters { get; set; } = new CurriculumDisciplineSemester[SEMESTER_COUNT];
+        public EducationalWork[] Semesters { get; set; } = new EducationalWork[SEMESTER_COUNT];
 
         /// <summary>
         /// Выявленные ошибки

@@ -40,8 +40,7 @@ namespace FosMan {
             }
 
             if (loadMatrix) {
-                m_competenceMatrix = new();
-                m_competenceMatrix.LoadFromFile(textBoxMatrixFileName.Text);
+                m_competenceMatrix = CompetenceMatrix.LoadFromFile(textBoxMatrixFileName.Text);
 
                 if (m_competenceMatrix.IsLoaded) {
                     m_matrixFileName = textBoxMatrixFileName.Text;
@@ -469,7 +468,7 @@ namespace FosMan {
                         Directory.CreateDirectory(logDir);
                     }
                     var dt = DateTime.Now;
-                    var reportFile = Path.Combine(logDir, $"{dt:yyyy-MM-dd_HH-mm-ss}.log");
+                    var reportFile = Path.Combine(logDir, $"уп.{dt:yyyy-MM-dd_HH-mm-ss}.log");
                     File.WriteAllLines(reportFile, report, Encoding.UTF8);
                     MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -567,7 +566,7 @@ namespace FosMan {
                         Directory.CreateDirectory(logDir);
                     }
                     var dt = DateTime.Now;
-                    var reportFile = Path.Combine(logDir, $"{dt:yyyy-MM-dd_HH-mm-ss}.log");
+                    var reportFile = Path.Combine(logDir, $"рпд.{dt:yyyy-MM-dd_HH-mm-ss}.log");
                     File.WriteAllLines(reportFile, report, Encoding.UTF8);
                     MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
                                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
