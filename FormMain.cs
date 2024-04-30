@@ -60,40 +60,7 @@ namespace FosMan {
         /// </summary>
         /// <param name="errors"></param>
         async void ShowMatrix(CompetenceMatrix matrix) {
-            var html = "<html><body>";
-            var tdStyle = " style='border: 1px solid; vertical-align: top'";
-
-            //если есть ошибки
-            if (matrix.Errors?.Any() ?? false) {
-                html += "<div style='color: red'><b>ОШИБКИ:</b></div>";
-                html += string.Join("", matrix.Errors.Select(e => $"<div style='color: red'>{e}</div>"));
-            }
-
-            //формирование матрицы
-            html += "<table style='border: 1px solid'>";
-            html += $"<tr><th {tdStyle}><b>Код и наименование компетенций</b></th>" +
-                        $"<th {tdStyle}><b>Коды и индикаторы достижения компетенций\r\n</b></tdh>" +
-                        $"<th {tdStyle}><b>Коды и результаты обучения</b></td></th></tr>";
-            foreach (var item in matrix.Items) {
-                html += "<tr>";
-                html += $"<td {tdStyle} rowspan='{item.Achievements.Count}'><b>{item.Code}</b>. {item.Title}</td>";
-                var firstAchi = true;
-                foreach (var achi in item.Achievements) {
-                    if (!firstAchi) {
-                        html += "<tr>";
-                    }
-                    html += $"<td {tdStyle}>{achi.Code}. {achi.Indicator}</td>";
-                    html += $"<td {tdStyle}>{achi.ResultCode}:<br />{achi.ResultDescription}</td>";
-                    if (!firstAchi) {
-                        html += "</tr>";
-                    }
-                    firstAchi = false;
-                }
-                html += "</tr>";
-            }
-            html += "</table>";
-
-            html += "</body></html>";
+            var html = matrix.CreateHtmlReport();
 
             await webView21.EnsureCoreWebView2Async();
             webView21.NavigateToString(html);
@@ -402,6 +369,22 @@ namespace FosMan {
                 }
             };
             fastObjectListViewRpdList.Columns.Add(olvColumnFormsOfStudy);
+            //матрица компетенций
+            var olvColumnCompetenceMatrix = new OLVColumn("Компетенции", "CompetenceMatrix") {
+                Width = 60,
+                CheckBoxes = true,
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    bool value = false;
+                    var rpd = x as Rpd;
+                    if (rpd != null && rpd.CompetenceMatrix != null) {
+                        value = true;
+                    }
+                    return value;
+                }
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnCompetenceMatrix);
+            //ошибки
             var olvColumnErrors = new OLVColumn("Ошибки", "Errors") {
                 Width = 50,
                 IsEditable = false,
@@ -436,7 +419,7 @@ namespace FosMan {
 
         private void buttonSelectExcelFiles_Click(object sender, EventArgs e) {
             if (openFileDialog2.ShowDialog(this) == DialogResult.OK) {
-                var files = openFileDialog2.FileNames.Where(x => !LoadedData.HasCurriculumFile(x)).ToArray();
+                var files = openFileDialog2.FileNames.Where(x => !App.HasCurriculumFile(x)).ToArray();
 
                 labelExcelFileLoading.Visible = true;
                 Application.UseWaitCursor = true;
@@ -447,7 +430,7 @@ namespace FosMan {
                 foreach (var file in files) {
                     labelExcelFileLoading.Text = $"Загрузка файлов ({idx} из {files.Length})...";
                     var curriculum = Curriculum.LoadFromFile(file);
-                    LoadedData.AddCurriculum(curriculum);
+                    App.AddCurriculum(curriculum);
 
                     fastObjectListViewCurricula.AddObject(curriculum);
                     idx++;
@@ -534,7 +517,7 @@ namespace FosMan {
 
         private void buttonSelectRpdFiles_Click(object sender, EventArgs e) {
             if (openFileDialog3.ShowDialog(this) == DialogResult.OK) {
-                var files = openFileDialog3.FileNames.Where(x => !LoadedData.HasRpdFile(x)).ToArray();
+                var files = openFileDialog3.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
 
                 labelLoadRpd.Visible = true;
                 Application.UseWaitCursor = true;
@@ -545,7 +528,7 @@ namespace FosMan {
                 foreach (var file in files) {
                     labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})...";
                     var rpd = Rpd.LoadFromFile(file);
-                    LoadedData.AddRpd(rpd);
+                    App.AddRpd(rpd);
 
                     fastObjectListViewRpdList.AddObject(rpd);
                     idx++;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -60,37 +61,45 @@ namespace FosMan {
         /// <param name="matrix"></param>
         /// <returns></returns>
         public static bool TryParseTable(Table table, CompetenceMatrix matrix) {
-            CompetenceMatrixItem currItem = new();
+            CompetenceMatrixItem currItem = null;
+            CompetenceAchievement currAchievement = null;
 
             var matchedTable = false;   //флаг, что таблица с компетенциями
 
             for (var rowIdx = 0; rowIdx < table.Rows.Count; rowIdx++) {
                 var row = table.Rows[rowIdx];
                 if (row.Cells.Count >= 3) {
-                    //var cell0 = row.Cells[0];
-
-                    var text = string.Join(" ", row.Cells[0].Paragraphs.Select(p => p.Text));
-                    if (!string.IsNullOrEmpty(text)) { //проверка на очередной ряд с компетенцией
-                        if (CompetenceMatrixItem.TryParse(text, out currItem)) {
+                    var textCompetence = string.Join(" ", row.Cells[0].Paragraphs.Select(p => p.Text));
+                    if (!string.IsNullOrEmpty(textCompetence)) { //проверка на очередной ряд с компетенцией
+                        if (CompetenceMatrixItem.TryParse(textCompetence, out currItem)) {
                             matchedTable = true;
                             matrix.Items.Add(currItem);
                         }
                         else if (matchedTable) {
-                            matrix.Errors.Add($"Не удалось распарсить текст [{text}] (ряд {rowIdx}, колонка 0).");
+                            matrix.Errors.Add($"Не удалось распарсить текст [{textCompetence}] (ряд {rowIdx}, колонка 0).");
                         }
                     }
 
                     if (matchedTable) {
-                        var achievement = new CompetenceAchievement();
-                        currItem.Achievements.Add(achievement);
+                        var textIndicator = string.Join(" ", row.Cells[1].Paragraphs.Select(p => p.Text)).Trim();
+                        if (!string.IsNullOrEmpty(textIndicator)) { //значение индикатора есть?
+                            if (CompetenceAchievement.TryParseIndicator(textIndicator, out currAchievement)) {
+                                currItem.Achievements.Add(currAchievement);
+                            }
+                            else {
+                                matrix.Errors.Add($"Не удалось распарсить текст [{textIndicator}] (ряд {rowIdx}, колонка 1).");
+                            }
 
-                        var text1 = string.Join(" ", row.Cells[1].Paragraphs.Select(p => p.Text));
-                        var text2 = string.Join("\r\n", row.Cells[2].Paragraphs.Select(p => p.Text));
-                        if (!achievement.TryParseIndicator(text1)) {
-                            matrix.Errors.Add($"Не удалось распарсить текст [{text1}] (ряд {rowIdx}, колонка 1).");
                         }
-                        if (!achievement.TryParseResult(text2)) {
-                            matrix.Errors.Add($"Не удалось распарсить текст [{text2}] (ряд {rowIdx}, колонка 2).");
+
+                        var textResult = string.Join("\r\n", row.Cells[2].Paragraphs.Select(p => p.Text)).Trim();
+                        if (!string.IsNullOrEmpty(textResult)) {
+                            if (CompetenceResult.TryParse(textResult, out var result)) {
+                                currAchievement?.Results.Add(result);
+                            }
+                            else {
+                                matrix.Errors.Add($"Не удалось распарсить текст [{textResult}] (ряд {rowIdx}, колонка 2).");
+                            }
                         }
                     }
                 }
@@ -117,14 +126,71 @@ namespace FosMan {
                     else if (!achi.Code.Contains(item.Code)) {
                         Errors.Add($"Компетенция {item.Code}: индикатор не соответствует компетенции - {achi.Code}");
                     }
-                    if (string.IsNullOrEmpty(achi.ResultCode)) {
-                        Errors.Add($"Компетенция {item.Code}: результат не определён");
-                    }
-                    else if (!achi.ResultCode.Contains(item.Code)) {
-                        Errors.Add($"Компетенция {item.Code}: результат не соответствует компетенции - {achi.ResultCode}");
+                    foreach (var res in achi.Results) {
+                        if (string.IsNullOrEmpty(res.Code)) {
+                            Errors.Add($"Компетенция {item.Code}: результат не определён для индикатора {achi.Code}");
+                        }
+                        else if (!res.Code.Contains(item.Code)) {
+                            Errors.Add($"Компетенция {item.Code}: результат индикатора {achi.Code} не соответствует компетенции - {res.Code}");
+                        }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Создать html-отчет
+        /// </summary>
+        /// <returns></returns>
+        public string CreateHtmlReport() {
+            var html = "<html><body>";
+            var tdStyle = " style='border: 1px solid; vertical-align: top'";
+
+            //если есть ошибки
+            if (Errors?.Any() ?? false) {
+                html += "<div style='color: red'><b>ОШИБКИ:</b></div>";
+                html += string.Join("", Errors.Select(e => $"<div style='color: red'>{e}</div>"));
+            }
+
+            //формирование матрицы
+            html += "<table style='border: 1px solid'>";
+            html += $"<tr><th {tdStyle}><b>Код и наименование компетенций</b></th>" +
+                        $"<th {tdStyle}><b>Коды и индикаторы достижения компетенций\r\n</b></tdh>" +
+                        $"<th {tdStyle}><b>Коды и результаты обучения</b></td></th></tr>";
+            foreach (var item in Items) {
+                html += "<tr>";
+                var rowSpan = item.Achievements.Sum(a => a.Results.Count);
+                html += $"<td {tdStyle} rowspan='{rowSpan}'><b>{item.Code}</b>. {item.Title}</td>";
+
+                var firstAchi = true;
+                foreach (var achi in item.Achievements) {
+                    if (!firstAchi) {
+                        html += $"<tr>";
+                    }
+                    html += $"<td {tdStyle} rowspan='{achi.Results.Count}'>{achi.Code}. {achi.Indicator}</td>";
+                    var firstResult = true;
+                    foreach (var res in achi.Results) {
+                        if (!firstResult) {
+                            html += "<tr>";
+                        }
+                        html += $"<td {tdStyle}>{res.Code}:<br />{res.Description}</td>";
+                        if (!firstResult) {
+                            html += "</tr>";
+                        }
+                        firstResult = false;
+                    }
+                    if (!firstAchi) {
+                        html += "</tr>";
+                    }
+                    firstAchi = false;
+                }
+                html += "</tr>";
+            }
+            html += "</table>";
+
+            html += "</body></html>";
+
+            return html;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace FosMan {
     /// <summary>
     /// Загруженные данные
     /// </summary>
-    static internal class LoadedData {
+    static internal class App {
         static Dictionary<string, Curriculum> m_curriculumDic = [];
         static Dictionary<string, Rpd> m_rpdDic = [];
 

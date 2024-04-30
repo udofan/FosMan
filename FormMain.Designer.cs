@@ -166,7 +166,7 @@
             textBoxMatrixFileName.Name = "textBoxMatrixFileName";
             textBoxMatrixFileName.Size = new Size(530, 22);
             textBoxMatrixFileName.TabIndex = 0;
-            textBoxMatrixFileName.Text = "c:\\FosMan\\Матрицы_компетенций\\1. Индикаторы и компетенции_37.03.01 _Пс  3++.docx";
+            textBoxMatrixFileName.Text = "c:\\FosMan\\Матрицы_компетенций\\test3.docx";
             // 
             // tabPageСurriculum
             // 
@@ -186,9 +186,9 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 364);
+            groupBoxDisciplines.Location = new Point(8, 365);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
-            groupBoxDisciplines.Size = new Size(1023, 257);
+            groupBoxDisciplines.Size = new Size(1023, 244);
             groupBoxDisciplines.TabIndex = 3;
             groupBoxDisciplines.TabStop = false;
             groupBoxDisciplines.Text = "Дисциплины программы";
@@ -202,7 +202,7 @@
             fastObjectListViewDisciplines.Location = new Point(3, 18);
             fastObjectListViewDisciplines.Name = "fastObjectListViewDisciplines";
             fastObjectListViewDisciplines.ShowGroups = false;
-            fastObjectListViewDisciplines.Size = new Size(1017, 236);
+            fastObjectListViewDisciplines.Size = new Size(1017, 223);
             fastObjectListViewDisciplines.TabIndex = 4;
             fastObjectListViewDisciplines.UseFilterIndicator = true;
             fastObjectListViewDisciplines.UseFiltering = true;
@@ -232,7 +232,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1023, 301);
+            fastObjectListViewCurricula.Size = new Size(1023, 302);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -260,10 +260,10 @@
             tabPage1.Controls.Add(labelLoadRpd);
             tabPage1.Controls.Add(fastObjectListViewRpdList);
             tabPage1.Controls.Add(buttonSelectRpdFiles);
-            tabPage1.Location = new Point(4, 23);
+            tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1039, 617);
+            tabPage1.Size = new Size(1039, 616);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "РПД";
             tabPage1.UseVisualStyleBackColor = true;
@@ -286,7 +286,7 @@
             fastObjectListViewRpdList.Location = new Point(8, 57);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1023, 579);
+            fastObjectListViewRpdList.Size = new Size(1023, 556);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;

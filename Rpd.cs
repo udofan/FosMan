@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Xceed.Document.NET;
 using Xceed.Words.NET;
 
 namespace FosMan {
@@ -158,10 +159,10 @@ namespace FosMan {
                     //проверка таблиц
                     foreach (var table in docx.Tables) {
                         if (!rpd.EducationalWorks.Any()) {
-                            TestTableForEducationalWorks(docx, rpd);
+                            TestTableForEducationalWorks(table, rpd);
                         }
                         if (rpd.CompetenceMatrix == null) {
-                            TestTableForCompetenceMatrix(docx, rpd);
+                            TestTableForCompetenceMatrix(table, rpd);
                         }
                     }
                 }
@@ -173,11 +174,28 @@ namespace FosMan {
             return rpd;
         }
 
-        private static void TestTableForCompetenceMatrix(DocX docx, Rpd rpd) {
-            throw new NotImplementedException();
+        /// <summary>
+        /// Проверка таблицы на матрицу компетенций
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="rpd"></param>
+        private static void TestTableForCompetenceMatrix(Table table, Rpd rpd) {
+            var matrix = new CompetenceMatrix() {
+                Items = [],
+                Errors = [],
+            };
+            if (CompetenceMatrix.TryParseTable(table, matrix)) {
+                rpd.CompetenceMatrix = matrix;
+                rpd.Errors.AddRange(matrix.Errors);
+            }
         }
 
-        static void TestTableForEducationalWorks(DocX docx, Rpd rpd) {
+        /// <summary>
+        /// Проверка таблицы на учебные работы по формам обучения
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="rpd"></param>
+        static void TestTableForEducationalWorks(Table table, Rpd rpd) {
 
         }
     }
