@@ -2,6 +2,7 @@
 using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Security.Policy;
@@ -15,10 +16,15 @@ namespace FosMan {
     /// Форма контроля
     /// </summary>
     public enum EControlForm {
+        [Description("Экзамен")]
         Exam,           //экзамен
+        [Description("Зачет")]
         Test,           //зачет
+        [Description("Зачет с оценкой")]
         TestWithAGrade, //зачет с оценкой
+        [Description("Контрольная работа")]
         ControlWork,    //контрольная работа
+        [Description("НЕИЗВЕСТНО")]
         Unknown         //определить НЕ УДАЛОСЬ
     }
 
@@ -26,9 +32,13 @@ namespace FosMan {
     /// Тип дисциплины
     /// </summary>
     public enum EDisciplineType {
+        [Description("Обязательная")]
         Required,       //обязательная
+        [Description("По выбору")]
         ByChoice,       //по выбору
+        [Description("Факультативная")]
         Optional,       //факультативная
+        [Description("НЕИЗВЕСТНО")]
         Unknown         //опередить НЕ УДАЛОСЬ
     }
 
@@ -87,17 +97,19 @@ namespace FosMan {
         /// </summary>
         public string DepartmentCode { get; set; }
         /// <summary>
-        /// Компетенции (коды)
+        /// Нормализованные компетенции (коды)
         /// </summary>
         public List<string> CompetenceList { get; set; }
-
+        /// <summary>
+        /// Компетенции строкой (берутся из xlsx)
+        /// </summary>
         public string Competences {
             get => m_competences;
             set {
                 if (!string.IsNullOrEmpty(value)) {
                     var competenceItems = value.Split(';', StringSplitOptions.TrimEntries);
                     CompetenceList = [];
-                    CompetenceList.AddRange(competenceItems.Select(x => string.Join("", x.Split(' '))));
+                    CompetenceList.AddRange(competenceItems.Select(x => string.Join("", x.Split(' ')).ToUpper()));
                 }
             }
         }
@@ -136,7 +148,7 @@ namespace FosMan {
         public List<string> Errors { get; set; }
 
         public CurriculumDiscipline() {
-            Errors = new();
+            Errors = [];
 
             for (var i = 0; i < Semesters.Length; i++) {
                 Semesters[i] = new();
@@ -146,10 +158,11 @@ namespace FosMan {
         /// <summary>
         /// Установить значение указанному свойству
         /// </summary>
-        /// <param name="targetProperty"></param>
-        /// <param name="targetType"></param>
-        /// <param name="cellValue"></param>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <param name="targetProperty">целевое свойство</param>
+        /// <param name="targetType">тип целевого свойства</param>
+        /// <param name="cellValue">значение (будет приведено к типу targetType)</param>
+        /// <param name="index">индекс списка, если целевое свойство List(object)</param>
+        /// <param name="subProperty">свойство object'а из списка</param>
         internal void SetProperty(string targetProperty, Type targetType, string cellValue, int index = -1, string subProperty = null) {
             object value = null;
 

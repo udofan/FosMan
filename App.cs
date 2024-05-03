@@ -1,6 +1,13 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.DirectoryServices.ActiveDirectory;
+using System.Drawing;
+using System.Drawing.Design;
 using System.Linq;
+using System.Reflection;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using Xceed.Document.NET;
@@ -12,6 +19,10 @@ namespace FosMan {
     static internal class App {
         static Dictionary<string, Curriculum> m_curriculumDic = [];
         static Dictionary<string, Rpd> m_rpdDic = [];
+
+        public static Dictionary<string, Rpd> RpdList { get => m_rpdDic; }
+
+        public static Dictionary<string, Curriculum> Curricula { get => m_curriculumDic; }
 
         public static bool HasCurriculumFile(string fileName) => m_curriculumDic.ContainsKey(fileName);
 
@@ -36,6 +47,145 @@ namespace FosMan {
                 return text.Trim();
             }
             return text;
+        }
+
+        static void AddError(this StringBuilder report, string error) {
+            report.Append($"<div style='color: red'>{error}</div>");
+        }
+
+        static void AddDiv(this StringBuilder report, string content) {
+            report.Append($"<div>{content}</div>");
+        }
+
+        static void AddTocElement(this StringBuilder toc, string element, string anchor, bool errorMark) {
+            var color = errorMark ? "red" : "green";
+            toc.Append($"<li><a href='#{anchor}'><span style='color:{color};'>{element}</span></a></li>");
+        }
+
+        /// <summary>
+        /// Проверить загруженные РПД
+        /// </summary>
+        public static void CheckRdp(out string htmlReport) {
+            htmlReport = string.Empty;
+
+            StringBuilder html = new("<html><body>");
+            StringBuilder toc = new("<div><ul>");
+            StringBuilder rep = new("<div>");
+            var idx = 0;
+            foreach (var rpd in m_rpdDic.Values) {
+                var anchor = $"rpd{idx}";
+                idx++;
+                rpd.ExtraErrors = [];
+                var hasErrors = false;
+
+                rep.Append($"<div id='{anchor}'><h3>{rpd.DisciplineName}</h3>");
+                rep.AddDiv(rpd.SourceFileName);
+                //ищем Учебные планы
+                var curriculums = FindCurriculums(rpd.DirectionCode, rpd.Profile, rpd.Department);
+                if (curriculums != null && curriculums.Any()) {
+                    //проверка на отсутствие УПов
+                    var missedFormsOfStudy = rpd.FormsOfStudy.ToHashSet();
+                    missedFormsOfStudy.RemoveWhere(x => curriculums.ContainsKey(x));
+                    foreach (var item in missedFormsOfStudy) {
+                        rep.AddError($"Не найден УП для формы обучения [{item.GetDescription()}].");
+                        hasErrors = true;
+                    }
+
+                    //поиск дисциплины в УПах
+                    foreach (var curriculum in curriculums) {
+                        var discipline = curriculum.Value.FindDiscipline(rpd.DisciplineName);
+                        if (discipline != null) {
+                            //проверка времен учебной работы
+                            var eduWork = rpd.EducationalWorks[curriculum.Key];
+                            if (discipline.TotalByPlanHours != eduWork.TotalHours) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: итоговое время [{discipline.TotalByPlanHours}] не соответствует УП (д.б. {eduWork.TotalHours}).");
+                            }
+                            if (discipline.TotalContactWorkHours != eduWork.ContactWorkHours) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время контактной работы [{discipline.TotalContactWorkHours}] не соответствует УП (д.б. {eduWork.ContactWorkHours}).");
+                            }
+                            if (discipline.TotalControlHours != eduWork.ControlHours) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время контроля [{discipline.TotalControlHours}] не соответствует УП (д.б. {eduWork.ControlHours}).");
+                            }
+                            if (discipline.TotalSelfStudyHours!= eduWork.SelfStudyHours) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время самостоятельных работ [{discipline.TotalSelfStudyHours}] не соответствует УП (д.б. {eduWork.SelfStudyHours}).");
+                            }
+                            var practicalHours = discipline.Semesters.Sum(s => s.PracticalHours);
+                            if (practicalHours != eduWork.PracticalHours) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время практических работ [{practicalHours}] не соответствует УП (д.б. {eduWork.PracticalHours}).");
+                            }
+                            var lectureHours = discipline.Semesters.Sum(s => s.LectureHours);
+                            if (lectureHours != eduWork.LectureHours) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время лекций [{lectureHours}] не соответствует УП (д.б. {eduWork.LectureHours}).");
+                            }
+                        }
+                        else {
+                            hasErrors = true;
+                            rep.AddError($"Не удалось найти дисциплину в учебном плане [{curriculum.Value.SourceFileName}].");
+                        }
+                    }
+                }
+                else {
+                    rep.AddError("Не удалось найти учебные планы. Добавление УП осуществляется на вкладке \"Учебные планы\".");
+                    hasErrors = true;
+                }
+                if (!hasErrors) {
+                    rep.AddDiv("Ошибок не обнаружено.");
+                }
+                rep.Append("</div>");
+
+                toc.AddTocElement(rpd.DisciplineName, anchor, hasErrors);
+            }
+            rep.Append("</div>");
+            toc.Append("</ul></div>");
+            html.Append(toc).Append(rep).Append("</body></html>");
+
+            htmlReport = html.ToString();
+        }
+
+        /// <summary>
+        /// Найти учебные планы по формам обучения
+        /// </summary>
+        /// <param name="directionCode"></param>
+        /// <param name="profile"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private static Dictionary<EFormOfStudy, Curriculum> FindCurriculums(string directionCode, string profile, string department) {
+            if (!string.IsNullOrEmpty(directionCode) && !string.IsNullOrEmpty(profile) && !string.IsNullOrEmpty(department)) {
+                var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, directionCode, true) == 0 &&
+                                                              string.Compare(c.Profile, profile, true) == 0 &&
+                                                              string.Compare(c.Department, department, true) == 0);
+                var dic = items.ToDictionary(x => x.FormOfStudy, x => x);
+                return dic;
+            }
+            else {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Описание значения перечисления
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string GetDescription(this Enum value) {
+            Type type = value.GetType();
+            string name = Enum.GetName(type, value);
+            if (name != null) {
+                FieldInfo field = type.GetField(name);
+                if (field != null) {
+                    DescriptionAttribute attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                    if (attr != null) {
+                        return attr.Description;
+                    }
+                }
+            }
+            return null;
         }
     }
 }

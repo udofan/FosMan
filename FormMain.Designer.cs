@@ -42,11 +42,14 @@
             fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
             buttonSelectExcelFiles = new Button();
             tabPage1 = new TabPage();
+            buttonRpdCheck = new Button();
             labelLoadRpd = new Label();
             fastObjectListViewRpdList = new BrightIdeasSoftware.FastObjectListView();
             buttonSelectRpdFiles = new Button();
             tabPage2 = new TabPage();
             label1 = new Label();
+            tabPageRpdCheck = new TabPage();
+            webView2RpdReport = new Microsoft.Web.WebView2.WinForms.WebView2();
             openFileDialog1 = new OpenFileDialog();
             openFileDialog2 = new OpenFileDialog();
             openFileDialog3 = new OpenFileDialog();
@@ -62,6 +65,8 @@
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).BeginInit();
             tabPage2.SuspendLayout();
+            tabPageRpdCheck.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)webView2RpdReport).BeginInit();
             SuspendLayout();
             // 
             // buttonSelectFosDir
@@ -97,6 +102,7 @@
             tabControl1.Controls.Add(tabPageСurriculum);
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPageRpdCheck);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
@@ -186,7 +192,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 365);
+            groupBoxDisciplines.Location = new Point(8, 366);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(1023, 244);
             groupBoxDisciplines.TabIndex = 3;
@@ -232,7 +238,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1023, 302);
+            fastObjectListViewCurricula.Size = new Size(1023, 303);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -257,16 +263,27 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(buttonRpdCheck);
             tabPage1.Controls.Add(labelLoadRpd);
             tabPage1.Controls.Add(fastObjectListViewRpdList);
             tabPage1.Controls.Add(buttonSelectRpdFiles);
-            tabPage1.Location = new Point(4, 24);
+            tabPage1.Location = new Point(4, 23);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1039, 616);
+            tabPage1.Size = new Size(1039, 617);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "РПД";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // buttonRpdCheck
+            // 
+            buttonRpdCheck.Location = new Point(582, 18);
+            buttonRpdCheck.Name = "buttonRpdCheck";
+            buttonRpdCheck.Size = new Size(100, 23);
+            buttonRpdCheck.TabIndex = 6;
+            buttonRpdCheck.Text = "Проверить";
+            buttonRpdCheck.UseVisualStyleBackColor = true;
+            buttonRpdCheck.Click += buttonRpdCheck_Click;
             // 
             // labelLoadRpd
             // 
@@ -286,7 +303,7 @@
             fastObjectListViewRpdList.Location = new Point(8, 57);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1023, 556);
+            fastObjectListViewRpdList.Size = new Size(1023, 569);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -331,19 +348,36 @@
             label1.TabIndex = 2;
             label1.Text = "Расположение:";
             // 
-            // openFileDialog1
+            // tabPageRpdCheck
             // 
-            openFileDialog1.FileName = "openFileDialog1";
+            tabPageRpdCheck.Controls.Add(webView2RpdReport);
+            tabPageRpdCheck.Location = new Point(4, 24);
+            tabPageRpdCheck.Name = "tabPageRpdCheck";
+            tabPageRpdCheck.Padding = new Padding(3);
+            tabPageRpdCheck.Size = new Size(1039, 616);
+            tabPageRpdCheck.TabIndex = 4;
+            tabPageRpdCheck.Text = "Проверка РПД";
+            tabPageRpdCheck.UseVisualStyleBackColor = true;
+            // 
+            // webView2RpdReport
+            // 
+            webView2RpdReport.AllowExternalDrop = false;
+            webView2RpdReport.CreationProperties = null;
+            webView2RpdReport.DefaultBackgroundColor = Color.White;
+            webView2RpdReport.Dock = DockStyle.Fill;
+            webView2RpdReport.Location = new Point(3, 3);
+            webView2RpdReport.Name = "webView2RpdReport";
+            webView2RpdReport.Size = new Size(1033, 610);
+            webView2RpdReport.TabIndex = 5;
+            webView2RpdReport.ZoomFactor = 1D;
             // 
             // openFileDialog2
             // 
-            openFileDialog2.FileName = "openFileDialog2";
             openFileDialog2.Filter = "Excel-файлы|*.xlsx|Все файлы|*.*";
             openFileDialog2.Multiselect = true;
             // 
             // openFileDialog3
             // 
-            openFileDialog3.FileName = "openFileDialog2";
             openFileDialog3.Filter = "Word-файлы|*.docx|Все файлы|*.*";
             openFileDialog3.Multiselect = true;
             // 
@@ -379,6 +413,8 @@
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).EndInit();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
+            tabPageRpdCheck.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)webView2RpdReport).EndInit();
             ResumeLayout(false);
         }
 
@@ -410,5 +446,8 @@
         private Button buttonSelectRpdFiles;
         private OpenFileDialog openFileDialog3;
         private OpenFileDialog openFileDialog4;
+        private Button buttonRpdCheck;
+        private TabPage tabPageRpdCheck;
+        private Microsoft.Web.WebView2.WinForms.WebView2 webView2RpdReport;
     }
 }

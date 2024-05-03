@@ -1,6 +1,7 @@
 ﻿using ExcelDataReader;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Dynamic;
 using System.Linq;
@@ -13,9 +14,13 @@ namespace FosMan {
     /// Форма обучения
     /// </summary>
     public enum EFormOfStudy {
+        [Description("Очная")]
         FullTime,               //очная
+        [Description("Заочная")]
         PartTime,               //заочная
-        FullTimeAndPartTime,    //очно-заочная
+        [Description("Очно-заочная")]
+        MixedTime,              //очно-заочная
+        [Description("НЕИЗВЕСТНО")]
         Unknown    
     }
 
@@ -154,25 +159,26 @@ namespace FosMan {
                                 curriculum.DirectionName = match.Groups[2].Value.Trim();
                             }
                         }
-                        if (cellValue.Contains("ПРОФИЛЬ")) {
+                        if (cellValue.Contains("ПРОФИЛЬ", StringComparison.CurrentCultureIgnoreCase) || 
+                            cellValue.Contains("Программа магистр", StringComparison.CurrentCultureIgnoreCase)) {
                             curriculum.Profile = getNextCellValue(row, colIdx);
                         }
-                        if (cellValue.Contains("КАФЕДРА")) {
+                        if (cellValue.Contains("КАФЕДРА", StringComparison.CurrentCultureIgnoreCase)) {
                             curriculum.Department = getNextCellValue(row, colIdx);
                         }
-                        if (cellValue.Contains("ФАКУЛЬТЕТ")) {
+                        if (cellValue.Contains("ФАКУЛЬТЕТ", StringComparison.CurrentCultureIgnoreCase)) {
                             curriculum.Faculty = getNextCellValue(row, colIdx);
                         }
-                        if (cellValue.Contains("ФОРМА ОБУЧ")) {
+                        if (cellValue.Contains("ФОРМА ОБУЧ", StringComparison.CurrentCultureIgnoreCase)) {
                             curriculum.FormOfStudy = DetectFormOfStudy(cellValue);
                             if (curriculum.FormOfStudy == EFormOfStudy.Unknown) {
                                 curriculum.Errors.Add($"Не удалось определить форму обучения - {cellValue}");
                             }
                         }
-                        if (cellValue.Contains("УЧЕБНЫЙ ГОД")) {
+                        if (cellValue.Contains("УЧЕБНЫЙ ГОД", StringComparison.CurrentCultureIgnoreCase)) {
                             curriculum.AcademicYear = getNextCellValue(row, colIdx);
                         }
-                        if (cellValue.Contains("ОБРАЗОВАТЕЛЬНЫЙ СТАНД")) {
+                        if (cellValue.Contains("ОБРАЗОВАТЕЛЬНЫЙ СТАНД", StringComparison.CurrentCultureIgnoreCase)) {
                             curriculum.FSES = getNextCellValue(row, colIdx);
                         }
                     }
@@ -348,7 +354,7 @@ namespace FosMan {
 
             if (!string.IsNullOrEmpty(value)) {
                 if (value.Contains("очно-заочная")) {
-                    form = EFormOfStudy.FullTimeAndPartTime;
+                    form = EFormOfStudy.MixedTime;
                 }
                 else if (value.Contains("заочная")) {
                     form = EFormOfStudy.PartTime;
@@ -359,6 +365,16 @@ namespace FosMan {
             }
 
             return form;
+        }
+
+        /// <summary>
+        /// Найти дисциплину в УП или вернуть null
+        /// </summary>
+        /// <param name="disciplineName"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        internal CurriculumDiscipline FindDiscipline(string disciplineName) {
+            return Disciplines.Values.FirstOrDefault(d => string.Compare(d.Name, disciplineName, true) == 0);
         }
     }
 }

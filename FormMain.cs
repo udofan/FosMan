@@ -105,16 +105,16 @@ namespace FosMan {
                     var curriculum = x as Curriculum;
                     if (curriculum != null) {
                         if (curriculum.FormOfStudy == EFormOfStudy.FullTime) {
-                            value = "очная";
+                            value = EFormOfStudy.FullTime.GetDescription();
                         }
                         else if (curriculum.FormOfStudy == EFormOfStudy.PartTime) {
-                            value = "заочная";
+                            value = EFormOfStudy.PartTime.GetDescription();
                         }
-                        else if (curriculum.FormOfStudy == EFormOfStudy.FullTimeAndPartTime) {
-                            value = "очно-заочная";
+                        else if (curriculum.FormOfStudy == EFormOfStudy.MixedTime) {
+                            value = EFormOfStudy.MixedTime.GetDescription();
                         }
                         else {
-                            value = "НЕИЗВЕСТНО";
+                            value = EFormOfStudy.Unknown.GetDescription();
                         }
                     }
                     return value;
@@ -331,11 +331,11 @@ namespace FosMan {
                 IsEditable = false
             };
             fastObjectListViewRpdList.Columns.Add(olvColumnDepartment);
-            var olvColumnFaculty = new OLVColumn("Факультет", "Faculty") {
-                Width = 100,
+            var olvColumnYear = new OLVColumn("Год", "Year") {
+                Width = 50,
                 IsEditable = false
             };
-            fastObjectListViewRpdList.Columns.Add(olvColumnFaculty);
+            fastObjectListViewRpdList.Columns.Add(olvColumnYear);
             //var olvColumnCurriculumAcademicYear = new OLVColumn("Учебный год", "AcademicYear") {
             //    Width = 100,
             //    IsEditable = false
@@ -356,7 +356,7 @@ namespace FosMan {
                             else if (item == EFormOfStudy.PartTime) {
                                 items.Add("заочная");
                             }
-                            else if (item == EFormOfStudy.FullTimeAndPartTime) {
+                            else if (item == EFormOfStudy.MixedTime) {
                                 items.Add("очно-заочная");
                             }
                             else {
@@ -384,6 +384,21 @@ namespace FosMan {
                 }
             };
             fastObjectListViewRpdList.Columns.Add(olvColumnCompetenceMatrix);
+            //объем дисциплины (часы по формам обучения)
+            var olvColumnEducationWork = new OLVColumn("Объем", "EducationalWorks") {
+                Width = 60,
+                CheckBoxes = true,
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    bool value = false;
+                    var rpd = x as Rpd;
+                    if (rpd != null && rpd.EducationalWorks != null) {
+                        value = rpd.EducationalWorks.Count == rpd.FormsOfStudy.Count;
+                    }
+                    return value;
+                }
+            };
+            fastObjectListViewRpdList.Columns.Add(olvColumnEducationWork);
             //ошибки
             var olvColumnErrors = new OLVColumn("Ошибки", "Errors") {
                 Width = 50,
@@ -575,6 +590,20 @@ namespace FosMan {
                     e.Item.BackColor = Color.Pink;
                 }
             }
+        }
+
+        private async void buttonRpdCheck_Click(object sender, EventArgs e) {
+            App.CheckRdp(out var report);
+
+            if (!string.IsNullOrEmpty(report)) {
+                await webView2RpdReport.EnsureCoreWebView2Async();
+                webView2RpdReport.NavigateToString(report);
+
+                tabControl1.SelectedTab = tabPageRpdCheck;
+            }
+            //foreach (var model in fastObjectListViewRpdList.Objects) {
+            //    fastObjectListViewRpdList.UpdateObject(model);
+            //}
         }
     }
 }

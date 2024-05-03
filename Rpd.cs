@@ -14,13 +14,14 @@ using Xceed.Words.NET;
 namespace FosMan {
     internal class Rpd {
         //Кафедра
-        static Regex m_regexDepartment = new(@"(Кафедра.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexDepartment = new(@"Кафедра\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //Маркер конца титульной странцы "Москва 20xx"
-        static Regex m_regexTitlePageEndMarker = new(@"Москва\s+\d{4}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        //профиль
-        static Regex m_regexProfile = new(@"Профиль[:]*\s+[«""“](.+)[»""”]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        //дисциплина
-        static Regex m_regexDiscipline = new(@"[«""“](.+)[»""”]", RegexOptions.Compiled);
+        static Regex m_regexTitlePageEndMarker = new(@"Москва\s+(\d{4})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        //профиль/направленность подготовки
+        static Regex m_regexProfileInline = new(@"(Профиль|Направленность\s+подготовки)[:]*\s+[«""“](.+)[»""”]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexProfileMarker = new(@"(Профиль|Направленность\s+подготовки)[:]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        //наименование в опциональных кавычках
+        static Regex m_regexName = new(@"[«""“]*(.+)[»""”]*$", RegexOptions.Compiled);
         //направление подготовки
         static Regex m_regexDirection = new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled);
         //форма обучения
@@ -30,11 +31,12 @@ namespace FosMan {
         //таблица учебных работ по формам обучения
         static Regex m_regexEduWorkType = new(@"вид.+ учеб.+ работ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexFormFullTime = new(@"^очная", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexFormFullPartTime = new(@"^очно-заоч", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexFormMixedTime = new(@"^очно-заоч", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexFormPartTime = new(@"^заочная", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexTotalHours = new(@"общ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexContactHours = new(@"аудит", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexTotalHours = new(@"(общ|всего)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexContactHours = new(@"(аудит|контакт)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexLectureHours = new(@"лекц", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexLabHours = new(@"лабор", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexPracticalHours = new(@"практич", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexSelfStudyHours = new(@"самост", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexControlHours = new(@"контроль", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -48,6 +50,10 @@ namespace FosMan {
         /// Факультет
         /// </summary>
         public string Faculty { get; set; }
+        /// <summary>
+        /// Год
+        /// </summary>
+        public string Year { get; set; }
         /// <summary>
         /// Дисциплина
         /// </summary>
@@ -88,6 +94,10 @@ namespace FosMan {
         /// Учебная работа по формам обучения
         /// </summary>
         public Dictionary<EFormOfStudy, EducationalWork> EducationalWorks { get; set; }
+        /// <summary>
+        /// Список доп. ошибок, выявленных при проверке
+        /// </summary>
+        public List<string> ExtraErrors { get; set; }
 
         /// <summary>
         /// Загрузка РПД из файла
@@ -106,33 +116,75 @@ namespace FosMan {
                     //парсинг титульной страницы
                     var parIdx = 0;
                     var disciplineTestReady = false;    //флаг готовности поиска имени дисциплины
+                    var disciplineName = "";
+                    var profileTestReady = false;
+
                     foreach (var par in docx.Paragraphs) {
-                        if (string.IsNullOrWhiteSpace(par.Text)) {
+                        var text = par.Text;
+                        //если в предыд. итерацию был обнаружен маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
+                        if (disciplineTestReady) {
+                            if (string.IsNullOrEmpty(text)) {
+                                var matchDiscipline = m_regexName.Match(disciplineName);
+                                if (matchDiscipline.Success) {
+                                    rpd.DisciplineName = matchDiscipline.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
+                                    disciplineTestReady = false;
+                                }
+                            }
+                            else {
+                                if (disciplineName.Length  > 0) {
+                                    disciplineName += " ";
+                                }
+                                disciplineName += text;
+                                continue;
+                            }
+                        }
+
+                        if (string.IsNullOrWhiteSpace(text)) {
                             continue;
                         }
                         //кафедра
                         if (string.IsNullOrEmpty(rpd.Department)) {
-                            var matchDepartment = m_regexDepartment.Match(par.Text);
-                            if (matchDepartment.Success) rpd.Department = matchDepartment.Groups[1].Value.Trim();
+                            var matchDepartment = m_regexDepartment.Match(text);
+                            if (matchDepartment.Success) rpd.Department = matchDepartment.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
                         }
                         //профиль
                         if (string.IsNullOrEmpty(rpd.Profile)) {
-                            var matchProfile = m_regexProfile.Match(par.Text);
-                            if (matchProfile.Success) rpd.Profile = matchProfile.Groups[1].Value.Trim();
+                            if (profileTestReady) {
+                                var matchProfile = m_regexName.Match(text);
+                                if (matchProfile.Success) {
+                                    rpd.Profile = matchProfile.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
+                                    profileTestReady = false;
+                                }
+                            }
+                            else {
+                                var matchProfile = m_regexProfileInline.Match(text);
+                                if (matchProfile.Success) {
+                                    rpd.Profile = matchProfile.Groups[2].Value.Trim(' ', '«', '»', '"', '“', '”');
+                                }
+                                else {
+                                    var matchProfileMarket = m_regexProfileMarker.Match(text);
+                                    profileTestReady = matchProfileMarket.Success;
+                                }
+                            }
                         }
                         //направление подготовки
                         if (string.IsNullOrEmpty(rpd.DirectionCode)) {
-                            var matchDirection = m_regexDirection.Match(par.Text);
+                            var matchDirection = m_regexDirection.Match(text);
                             if (matchDirection.Success) {
                                 rpd.DirectionCode = string.Join("", matchDirection.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
                                 rpd.DirectionName = matchDirection.Groups[2].Value.Trim(' ', '«', '»', '"', '“', '”');
                             }
                         }
                         //формы обучения
+                        //вариант 1: в двух абзацах
+                        if (text.Equals("форма обучения", StringComparison.CurrentCultureIgnoreCase)) {
+                            text += $" {par.NextParagraph.Text}";
+                        }
+                        //вариант 2: в одной строке
                         if (rpd.FormsOfStudy.Count == 0) {
-                            var matchFormsOfStudy = m_regexFormsOfStudy.Match(par.Text);
+                            var matchFormsOfStudy = m_regexFormsOfStudy.Match(text);
                             if (matchFormsOfStudy.Success) {
-                                var items = matchFormsOfStudy.Groups[1].Value.Split(',');
+                                var items = matchFormsOfStudy.Groups[1].Value.Split(',', StringSplitOptions.TrimEntries);
                                 foreach (var item in items) {
                                     switch (item.Trim().ToLower()) {
                                         case "очная":
@@ -142,7 +194,7 @@ namespace FosMan {
                                             rpd.FormsOfStudy.Add(EFormOfStudy.PartTime);
                                             break;
                                         case "очно-заочная":
-                                            rpd.FormsOfStudy.Add(EFormOfStudy.FullTimeAndPartTime);
+                                            rpd.FormsOfStudy.Add(EFormOfStudy.MixedTime);
                                             break;
                                         default:
                                             rpd.FormsOfStudy.Add(EFormOfStudy.Unknown);
@@ -152,23 +204,16 @@ namespace FosMan {
                                 }
                             }
                         }
-                        //если в предыд. итерацию был обнаружен маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
-                        if (disciplineTestReady) {
-                            var matchDiscipline = m_regexDiscipline.Match(par.Text);
-                            if (matchDiscipline.Success) {
-                                rpd.DisciplineName = matchDiscipline.Groups[1].Value.Trim();
-                                disciplineTestReady = false;
-                            }
-                        }
 
                         //проверка на маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
                         if (string.IsNullOrEmpty(rpd.DisciplineName)) {
-                            var matchRpdMarker = m_regexRpdMarker.Match(par.Text);
+                            var matchRpdMarker = m_regexRpdMarker.Match(text);
                             disciplineTestReady = matchRpdMarker.Success;
                         }
                         //если встретился маркер конца титульной страницы
-                        if (m_regexTitlePageEndMarker.IsMatch(par.Text)) {
-                            break;
+                        var matchPageEnd = m_regexTitlePageEndMarker.Match(text);
+                        if (matchPageEnd.Success) {
+                            rpd.Year = matchPageEnd.Groups[1].Value;
                         }
                         parIdx++;
                     }
@@ -180,6 +225,14 @@ namespace FosMan {
                         }
                         if (rpd.CompetenceMatrix == null) {
                             TestTableForCompetenceMatrix(table, rpd);
+                        }
+                    }
+                    //итоговая проверка
+                    if (rpd.FormsOfStudy.Count != rpd.EducationalWorks.Count) {
+                        foreach (var form in rpd.FormsOfStudy) {
+                            if (!rpd.EducationalWorks.ContainsKey(form)) {
+                                rpd.Errors.Add($"Не найдена информация по учебным работам по форме обучения {form}");
+                            }
                         }
                     }
                 }
@@ -213,26 +266,27 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="rpd"></param>
         static void TestTableForEducationalWorks(Table table, Rpd rpd) {
-            if (table.RowCount > 0 && table.ColumnCount >= 2) { 
+            if (table.RowCount > 5 && table.ColumnCount >= 2) { 
                 var headerRow = table.Rows[0];
                 var cellText = headerRow.Cells[0].GetText();
                 //проверка левой верхней ячейки
-                if (m_regexEduWorkType.IsMatch(cellText)) {
+                if (m_regexEduWorkType.IsMatch(cellText) || 
+                    string.IsNullOrWhiteSpace(cellText) /* встречаются РПД, где в этой ячейке таблицы пусто */) {
                     Dictionary<EFormOfStudy, int> formColIdx = new() {
                         { EFormOfStudy.FullTime, -1 },
-                        { EFormOfStudy.FullTimeAndPartTime, -1 },
+                        { EFormOfStudy.MixedTime, -1 },
                         { EFormOfStudy.PartTime, -1 }
                     };
-                    for (var colIdx = 1; colIdx < table.ColumnCount; colIdx++) {
+                    for (var colIdx = 1; colIdx < headerRow.Cells.Count; colIdx++) {
                         var text = headerRow.Cells[colIdx].GetText();
                         if (!string.IsNullOrEmpty(text)) {
                             if (m_regexFormFullTime.IsMatch(text)) {
                                 formColIdx[EFormOfStudy.FullTime] = colIdx;
                                 rpd.EducationalWorks[EFormOfStudy.FullTime] = new();
                             }
-                            else if (m_regexFormFullPartTime.IsMatch(text)) {
-                                formColIdx[EFormOfStudy.FullTimeAndPartTime] = colIdx;
-                                rpd.EducationalWorks[EFormOfStudy.FullTimeAndPartTime] = new();
+                            else if (m_regexFormMixedTime.IsMatch(text)) {
+                                formColIdx[EFormOfStudy.MixedTime] = colIdx;
+                                rpd.EducationalWorks[EFormOfStudy.MixedTime] = new();
                             }
                             else if (m_regexFormPartTime.IsMatch(text)) {
                                 formColIdx[EFormOfStudy.PartTime] = colIdx;
@@ -258,6 +312,7 @@ namespace FosMan {
                                 if (m_regexContactHours.IsMatch(header)) eduWork.ContactWorkHours = intValue;
                                 if (m_regexControlHours.IsMatch(header)) eduWork.ControlHours = intValue;
                                 if (m_regexLectureHours.IsMatch(header)) eduWork.LectureHours = intValue;
+                                if (m_regexLabHours.IsMatch(header)) eduWork.LabHours = intValue;
                                 if (m_regexPracticalHours.IsMatch(header)) eduWork.PracticalHours = intValue;
                                 if (m_regexSelfStudyHours.IsMatch(header)) eduWork.SelfStudyHours = intValue;
                                 //форма итогового контроля
