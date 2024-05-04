@@ -104,7 +104,7 @@ namespace FosMan {
         public static void CheckRdp(out string htmlReport) {
             htmlReport = string.Empty;
 
-            StringBuilder html = new("<html><body>");
+            StringBuilder html = new("<html><body><h2>Отчёт по проверке РПД</h2>");
             StringBuilder toc = new("<div><ul>");
             StringBuilder rep = new("<div>");
             var idx = 0;
@@ -114,9 +114,18 @@ namespace FosMan {
                 rpd.ExtraErrors = [];
                 var errorCount = 0;
 
-                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{rpd.DisciplineName}</h3>");
+                //var discipName = rpd.DisciplineName;
+                //if (string.IsNullOrEmpty(discipName)) discipName = "?";
+                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{rpd.DisciplineName ?? "?"}</h3>");
                 rep.Append("<div style='padding-left: 30px'>");
                 rep.AddDiv($"Файл РПД: <b>{rpd.SourceFileName}</b>");
+                //ошибки, выявленные при загрузке
+                if (rpd.Errors.Any()) {
+                    errorCount += rpd.Errors.Count;
+                    rep.Append("<p />");
+                    rep.AddDiv($"<div style='color: red'>Ошибки, выявленные при загрузке РПД ({rpd.Errors.Count} шт.):</div>");
+                    rpd.Errors.ForEach(e => rep.AddError(e));
+                }
                 //ищем Учебные планы
                 var curriculums = FindCurriculums(rpd.DirectionCode, rpd.Profile, rpd.Department);
                 if (curriculums != null && curriculums.Any()) {
@@ -127,6 +136,7 @@ namespace FosMan {
                         rep.Append("<p />");
                         rep.AddDiv($"Форма обучения: <b>{item.GetDescription()}</b>");
                         rep.AddDiv($"Файл УП: <b><span style='color: red'>Не найден УП для данной формы обучения</span></b>");
+                        rep.AddError("Проверка РПД по УП невозможна.");
                         //rep.AddError($"Не найден УП для формы обучения <b>{item.GetDescription()}</b>.");
                         errorCount++;
                     }
@@ -267,13 +277,14 @@ namespace FosMan {
                 else {
                     errorCount++;
                     rep.AddError("Не удалось найти учебные планы. Добавление УП осуществляется на вкладке <b>\"Учебные планы\"</b>.");
+                    rep.AddError("Проверка РПД по УП невозможна.");
                 }
                 if (errorCount == 0) {
                     rep.AddDiv("Ошибок не обнаружено.");
                 }
                 rep.Append("</div></div>");
 
-                toc.AddTocElement(rpd.DisciplineName, anchor, errorCount);
+                toc.AddTocElement(rpd.DisciplineName ?? "?", anchor, errorCount);
             }
             rep.Append("</div>");
             toc.Append("</ul></div>");

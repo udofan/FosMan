@@ -210,131 +210,6 @@ namespace FosMan {
                     else {
                         CurriculumDisciplineReader.TestHeaderRow(tablePlan, rowIdx, curriculum, out headers);
                     }
-                    /*
-                    if (valuedRow) {
-                        discipline = new() {
-                            CompetenceList = []
-                        };
-                        if (colIndex >= 0) {
-                            discipline.Index = row[colIndex] as string;
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [Индекс]");
-                        }
-                        if (colName >= 0) {
-                            discipline.Name = row[colName] as string;
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [Наименование] дисциплины");
-                        }
-                        if (colDepartmentCode >= 0) {
-                            discipline.DepartmentCode = row[colDepartmentCode] as string;
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [Код] закрепленной кафедры");
-                        }
-                        if (colDepartment >= 0) {
-                            discipline.Department = row[colDepartment] as string;
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [Наименование] закрепленной кафедры");
-                        }
-                        if (colControlFormExam >= 0) {
-                            if (int.TryParse(row[colControlFormExam] as string, out int val)) discipline.ControlFormExamHours = val;
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [Экзамен]");
-                        }
-                        if (colControlFormTest >= 0) {
-                            if (int.TryParse(row[colControlFormTest] as string, out int val)) discipline.ControlFormTestHours = val;
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [Зачет]");
-                        }
-                        if (colControlFormTestWithAGrade >= 0) {
-                            if (int.TryParse(row[colControlFormTestWithAGrade] as string, out int val)) discipline.ControlFormTestWithAGradeHours = val;
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [Зачет с оц.]");
-                        }
-                        if (colControlFormControlWork >= 0) {
-                            if (int.TryParse(row[colControlFormControlWork] as string, out int val)) discipline.ControlFormControlWorkHours = val;
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [КР]");
-                        }
-
-                        if (colCompetenceList >= 0) {
-                            var competenceList = row[colCompetenceList] as string;
-                            if (!string.IsNullOrEmpty(competenceList)) {
-                                var competenceItems = competenceList.Split(';', StringSplitOptions.TrimEntries);
-                                discipline.CompetenceList.AddRange(competenceItems.Select(x => string.Join("", x.Split(' '))));
-                            }
-                        }
-                        else {
-                            curriculum.Errors.Add($"Не удалось обнаружить колонку [Компетенции]");
-                        }
-                        if (!curriculum.Disciplines.TryAdd(discipline.Name, discipline)) {
-                            curriculum.Errors.Add($"Повторное упоминание дисциплины [{discipline.Name}] на строке {rowIdx}");
-                        }
-                    }
-                    else {
-                        for (int colIdx = 0; colIdx < tablePlan.Columns.Count; colIdx++) {
-                            var cellValue = (row[colIdx] as string)?.ToUpper();
-                            if (cellValue != null) {
-                                //попытка парсинга ряда с номерами семестров
-                                if (!semesterRowIsParsed) {
-                                    //семестр X
-                                    var match = m_regexParseSemester.Match(cellValue);
-                                    if (match.Success && int.TryParse(match.Groups[1].Value.Trim(), out int num)) {
-                                        semesterColIdx[num] = colIdx;
-                                        semesterRow = true;
-                                    }
-                                }
-                                //попытка парсинга ряда заголовков
-                                if (!headerRowIsParsed) {
-                                    if (cellValue == "ИНДЕКС") {
-                                        colIndex = colIdx;
-                                        headerRow = true;
-                                    }
-                                    if (cellValue == "НАИМЕНОВАНИЕ") {
-                                        if (colIdx == colIndex + 1) {
-                                            colName = colIdx;
-                                        }
-                                        else {
-                                            colDepartment = colIdx;
-                                        }
-                                    }
-                                    if (cellValue.Contains("ЭКЗА")) colControlFormExam = colIdx;
-                                    if (cellValue.Contains("ЗАЧЕТ С ОЦ")) {
-                                        colControlFormTestWithAGrade = colIdx;
-                                    }
-                                    else if (cellValue.Contains("ЗАЧЕТ")) {
-                                        colControlFormTest = colIdx;
-                                    }
-                                    if (cellValue.Contains("КОД")) {
-                                        colDepartmentCode = colIdx;
-                                    }
-                                    if (cellValue.Contains("КОМПЕТЕНЦИИ")) {
-                                        colCompetenceList = colIdx;
-                                    }
-                                    if (cellValue == "КР") {
-                                        colControlFormControlWork = colIdx;
-                                    }
-                                }
-                                else {
-                                    if (valuedRow) { //значащий ряд
-
-                                    }
-                                }
-                            }
-                        }
-                        if (semesterRow) semesterRowIsParsed = true;
-                        if (headerRow) {
-                            headerRowIsParsed = true;
-                        }
-                    }
-                    */
                 }
             }
             catch (Exception ex) {
@@ -375,6 +250,11 @@ namespace FosMan {
         /// <exception cref="NotImplementedException"></exception>
         internal CurriculumDiscipline FindDiscipline(string disciplineName) {
             return Disciplines.Values.FirstOrDefault(d => string.Compare(d.Name, disciplineName, true) == 0);
+        }
+
+        public override string ToString() {
+            var name = $"{DirectionCode} {DirectionName} - {Profile} - Форма обучения: {FormOfStudy.GetDescription()}";
+            return name;
         }
     }
 }

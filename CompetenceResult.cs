@@ -40,7 +40,8 @@ namespace FosMan {
             if (match.Success) {
                 //var code = string.Join("", match.Groups[1].Value.Trim(' ', ':', '\r', '\n').Split(' ')).ToUpper();
 
-                result.Code = $"{match.Groups[1].Value} {match.Groups[2].Value}".ToUpper();
+                var val = string.Join("-", match.Groups[2].Value.Split(' ', '-').Where(x => x.Trim(' ','-').Length > 0));
+                result.Code = $"{match.Groups[1].Value} {val}".ToUpper();
 
                 //result.Code = $"{code[..3]} {result.Code}";
                 result.Description = match.Groups[4].Value.Trim();
