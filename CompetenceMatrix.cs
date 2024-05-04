@@ -118,7 +118,14 @@ namespace FosMan {
         /// Проверка матрицы
         /// </summary>
         private void Check() {
+            if (!Items.Any()) {
+                Errors.Add("Список компетенций не определён");
+            }
+
             foreach (var item in Items) {
+                if (!item.Achievements.Any()) {
+                    Errors.Add($"Компетенция {item.Code}: список индикаторов не определён");
+                }
                 foreach (var achi in item.Achievements) {
                     if (string.IsNullOrEmpty(achi.Code)) {
                         Errors.Add($"Компетенция {item.Code}: индикатор не определён");

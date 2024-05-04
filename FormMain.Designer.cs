@@ -303,7 +303,7 @@
             fastObjectListViewRpdList.Location = new Point(8, 57);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1023, 569);
+            fastObjectListViewRpdList.Size = new Size(1023, 579);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;

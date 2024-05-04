@@ -17,8 +17,11 @@ namespace FosMan {
     /// Загруженные данные
     /// </summary>
     static internal class App {
+        static CompetenceMatrix m_competenceMatrix = null;
         static Dictionary<string, Curriculum> m_curriculumDic = [];
         static Dictionary<string, Rpd> m_rpdDic = [];
+
+        public static CompetenceMatrix CompetenceMatrix { get => m_competenceMatrix; }
 
         public static Dictionary<string, Rpd> RpdList { get => m_rpdDic; }
 
@@ -33,6 +36,10 @@ namespace FosMan {
         }
         static public bool AddRpd(Rpd rpd) {
             return m_rpdDic.TryAdd(rpd.SourceFileName, rpd);
+        }
+
+        static public void SetCompetenceMatrix(CompetenceMatrix matrix) {
+            m_competenceMatrix = matrix;
         }
 
         /// <summary>
@@ -122,6 +129,70 @@ namespace FosMan {
                             if (lectureHours != eduWork.LectureHours) {
                                 hasErrors = true;
                                 rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время лекций [{lectureHours}] не соответствует УП (д.б. {eduWork.LectureHours}).");
+                            }
+                            //проверка итогового контроля
+                            if (eduWork.ControlForm == EControlForm.Exam && 
+                                (!discipline.ControlFormExamHours.HasValue || discipline.ControlFormExamHours == 0)) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: выявлено несоответствие типа итогового контроля - " +
+                                             $"ожидается [{eduWork.ControlForm.GetDescription()}], а в УП для экзамена время не определено.");
+                            }
+                            if (eduWork.ControlForm == EControlForm.Test &&
+                                (!discipline.ControlFormTestHours.HasValue || discipline.ControlFormTestHours == 0)) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: выявлено несоответствие типа итогового контроля - " +
+                                             $"ожидается [{eduWork.ControlForm.GetDescription()}], а в УП для зачета время не определено.");
+                            }
+                            if (eduWork.ControlForm == EControlForm.TestWithAGrade &&
+                                (!discipline.ControlFormTestWithAGradeHours.HasValue || discipline.ControlFormTestWithAGradeHours == 0)) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: выявлено несоответствие типа итогового контроля - " +
+                                             $"ожидается [{eduWork.ControlForm.GetDescription()}], а в УП для зачета с оценкой время не определено.");
+                            }
+                            //проверка компетенций
+                            var checkCompetences = true;
+                            if (!(discipline.CompetenceList?.Any() ?? false)) {
+                                hasErrors = true;
+                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: не удалось определить матрицу компетенций в УП.");
+                                checkCompetences = false;
+                            }
+                            if (!(rpd.CompetenceMatrix?.IsLoaded ?? false)) {
+                                hasErrors = true;
+                                rep.AddError("В РПД не обнаружена матрица компетенций - проверка компетенций невозможна.");
+                                checkCompetences = false;
+                            }
+                            if (!(m_competenceMatrix?.IsLoaded ?? false)) {
+                                hasErrors = true;
+                                rep.AddError("Матрица компетенций не загружена в программу - проверка компетенций невозможна.");
+                                checkCompetences = false;
+                            }
+                            if (checkCompetences) {
+                                var achiCodeList = new List<string>();
+                                rpd.CompetenceMatrix.Items.ForEach(x => achiCodeList.AddRange(x.Achievements.Select(a => a.Code)));
+                                var content = "";
+                                var matrixError = false;
+                                foreach (var code in discipline.CompetenceList) {
+                                    var elem = "";
+                                    if (achiCodeList.Contains(code)) {
+                                        elem = $"<span style='color: green; font-weight: bold'>{code}</span>";
+                                    }
+                                    else {
+                                        elem = $"<span style='color: red; font-weight: bold'>{code}</span>";
+                                        matrixError = true;
+                                    }
+
+                                    if (content.Length > 0) content += "; ";
+                                    content += elem;
+                                }
+                                foreach (var missedCode in achiCodeList.Except(discipline.CompetenceList)) {
+                                    matrixError = true;
+                                    if (content.Length > 0) content += "; ";
+                                    content += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
+                                }
+                                if (matrixError) {
+                                    hasErrors = true;
+                                    rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: выявлено несоответствие компетенций: {content}");
+                                }
                             }
                         }
                         else {

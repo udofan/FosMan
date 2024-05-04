@@ -3,7 +3,6 @@ using System.Text;
 
 namespace FosMan {
     public partial class FormMain : Form {
-        CompetenceMatrix m_competenceMatrix = null;
         string m_matrixFileName = null;
 
         public FormMain() {
@@ -33,24 +32,35 @@ namespace FosMan {
                 loadMatrix = false;
             }
 
-            if (loadMatrix && m_competenceMatrix != null && m_competenceMatrix.IsLoaded) {
+            if (loadMatrix && App.CompetenceMatrix != null && App.CompetenceMatrix.IsLoaded) {
                 if (MessageBox.Show("Матрица уже загружена.\r\nОбновить?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation) != DialogResult.Yes) {
                     loadMatrix = false;
                 }
             }
 
             if (loadMatrix) {
-                m_competenceMatrix = CompetenceMatrix.LoadFromFile(textBoxMatrixFileName.Text);
+                var matrix = CompetenceMatrix.LoadFromFile(textBoxMatrixFileName.Text);
 
-                if (m_competenceMatrix.IsLoaded) {
+                if (matrix.IsLoaded) {
+                    App.SetCompetenceMatrix(matrix);
                     m_matrixFileName = textBoxMatrixFileName.Text;
 
-                    ShowMatrix(m_competenceMatrix);
+                    ShowMatrix(matrix);
                     MessageBox.Show("Матрица компетенций успешно загружена.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                else {
-                    var errorList = string.Join("\r\n", m_competenceMatrix.Errors);
-                    MessageBox.Show($"Обнаружены ошибки:\r\n{errorList}", "Загрузка матрицы", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                if (matrix.Errors.Any()) {
+                    var logDir = Path.Combine(Environment.CurrentDirectory, "Logs");
+                    if (!Directory.Exists(logDir)) {
+                        Directory.CreateDirectory(logDir);
+                    }
+                    var dt = DateTime.Now;
+                    var reportFile = Path.Combine(logDir, $"компетенции.{dt:yyyy-MM-dd_HH-mm-ss}.log");
+                    var lines = new List<string>() { textBoxMatrixFileName.Text };
+                    lines.AddRange(matrix.Errors);
+                    File.WriteAllLines(reportFile, lines, Encoding.UTF8);
+                    var errorList = string.Join("\r\n", matrix.Errors);
+                    MessageBox.Show($"Во время загрузки обнаружены ошибки:\r\n{errorList}\r\n\r\nОни сохранены в журнале {reportFile}.", "Загрузка матрицы",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
         }

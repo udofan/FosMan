@@ -53,6 +53,7 @@ namespace FosMan {
         static Regex m_regexTestTypeRequired = new(@"^[^\.]+\.О\.", RegexOptions.Compiled);
         static Regex m_regexTestTypeByChoice = new(@"^[^\.]+\.В\.", RegexOptions.Compiled);
         static Regex m_regexTestTypeOptional = new(@"^ФТД", RegexOptions.Compiled);
+        HashSet<string> m_competenceList = null;
 
         string m_competences = null;
         EDisciplineType? m_type = null;
@@ -99,44 +100,43 @@ namespace FosMan {
         /// <summary>
         /// Нормализованные компетенции (коды)
         /// </summary>
-        public List<string> CompetenceList { get; set; }
+        public HashSet<string> CompetenceList { 
+            get {
+                if (m_competenceList == null && !string.IsNullOrEmpty(Competences)) {
+                    var competenceItems = Competences.Split(';', StringSplitOptions.TrimEntries);
+                    m_competenceList = competenceItems.Select(x => string.Join("", x.Split(' ', StringSplitOptions.TrimEntries)).ToUpper()).ToHashSet();
+                }
+                return m_competenceList;
+            }
+        }
         /// <summary>
         /// Компетенции строкой (берутся из xlsx)
         /// </summary>
-        public string Competences {
-            get => m_competences;
-            set {
-                if (!string.IsNullOrEmpty(value)) {
-                    var competenceItems = value.Split(';', StringSplitOptions.TrimEntries);
-                    CompetenceList = [];
-                    CompetenceList.AddRange(competenceItems.Select(x => string.Join("", x.Split(' ')).ToUpper()));
-                }
-            }
-        }
+        public string Competences { get; set; }
         /// <summary>
         /// Формы контроля
         /// </summary>
         public List<EControlForm> ControlForms { get; set; }
-        public int? ControlFormExamHours { get; set; } = 0;
-        public int? ControlFormTestHours { get; set; } = 0;
-        public int? ControlFormTestWithAGradeHours { get; set; } = 0;
-        public int? ControlFormControlWorkHours { get; set; } = 0;
+        public int? ControlFormExamHours { get; set; }
+        public int? ControlFormTestHours { get; set; }
+        public int? ControlFormTestWithAGradeHours { get; set; }
+        public int? ControlFormControlWorkHours { get; set; }
         /// <summary>
         /// Итого акад.часов: по плану
         /// </summary>
-        public int? TotalByPlanHours { get; set; } = 0;
+        public int? TotalByPlanHours { get; set; }
         /// <summary>
         /// Итого акад.часов: Конт. раб.
         /// </summary>
-        public int? TotalContactWorkHours { get; set; } = 0;
+        public int? TotalContactWorkHours { get; set; }
         /// <summary>
         /// Итого акад.часов: СР
         /// </summary>
-        public int? TotalSelfStudyHours { get; set; } = 0;
+        public int? TotalSelfStudyHours { get; set; }
         /// <summary>
         /// Итого акад.часов: Конт роль
         /// </summary>
-        public int? TotalControlHours { get; set; } = 0;
+        public int? TotalControlHours { get; set; }
         /// <summary>
         /// Описание учебных работ по семестрам
         /// </summary>

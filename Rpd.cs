@@ -18,8 +18,10 @@ namespace FosMan {
         //Маркер конца титульной странцы "Москва 20xx"
         static Regex m_regexTitlePageEndMarker = new(@"Москва\s+(\d{4})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //профиль/направленность подготовки
-        static Regex m_regexProfileInline = new(@"(Профиль|Направленность\s+подготовки)[:]*\s+[«""“](.+)[»""”]", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexProfileMarker = new(@"(Профиль|Направленность\s+подготовки)[:]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexProfileInline = new(@"(Профиль|Направленность\s+подготовки)[:]*\s+[«""“]+(.+)[»""”]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexProfileMarker = new(@"(Профиль|Направленность\s+подготовки)[:]*\s+[«""“]*(.*)[»""”]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        //наименование в кавычках
+        static Regex m_regexNameQuoted = new(@"[«""“]+(.+)[»""”]+$", RegexOptions.Compiled);
         //наименование в опциональных кавычках
         static Regex m_regexName = new(@"[«""“]*(.+)[»""”]*$", RegexOptions.Compiled);
         //направление подготовки
@@ -118,9 +120,10 @@ namespace FosMan {
                     var disciplineTestReady = false;    //флаг готовности поиска имени дисциплины
                     var disciplineName = "";
                     var profileTestReady = false;
+                    var profileField = "";              //если профиль разнесен по неск. строкам, здесь он будет накапливаться
 
                     foreach (var par in docx.Paragraphs) {
-                        var text = par.Text;
+                        var text = par.Text.Trim();
                         //если в предыд. итерацию был обнаружен маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
                         if (disciplineTestReady) {
                             if (string.IsNullOrEmpty(text)) {
@@ -131,10 +134,13 @@ namespace FosMan {
                                 }
                             }
                             else {
-                                if (disciplineName.Length  > 0) {
-                                    disciplineName += " ";
+                                if (disciplineName.Length > 0) disciplineName += " ";
+                                disciplineName += text;                                //проверка на дисциплину с кавычками
+                                var matchDiscipline = m_regexNameQuoted.Match(disciplineName);
+                                if (matchDiscipline.Success) {
+                                    rpd.DisciplineName = matchDiscipline.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
+                                    disciplineTestReady = false;
                                 }
-                                disciplineName += text;
                                 continue;
                             }
                         }
@@ -150,7 +156,10 @@ namespace FosMan {
                         //профиль
                         if (string.IsNullOrEmpty(rpd.Profile)) {
                             if (profileTestReady) {
-                                var matchProfile = m_regexName.Match(text);
+                                if (profileField.Length > 0) profileField += " ";
+                                profileField += text;
+                                
+                                var matchProfile = m_regexName.Match(profileField);
                                 if (matchProfile.Success) {
                                     rpd.Profile = matchProfile.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
                                     profileTestReady = false;
@@ -163,6 +172,11 @@ namespace FosMan {
                                 }
                                 else {
                                     var matchProfileMarket = m_regexProfileMarker.Match(text);
+                                    if (matchProfileMarket.Success) {
+                                        if (profileField.Length > 0) profileField += " ";
+                                        profileField += matchProfileMarket.Groups[2].Value;
+                                        profileTestReady = true;
+                                    }
                                     profileTestReady = matchProfileMarket.Success;
                                 }
                             }
@@ -297,37 +311,38 @@ namespace FosMan {
                     //если колонки форм обучения обнаружены
                     if (formColIdx.Any(x => x.Value >= 0)) {
                         foreach (var item in formColIdx) {
-                            var eduWork = rpd.EducationalWorks[item.Key];
-                            //выявление рядов
-                            for (var rowIdx = 1; rowIdx < table.RowCount; rowIdx++) {
-                                int? intValue = null;
-                                var text = table.Rows[rowIdx].Cells[item.Value].GetText();
-                                if (int.TryParse(text, out int intVal)) {
-                                    intValue = intVal;
-                                }
+                            if (rpd.EducationalWorks.TryGetValue(item.Key, out var eduWork)) {
+                                //выявление рядов
+                                for (var rowIdx = 1; rowIdx < table.RowCount; rowIdx++) {
+                                    int? intValue = null;
+                                    var text = table.Rows[rowIdx].Cells[item.Value].GetText();
+                                    if (int.TryParse(text, out int intVal)) {
+                                        intValue = intVal;
+                                    }
 
-                                var header = table.Rows[rowIdx].Cells[0].GetText();
+                                    var header = table.Rows[rowIdx].Cells[0].GetText();
 
-                                if (m_regexTotalHours.IsMatch(header)) eduWork.TotalHours = intValue;
-                                if (m_regexContactHours.IsMatch(header)) eduWork.ContactWorkHours = intValue;
-                                if (m_regexControlHours.IsMatch(header)) eduWork.ControlHours = intValue;
-                                if (m_regexLectureHours.IsMatch(header)) eduWork.LectureHours = intValue;
-                                if (m_regexLabHours.IsMatch(header)) eduWork.LabHours = intValue;
-                                if (m_regexPracticalHours.IsMatch(header)) eduWork.PracticalHours = intValue;
-                                if (m_regexSelfStudyHours.IsMatch(header)) eduWork.SelfStudyHours = intValue;
-                                //форма итогового контроля
-                                if (m_regexControlForm.IsMatch(header)) {
-                                    if (m_regexControlExam.IsMatch(text)) {
-                                        eduWork.ControlForm = EControlForm.Exam;
-                                    }
-                                    else if (m_regexControlTestGrade.IsMatch(text)) {
-                                        eduWork.ControlForm = EControlForm.TestWithAGrade;
-                                    }
-                                    else if (m_regexControlTest.IsMatch(text)) {
-                                        eduWork.ControlForm = EControlForm.Test;
-                                    }
-                                    else {
-                                        eduWork.ControlForm = EControlForm.Unknown;
+                                    if (m_regexTotalHours.IsMatch(header)) eduWork.TotalHours = intValue;
+                                    if (m_regexContactHours.IsMatch(header)) eduWork.ContactWorkHours = intValue;
+                                    if (m_regexControlHours.IsMatch(header)) eduWork.ControlHours = intValue;
+                                    if (m_regexLectureHours.IsMatch(header)) eduWork.LectureHours = intValue;
+                                    if (m_regexLabHours.IsMatch(header)) eduWork.LabHours = intValue;
+                                    if (m_regexPracticalHours.IsMatch(header)) eduWork.PracticalHours = intValue;
+                                    if (m_regexSelfStudyHours.IsMatch(header)) eduWork.SelfStudyHours = intValue;
+                                    //форма итогового контроля
+                                    if (m_regexControlForm.IsMatch(header)) {
+                                        if (m_regexControlExam.IsMatch(text)) {
+                                            eduWork.ControlForm = EControlForm.Exam;
+                                        }
+                                        else if (m_regexControlTestGrade.IsMatch(text)) {
+                                            eduWork.ControlForm = EControlForm.TestWithAGrade;
+                                        }
+                                        else if (m_regexControlTest.IsMatch(text)) {
+                                            eduWork.ControlForm = EControlForm.Test;
+                                        }
+                                        else {
+                                            eduWork.ControlForm = EControlForm.Unknown;
+                                        }
                                     }
                                 }
                             }
