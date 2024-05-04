@@ -11,7 +11,7 @@ namespace FosMan {
     /// </summary>
     public class CompetenceAchievement {
         //УК-1.1. Определяет и ранжиру-ет информацию, требуемую для решения поставленных задач.
-        static Regex m_regexParseIndicator = new(@"(.+\d{1})\.\s*([^\d{1}].+)$", RegexOptions.Compiled);
+        static Regex m_regexParseIndicator = new(@"(.+\d{1})[\.]*\s*([^\d{1}].+)$", RegexOptions.Compiled);
 
         /// <summary>
         /// Код

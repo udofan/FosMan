@@ -2,6 +2,7 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Eventing.Reader;
 using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
 using System.Drawing.Design;
@@ -64,9 +65,37 @@ namespace FosMan {
             report.Append($"<div>{content}</div>");
         }
 
-        static void AddTocElement(this StringBuilder toc, string element, string anchor, bool errorMark) {
-            var color = errorMark ? "red" : "green";
-            toc.Append($"<li><a href='#{anchor}'><span style='color:{color};'>{element}</span></a></li>");
+        static void AddTocElement(this StringBuilder toc, string element, string anchor, int errorCount) {
+            var color = errorCount > 0 ? "red" : "green";
+            toc.Append($"<li><a href='#{anchor}'><span style='color:{color};'>{element} (ошибок: {errorCount})</span></a></li>");
+        }
+
+        static void AddDisciplineCheckTableRow(this StringBuilder table, int rowNum, string description, bool result, string comment) {
+            var tdStyle = " style='border: 1px solid;'";
+            var style = $" style='color:{(result ? "green" : "red")}'";
+            var resultMark = result ? "&check;" : "&times;";
+            table.Append($"<tr {style}>");
+            table.Append($"<td {tdStyle}>{rowNum}</td><td {tdStyle}>{description}</td><td {tdStyle}>{resultMark}</td><td {tdStyle}>{comment}</td>");
+            table.Append("</tr>");
+        }
+
+        /// <summary>
+        /// Проверка дисциплины по учебному плану
+        /// </summary>
+        /// <param name="rpd"></param>
+        /// <param name="discipline"></param>
+        /// <param name="repTable"></param>
+        static bool ApplyDisciplineCheck(EFormOfStudy formOfStudy, Rpd rpd, CurriculumDiscipline discipline, StringBuilder repTable, 
+                                         ref int pos, ref int errorCount, string description, Func< EducationalWork, (bool result, string msg)> func) {
+            pos++;
+
+            rpd.EducationalWorks.TryGetValue(formOfStudy, out EducationalWork eduWork);
+            var ret = func.Invoke(eduWork);
+            if (!ret.result) errorCount++;
+
+            repTable.AddDisciplineCheckTableRow(pos, description, ret.result, ret.msg);
+
+            return ret.result;
         }
 
         /// <summary>
@@ -83,10 +112,11 @@ namespace FosMan {
                 var anchor = $"rpd{idx}";
                 idx++;
                 rpd.ExtraErrors = [];
-                var hasErrors = false;
+                var errorCount = 0;
 
-                rep.Append($"<div id='{anchor}'><h3>{rpd.DisciplineName}</h3>");
-                rep.AddDiv(rpd.SourceFileName);
+                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{rpd.DisciplineName}</h3>");
+                rep.Append("<div style='padding-left: 30px'>");
+                rep.AddDiv($"Файл РПД: <b>{rpd.SourceFileName}</b>");
                 //ищем Учебные планы
                 var curriculums = FindCurriculums(rpd.DirectionCode, rpd.Profile, rpd.Department);
                 if (curriculums != null && curriculums.Any()) {
@@ -94,123 +124,156 @@ namespace FosMan {
                     var missedFormsOfStudy = rpd.FormsOfStudy.ToHashSet();
                     missedFormsOfStudy.RemoveWhere(x => curriculums.ContainsKey(x));
                     foreach (var item in missedFormsOfStudy) {
-                        rep.AddError($"Не найден УП для формы обучения [{item.GetDescription()}].");
-                        hasErrors = true;
+                        rep.Append("<p />");
+                        rep.AddDiv($"Форма обучения: <b>{item.GetDescription()}</b>");
+                        rep.AddDiv($"Файл УП: <b><span style='color: red'>Не найден УП для данной формы обучения</span></b>");
+                        //rep.AddError($"Не найден УП для формы обучения <b>{item.GetDescription()}</b>.");
+                        errorCount++;
                     }
 
                     //поиск дисциплины в УПах
                     foreach (var curriculum in curriculums) {
+                        rep.Append("<p />");
+                        rep.AddDiv($"Форма обучения: <b>{curriculum.Value.FormOfStudy.GetDescription()}</b>");
+                        rep.AddDiv($"Файл УП: <b>{curriculum.Value.SourceFileName}</b>");
                         var discipline = curriculum.Value.FindDiscipline(rpd.DisciplineName);
+                        var checkPos = 0;
                         if (discipline != null) {
-                            //проверка времен учебной работы
-                            var eduWork = rpd.EducationalWorks[curriculum.Key];
-                            if (discipline.TotalByPlanHours != eduWork.TotalHours) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: итоговое время [{discipline.TotalByPlanHours}] не соответствует УП (д.б. {eduWork.TotalHours}).");
+                            var tdStyle = " style='border: 1px solid;'";
+                            var table = new StringBuilder(@"<table style='border: 1px solid'><tr style='font-weight: bold; background-color: lightgray'>");
+                            table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Проверка</th><th {tdStyle}>Результат</th><th {tdStyle}>Комментарий</th>");
+                            table.Append("</tr>");
+                            if (ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Наличие данных для формы обучения", (eduWork) => {
+                                var result = eduWork != null;
+                                var msg = result ? "" : "В описании РПД не определена учебная работа для данной формы обучения";
+                                return (result, msg);
+                            })) {
+                                //проверка времен учебной работы
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Итоговое время", (eduWork) => {
+                                    var result = discipline.TotalByPlanHours == eduWork.TotalHours;
+                                    var msg = result ? "" : $"Итоговое время [{discipline.TotalByPlanHours}] не соответствует УП (д.б. {eduWork.TotalHours}).";
+                                    return (result, msg);
+                                });
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время контактной работы", (eduWork) => {
+                                    var result = discipline.TotalContactWorkHours == eduWork.ContactWorkHours;
+                                    var msg = result ? "" : $"Время контактной работы [{discipline.TotalContactWorkHours}] не соответствует УП (д.б. {eduWork.ContactWorkHours}).";
+                                    return (result, msg);
+                                });
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время контроля", (eduWork) => {
+                                    var result = discipline.TotalControlHours == eduWork.ControlHours;
+                                    var msg = result ? "" : $"Время контроля [{discipline.TotalControlHours}] не соответствует УП (д.б. {eduWork.ControlHours}).";
+                                    return (result, msg);
+                                });
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время самостоятельной работы", (eduWork) => {
+                                    var result = discipline.TotalSelfStudyHours == eduWork.SelfStudyHours;
+                                    var msg = result ? "" : $"Время самостоятельных работ [{discipline.TotalSelfStudyHours}] не соответствует УП (д.б. {eduWork.SelfStudyHours}).";
+                                    return (result, msg);
+                                });
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время практических работ", (eduWork) => {
+                                    var practicalHours = discipline.Semesters.Sum(s => s.PracticalHours);
+                                    var result = practicalHours == eduWork.PracticalHours;
+                                    var msg = result ? "" : $"Время практических работ [{practicalHours}] не соответствует УП (д.б. {eduWork.PracticalHours}).";
+                                    return (result, msg);
+                                });
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время лекций", (eduWork) => {
+                                    var lectureHours = discipline.Semesters.Sum(s => s.LectureHours);
+                                    var result = lectureHours == eduWork.LectureHours;
+                                    var msg = result ? "" : $"Время лекций [{lectureHours}] не соответствует УП (д.б. {eduWork.LectureHours}).";
+                                    return (result, msg);
+                                });
+                                //проверка итогового контроля
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Тип итогового контроля", (eduWork) => {
+                                    var error = eduWork.ControlForm == EControlForm.Exam && (!discipline.ControlFormExamHours.HasValue || discipline.ControlFormExamHours == 0) ||
+                                                eduWork.ControlForm == EControlForm.Test && (!discipline.ControlFormTestHours.HasValue || discipline.ControlFormTestHours == 0) ||
+                                                eduWork.ControlForm == EControlForm.TestWithAGrade && (!discipline.ControlFormTestWithAGradeHours.HasValue || discipline.ControlFormTestWithAGradeHours == 0);
+                                    var msg = error ? $"Для типа контроля [{eduWork.ControlForm.GetDescription()}] в УП не определено значение." : "";
+                                    return (!error, msg);
+                                });
                             }
-                            if (discipline.TotalContactWorkHours != eduWork.ContactWorkHours) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время контактной работы [{discipline.TotalContactWorkHours}] не соответствует УП (д.б. {eduWork.ContactWorkHours}).");
-                            }
-                            if (discipline.TotalControlHours != eduWork.ControlHours) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время контроля [{discipline.TotalControlHours}] не соответствует УП (д.б. {eduWork.ControlHours}).");
-                            }
-                            if (discipline.TotalSelfStudyHours!= eduWork.SelfStudyHours) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время самостоятельных работ [{discipline.TotalSelfStudyHours}] не соответствует УП (д.б. {eduWork.SelfStudyHours}).");
-                            }
-                            var practicalHours = discipline.Semesters.Sum(s => s.PracticalHours);
-                            if (practicalHours != eduWork.PracticalHours) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время практических работ [{practicalHours}] не соответствует УП (д.б. {eduWork.PracticalHours}).");
-                            }
-                            var lectureHours = discipline.Semesters.Sum(s => s.LectureHours);
-                            if (lectureHours != eduWork.LectureHours) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: время лекций [{lectureHours}] не соответствует УП (д.б. {eduWork.LectureHours}).");
-                            }
-                            //проверка итогового контроля
-                            if (eduWork.ControlForm == EControlForm.Exam && 
-                                (!discipline.ControlFormExamHours.HasValue || discipline.ControlFormExamHours == 0)) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: выявлено несоответствие типа итогового контроля - " +
-                                             $"ожидается [{eduWork.ControlForm.GetDescription()}], а в УП для экзамена время не определено.");
-                            }
-                            if (eduWork.ControlForm == EControlForm.Test &&
-                                (!discipline.ControlFormTestHours.HasValue || discipline.ControlFormTestHours == 0)) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: выявлено несоответствие типа итогового контроля - " +
-                                             $"ожидается [{eduWork.ControlForm.GetDescription()}], а в УП для зачета время не определено.");
-                            }
-                            if (eduWork.ControlForm == EControlForm.TestWithAGrade &&
-                                (!discipline.ControlFormTestWithAGradeHours.HasValue || discipline.ControlFormTestWithAGradeHours == 0)) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: выявлено несоответствие типа итогового контроля - " +
-                                             $"ожидается [{eduWork.ControlForm.GetDescription()}], а в УП для зачета с оценкой время не определено.");
-                            }
+
                             //проверка компетенций
                             var checkCompetences = true;
-                            if (!(discipline.CompetenceList?.Any() ?? false)) {
-                                hasErrors = true;
-                                rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: не удалось определить матрицу компетенций в УП.");
-                                checkCompetences = false;
-                            }
-                            if (!(rpd.CompetenceMatrix?.IsLoaded ?? false)) {
-                                hasErrors = true;
-                                rep.AddError("В РПД не обнаружена матрица компетенций - проверка компетенций невозможна.");
-                                checkCompetences = false;
-                            }
-                            if (!(m_competenceMatrix?.IsLoaded ?? false)) {
-                                hasErrors = true;
-                                rep.AddError("Матрица компетенций не загружена в программу - проверка компетенций невозможна.");
-                                checkCompetences = false;
-                            }
-                            if (checkCompetences) {
-                                var achiCodeList = new List<string>();
-                                rpd.CompetenceMatrix.Items.ForEach(x => achiCodeList.AddRange(x.Achievements.Select(a => a.Code)));
-                                var content = "";
-                                var matrixError = false;
-                                foreach (var code in discipline.CompetenceList) {
-                                    var elem = "";
-                                    if (achiCodeList.Contains(code)) {
-                                        elem = $"<span style='color: green; font-weight: bold'>{code}</span>";
-                                    }
-                                    else {
-                                        elem = $"<span style='color: red; font-weight: bold'>{code}</span>";
-                                        matrixError = true;
-                                    }
+                            checkCompetences &= ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Наличие матрицы компетенций в УП", (eduWork) => {
+                                var result = discipline.CompetenceList?.Any() ?? false;
+                                var msg = result ? "" : $"Не удалось определить матрицу компетенций в УП.";
+                                return (result, msg);
+                            });
+                            checkCompetences &= ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций в РПД", (eduWork) => {
+                                var result = rpd.CompetenceMatrix?.IsLoaded ?? false;
+                                var msg = result ? "" : $"В РПД не обнаружена матрица компетенций.";
+                                if (result && rpd.CompetenceMatrix.Errors.Any()) {
+                                    msg = "В матрице обнаружены ошибки:<br />";
+                                    msg += string.Join("<br />", rpd.CompetenceMatrix.Errors);
+                                    result = false;
+                                }
+                                if (!result) {
+                                    if (msg.Length > 0) msg += "<br />";
+                                    msg += "Проверка компетенций невозможна";
+                                }
+                                return (result, msg);
+                            });
+                            checkCompetences &= ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка загруженной матрицы компетенций в программу", (eduWork) => {
+                                var result = m_competenceMatrix?.IsLoaded ?? false;
+                                var msg = result ? "" : $"Матрица компетенций не загружена в программу.";
+                                if (result && m_competenceMatrix.Errors.Any()) {
+                                    msg = "В матрице обнаружены ошибки:<br />";
+                                    msg += string.Join("<br />", m_competenceMatrix.Errors);
+                                    result = false;
+                                }
+                                if (!result) {
+                                    if (msg.Length > 0) msg += "<br />";
+                                    msg += "Проверка компетенций невозможна";
+                                }
+                                return (result, msg);
+                            });
 
-                                    if (content.Length > 0) content += "; ";
-                                    content += elem;
-                                }
-                                foreach (var missedCode in achiCodeList.Except(discipline.CompetenceList)) {
-                                    matrixError = true;
-                                    if (content.Length > 0) content += "; ";
-                                    content += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
-                                }
-                                if (matrixError) {
-                                    hasErrors = true;
-                                    rep.AddError($"Форма обучения [{curriculum.Key.GetDescription()}: выявлено несоответствие компетенций: {content}");
-                                }
+                            if (checkCompetences) {
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций", (eduWork) => {
+                                    var achiCodeList = new List<string>();
+                                    rpd.CompetenceMatrix.Items.ForEach(x => achiCodeList.AddRange(x.Achievements.Select(a => a.Code)));
+                                    var content = "";
+                                    var matrixError = false;
+                                    foreach (var code in discipline.CompetenceList) {
+                                        var elem = "";
+                                        if (achiCodeList.Contains(code)) {
+                                            elem = $"<span style='color: green; font-weight: bold'>{code}</span>";
+                                        }
+                                        else {
+                                            elem = $"<span style='color: red; font-weight: bold'>{code}</span>";
+                                            matrixError = true;
+                                        }
+
+                                        if (content.Length > 0) content += "; ";
+                                        content += elem;
+                                    }
+                                    foreach (var missedCode in achiCodeList.Except(discipline.CompetenceList)) {
+                                        matrixError = true;
+                                        if (content.Length > 0) content += "; ";
+                                        content += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
+                                    }
+                                    var msg = matrixError ? $"Выявлено несоответствие компетенций: {content}" : "";
+                                    return (!matrixError, msg);
+                                });
                             }
+                            table.Append("</table>");
+                            rep.Append(table);
                         }
                         else {
-                            hasErrors = true;
-                            rep.AddError($"Не удалось найти дисциплину в учебном плане [{curriculum.Value.SourceFileName}].");
+                            errorCount++;
+                            rep.AddError($"Не удалось найти дисциплину в учебном плане <b>{curriculum.Value.SourceFileName}</b>.");
                         }
                     }
                 }
                 else {
-                    rep.AddError("Не удалось найти учебные планы. Добавление УП осуществляется на вкладке \"Учебные планы\".");
-                    hasErrors = true;
+                    errorCount++;
+                    rep.AddError("Не удалось найти учебные планы. Добавление УП осуществляется на вкладке <b>\"Учебные планы\"</b>.");
                 }
-                if (!hasErrors) {
+                if (errorCount == 0) {
                     rep.AddDiv("Ошибок не обнаружено.");
                 }
-                rep.Append("</div>");
+                rep.Append("</div></div>");
 
-                toc.AddTocElement(rpd.DisciplineName, anchor, hasErrors);
+                toc.AddTocElement(rpd.DisciplineName, anchor, errorCount);
             }
             rep.Append("</div>");
             toc.Append("</ul></div>");

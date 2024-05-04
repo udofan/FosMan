@@ -76,7 +76,7 @@ namespace FosMan {
                             matrix.Items.Add(currItem);
                         }
                         else if (matchedTable) {
-                            matrix.Errors.Add($"Не удалось распарсить текст [{textCompetence}] (ряд {rowIdx}, колонка 0).");
+                            matrix.Errors.Add($"Не удалось распарсить текст компетенции [{textCompetence}] (ряд {rowIdx}, колонка 0).");
                         }
                     }
 
@@ -87,7 +87,7 @@ namespace FosMan {
                                 currItem.Achievements.Add(currAchievement);
                             }
                             else {
-                                matrix.Errors.Add($"Не удалось распарсить текст [{textIndicator}] (ряд {rowIdx}, колонка 1).");
+                                matrix.Errors.Add($"Не удалось распарсить текст индикатора [{textIndicator}] (ряд {rowIdx}, колонка 1).");
                             }
 
                         }
@@ -98,7 +98,7 @@ namespace FosMan {
                                 currAchievement?.Results.Add(result);
                             }
                             else {
-                                matrix.Errors.Add($"Не удалось распарсить текст [{textResult}] (ряд {rowIdx}, колонка 2).");
+                                matrix.Errors.Add($"Не удалось распарсить текст результата [{textResult}] (ряд {rowIdx}, колонка 2).");
                             }
                         }
                     }
@@ -111,7 +111,7 @@ namespace FosMan {
 
             matrix.Check();
 
-            return !matrix.Errors.Any();
+            return matrix.Items.Any();
         }
 
         /// <summary>

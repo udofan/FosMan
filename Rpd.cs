@@ -19,7 +19,7 @@ namespace FosMan {
         static Regex m_regexTitlePageEndMarker = new(@"Москва\s+(\d{4})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //профиль/направленность подготовки
         static Regex m_regexProfileInline = new(@"(Профиль|Направленность\s+подготовки)[:]*\s+[«""“]+(.+)[»""”]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexProfileMarker = new(@"(Профиль|Направленность\s+подготовки)[:]*\s+[«""“]*(.*)[»""”]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexProfileMarker = new(@"(Профиль|Направленность\s+подготовки)[:]*\s*[«""“]*(.*)[»""”]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //наименование в кавычках
         static Regex m_regexNameQuoted = new(@"[«""“]+(.+)[»""”]+$", RegexOptions.Compiled);
         //наименование в опциональных кавычках
