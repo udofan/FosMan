@@ -52,14 +52,17 @@
             buttonSaveRpdReport = new Button();
             webView2RpdReport = new Microsoft.Web.WebView2.WinForms.WebView2();
             tabPageRpdGeneration = new TabPage();
-            labelRpdGenStatus = new Label();
-            textBoxRpdGenDepartment = new TextBox();
-            label9 = new Label();
-            textBoxRpdGenProfile = new TextBox();
-            textBoxRpdGenDirectionName = new TextBox();
-            label8 = new Label();
+            groupBox3 = new GroupBox();
+            textBoxRpdGenFormsOfStudy = new TextBox();
+            label10 = new Label();
             textBoxRpdGenDirectionCode = new TextBox();
             label7 = new Label();
+            label8 = new Label();
+            textBoxRpdGenDepartment = new TextBox();
+            textBoxRpdGenDirectionName = new TextBox();
+            label9 = new Label();
+            textBoxRpdGenProfile = new TextBox();
+            labelRpdGenStatus = new Label();
             groupBox2 = new GroupBox();
             comboBoxRpdGenTemplates = new ComboBox();
             buttonSelectRpdTargetDir = new Button();
@@ -79,7 +82,6 @@
             openFileDialog4 = new OpenFileDialog();
             openFileDialogRpdTemplate = new OpenFileDialog();
             folderBrowserDialogRpdTargetDir = new FolderBrowserDialog();
-            groupBox3 = new GroupBox();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
@@ -94,10 +96,10 @@
             tabPageRpdCheck.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)webView2RpdReport).BeginInit();
             tabPageRpdGeneration.SuspendLayout();
+            groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).BeginInit();
-            groupBox3.SuspendLayout();
             SuspendLayout();
             // 
             // buttonSelectFosDir
@@ -213,10 +215,10 @@
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Location = new Point(4, 24);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1039, 617);
+            tabPageСurriculum.Size = new Size(1039, 616);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -300,10 +302,10 @@
             tabPage1.Controls.Add(labelLoadRpd);
             tabPage1.Controls.Add(fastObjectListViewRpdList);
             tabPage1.Controls.Add(buttonSelectRpdFiles);
-            tabPage1.Location = new Point(4, 23);
+            tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1039, 617);
+            tabPage1.Size = new Size(1039, 616);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "РПД";
             tabPage1.UseVisualStyleBackColor = true;
@@ -434,64 +436,47 @@
             tabPageRpdGeneration.Text = "Генерация РПД";
             tabPageRpdGeneration.UseVisualStyleBackColor = true;
             // 
-            // labelRpdGenStatus
+            // groupBox3
             // 
-            labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(667, 549);
-            labelRpdGenStatus.Name = "labelRpdGenStatus";
-            labelRpdGenStatus.Size = new Size(361, 52);
-            labelRpdGenStatus.TabIndex = 23;
-            labelRpdGenStatus.Text = "label11";
-            labelRpdGenStatus.Visible = false;
+            groupBox3.Controls.Add(textBoxRpdGenFormsOfStudy);
+            groupBox3.Controls.Add(label10);
+            groupBox3.Controls.Add(textBoxRpdGenDirectionCode);
+            groupBox3.Controls.Add(label7);
+            groupBox3.Controls.Add(label8);
+            groupBox3.Controls.Add(textBoxRpdGenDepartment);
+            groupBox3.Controls.Add(textBoxRpdGenDirectionName);
+            groupBox3.Controls.Add(label9);
+            groupBox3.Controls.Add(textBoxRpdGenProfile);
+            groupBox3.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            groupBox3.Location = new Point(8, 47);
+            groupBox3.Name = "groupBox3";
+            groupBox3.Size = new Size(818, 140);
+            groupBox3.TabIndex = 24;
+            groupBox3.TabStop = false;
+            groupBox3.Text = "2. Настройка полей шаблона";
             // 
-            // textBoxRpdGenDepartment
+            // textBoxRpdGenFormsOfStudy
             // 
-            textBoxRpdGenDepartment.Font = new Font("Tahoma", 9F);
-            textBoxRpdGenDepartment.Location = new Point(106, 77);
-            textBoxRpdGenDepartment.Name = "textBoxRpdGenDepartment";
-            textBoxRpdGenDepartment.Size = new Size(682, 22);
-            textBoxRpdGenDepartment.TabIndex = 21;
+            textBoxRpdGenFormsOfStudy.Font = new Font("Tahoma", 9F);
+            textBoxRpdGenFormsOfStudy.Location = new Point(120, 105);
+            textBoxRpdGenFormsOfStudy.Name = "textBoxRpdGenFormsOfStudy";
+            textBoxRpdGenFormsOfStudy.Size = new Size(682, 22);
+            textBoxRpdGenFormsOfStudy.TabIndex = 23;
             // 
-            // label9
+            // label10
             // 
-            label9.AutoSize = true;
-            label9.Font = new Font("Tahoma", 9F);
-            label9.Location = new Point(39, 80);
-            label9.Name = "label9";
-            label9.Size = new Size(61, 14);
-            label9.TabIndex = 20;
-            label9.Text = "Кафедра:";
-            // 
-            // textBoxRpdGenProfile
-            // 
-            textBoxRpdGenProfile.Font = new Font("Tahoma", 9F);
-            textBoxRpdGenProfile.Location = new Point(106, 49);
-            textBoxRpdGenProfile.Name = "textBoxRpdGenProfile";
-            textBoxRpdGenProfile.Size = new Size(682, 22);
-            textBoxRpdGenProfile.TabIndex = 19;
-            // 
-            // textBoxRpdGenDirectionName
-            // 
-            textBoxRpdGenDirectionName.Font = new Font("Tahoma", 9F);
-            textBoxRpdGenDirectionName.Location = new Point(212, 21);
-            textBoxRpdGenDirectionName.Name = "textBoxRpdGenDirectionName";
-            textBoxRpdGenDirectionName.Size = new Size(576, 22);
-            textBoxRpdGenDirectionName.TabIndex = 18;
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Font = new Font("Tahoma", 9F);
-            label8.Location = new Point(37, 52);
-            label8.Name = "label8";
-            label8.Size = new Size(63, 14);
-            label8.TabIndex = 17;
-            label8.Text = "Профиль:";
+            label10.AutoSize = true;
+            label10.Font = new Font("Tahoma", 9F);
+            label10.Location = new Point(6, 108);
+            label10.Name = "label10";
+            label10.Size = new Size(108, 14);
+            label10.TabIndex = 22;
+            label10.Text = "Форма обучения:";
             // 
             // textBoxRpdGenDirectionCode
             // 
             textBoxRpdGenDirectionCode.Font = new Font("Tahoma", 9F);
-            textBoxRpdGenDirectionCode.Location = new Point(106, 21);
+            textBoxRpdGenDirectionCode.Location = new Point(120, 21);
             textBoxRpdGenDirectionCode.Name = "textBoxRpdGenDirectionCode";
             textBoxRpdGenDirectionCode.Size = new Size(100, 22);
             textBoxRpdGenDirectionCode.TabIndex = 16;
@@ -500,11 +485,66 @@
             // 
             label7.AutoSize = true;
             label7.Font = new Font("Tahoma", 9F);
-            label7.Location = new Point(14, 24);
+            label7.Location = new Point(28, 24);
             label7.Name = "label7";
             label7.Size = new Size(86, 14);
             label7.TabIndex = 15;
             label7.Text = "Направление:";
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Font = new Font("Tahoma", 9F);
+            label8.Location = new Point(51, 52);
+            label8.Name = "label8";
+            label8.Size = new Size(63, 14);
+            label8.TabIndex = 17;
+            label8.Text = "Профиль:";
+            // 
+            // textBoxRpdGenDepartment
+            // 
+            textBoxRpdGenDepartment.Font = new Font("Tahoma", 9F);
+            textBoxRpdGenDepartment.Location = new Point(120, 77);
+            textBoxRpdGenDepartment.Name = "textBoxRpdGenDepartment";
+            textBoxRpdGenDepartment.Size = new Size(682, 22);
+            textBoxRpdGenDepartment.TabIndex = 21;
+            // 
+            // textBoxRpdGenDirectionName
+            // 
+            textBoxRpdGenDirectionName.Font = new Font("Tahoma", 9F);
+            textBoxRpdGenDirectionName.Location = new Point(226, 21);
+            textBoxRpdGenDirectionName.Name = "textBoxRpdGenDirectionName";
+            textBoxRpdGenDirectionName.Size = new Size(576, 22);
+            textBoxRpdGenDirectionName.TabIndex = 18;
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Font = new Font("Tahoma", 9F);
+            label9.Location = new Point(53, 80);
+            label9.Name = "label9";
+            label9.Size = new Size(61, 14);
+            label9.TabIndex = 20;
+            label9.Text = "Кафедра:";
+            label9.Click += label9_Click;
+            // 
+            // textBoxRpdGenProfile
+            // 
+            textBoxRpdGenProfile.Font = new Font("Tahoma", 9F);
+            textBoxRpdGenProfile.Location = new Point(120, 49);
+            textBoxRpdGenProfile.Name = "textBoxRpdGenProfile";
+            textBoxRpdGenProfile.Size = new Size(682, 22);
+            textBoxRpdGenProfile.TabIndex = 19;
+            // 
+            // labelRpdGenStatus
+            // 
+            labelRpdGenStatus.AutoEllipsis = true;
+            labelRpdGenStatus.Location = new Point(667, 543);
+            labelRpdGenStatus.Name = "labelRpdGenStatus";
+            labelRpdGenStatus.Size = new Size(361, 52);
+            labelRpdGenStatus.TabIndex = 23;
+            labelRpdGenStatus.Text = "label11";
+            labelRpdGenStatus.Visible = false;
             // 
             // groupBox2
             // 
@@ -517,7 +557,7 @@
             groupBox2.Controls.Add(textBoxRpdGenFileNameTemplate);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(8, 500);
+            groupBox2.Location = new Point(8, 504);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 109);
             groupBox2.TabIndex = 14;
@@ -594,9 +634,9 @@
             // 
             // buttonGenerate
             // 
-            buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(667, 500);
+            buttonGenerate.Location = new Point(667, 504);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -609,9 +649,9 @@
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBox1.Controls.Add(fastObjectListViewDisciplineListForGeneration);
             groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox1.Location = new Point(8, 161);
+            groupBox1.Location = new Point(8, 193);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(1023, 333);
+            groupBox1.Size = new Size(1023, 305);
             groupBox1.TabIndex = 4;
             groupBox1.TabStop = false;
             groupBox1.Text = "3. Выбор дисциплин";
@@ -628,7 +668,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(1017, 312);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(1017, 284);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -680,23 +720,6 @@
             // 
             openFileDialogRpdTemplate.Filter = "Docx-файлы|*.docx|Все файлы|*.*";
             // 
-            // groupBox3
-            // 
-            groupBox3.Controls.Add(textBoxRpdGenDirectionCode);
-            groupBox3.Controls.Add(label7);
-            groupBox3.Controls.Add(label8);
-            groupBox3.Controls.Add(textBoxRpdGenDepartment);
-            groupBox3.Controls.Add(textBoxRpdGenDirectionName);
-            groupBox3.Controls.Add(label9);
-            groupBox3.Controls.Add(textBoxRpdGenProfile);
-            groupBox3.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox3.Location = new Point(8, 47);
-            groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(799, 108);
-            groupBox3.TabIndex = 24;
-            groupBox3.TabStop = false;
-            groupBox3.Text = "2. Настройка полей шаблона";
-            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
@@ -727,12 +750,12 @@
             ((System.ComponentModel.ISupportInitialize)webView2RpdReport).EndInit();
             tabPageRpdGeneration.ResumeLayout(false);
             tabPageRpdGeneration.PerformLayout();
+            groupBox3.ResumeLayout(false);
+            groupBox3.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).EndInit();
-            groupBox3.ResumeLayout(false);
-            groupBox3.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -795,5 +818,7 @@
         private ComboBox comboBoxRpdGenTemplates;
         private Label labelRpdGenStatus;
         private GroupBox groupBox3;
+        private TextBox textBoxRpdGenFormsOfStudy;
+        private Label label10;
     }
 }

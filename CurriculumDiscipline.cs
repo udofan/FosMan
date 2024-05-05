@@ -256,7 +256,14 @@ namespace FosMan {
         /// <param name="propName"></param>
         /// <returns></returns>
         public object GetProperty(string propName) {
-            return m_typeAccesor[this, propName];
+            object value = null;
+            try {
+                value = m_typeAccesor[this, propName];
+            }
+            catch (Exception ex) {
+            }
+
+            return value;
         }
     }
 }

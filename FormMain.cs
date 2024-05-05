@@ -639,6 +639,7 @@ namespace FosMan {
                 textBoxRpdGenDirectionName.Text = curriculumGroup.DirectionName;
                 textBoxRpdGenProfile.Text = curriculumGroup.Profile;
                 textBoxRpdGenDepartment.Text = curriculumGroup.Department;
+                textBoxRpdGenFormsOfStudy.Text = curriculumGroup.FormsOfStudyList;
             }
         }
 
@@ -687,6 +688,7 @@ namespace FosMan {
                     curriculumGroup.DirectionName = textBoxRpdGenDirectionName.Text;
                     curriculumGroup.Department = textBoxRpdGenDepartment.Text;
                     curriculumGroup.Profile = textBoxRpdGenProfile.Text;
+                    curriculumGroup.FormsOfStudyList = textBoxRpdGenFormsOfStudy.Text;
 
                     curriculumGroup.CheckedDisciplines = disciplines;
                     var rpdTemplate = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES, comboBoxRpdGenTemplates.SelectedItem.ToString());
@@ -696,7 +698,7 @@ namespace FosMan {
                     labelRpdGenStatus.Text = "";
 
                     var newRpdFiles = App.GenerateRpdFiles(curriculumGroup, rpdTemplate, textBoxRpdGenTargetDir.Text,
-                                                           textBoxRpdGenFileNameTemplate.Text, 
+                                                           textBoxRpdGenFileNameTemplate.Text,
                                                            (int idx, CurriculumDiscipline discipline) => {
                                                                this.Invoke(new MethodInvoker(() => {
                                                                    labelRpdGenStatus.Text = $"Генерация РПД для дисциплины\r\n[{discipline.Name}]\r\n" +
@@ -708,12 +710,27 @@ namespace FosMan {
 
                     Application.UseWaitCursor = false;
                     labelRpdGenStatus.Text += " завершено.";
+                    var msg = "";
+                    if (newRpdFiles.Count > 0) {
+                        msg = $"Генерация РПД завершена.\r\nУспешно созданные РПД ({newRpdFiles.Count} шт.):\r\n{string.Join("\r\n", newRpdFiles)}";
+                    }
+                    else {
+                        msg = $"Генерация РПД завершена.\r\nСоздание файлов не удалось.";
+                    }
+                    if (errors.Any()) {
+                        msg += $"\r\n\r\nПолученные ошибки ({errors.Count} шт.):\r\n{string.Join("\r\n", errors)}";
+                    }
+                    MessageBox.Show(msg, "Генерация РПД", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             else {
-                MessageBox.Show($"Для генерации РПД необходимо предварительно выбрать группу учебных планов и отметить нужные дисциплины в списке.", "Генерация РПД", 
+                MessageBox.Show($"Для генерации РПД необходимо предварительно выбрать группу учебных планов и отметить нужные дисциплины в списке.", "Генерация РПД",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+
+        private void label9_Click(object sender, EventArgs e) {
+
         }
     }
 }

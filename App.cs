@@ -400,29 +400,39 @@ namespace FosMan {
                         //создание файла
                         var targetFile = Path.Combine(targetDir, fileName);
                         File.Copy(rpdTemplate, targetFile, true);
-                        using (var docx = DocX.Load(fileName)) {
-                            foreach (var par in docx.Paragraphs) {
-                                var updatedText = Regex.Replace(par.Text, @"({[^}]+})", m => {
-                                    var replaceValue = m.Value;
-                                    var propName = m.Value.Trim('{', '}');
-                                    var groupProp = curriculumGroup.GetProperty(propName);
-                                    if (groupProp != null) {
-                                        replaceValue = groupProp.ToString();
-                                    }
-                                    else {
-                                        var discProp = disc.GetProperty(propName);
-                                        if (discProp != null) {
-                                            replaceValue = discProp.ToString();
+                        using (var docx = DocX.Load(targetFile)) {
+                            foreach (var par in docx.Paragraphs.ToList()) {
+                                var replaceOptions = new FunctionReplaceTextOptions() {
+                                    ContainerLocation = ReplaceTextContainer.All,
+                                    FindPattern = "{[^}]+}",
+                                    RegexMatchHandler = m => {
+                                        var replaceValue = m;
+                                        var propName = m.Trim('{', '}');
+                                        var groupProp = curriculumGroup.GetProperty(propName);
+                                        if (groupProp != null) {
+                                            replaceValue = groupProp.ToString();
                                         }
                                         else {
-                                            if (TryInsertSpecialObjectInRpd(propName, par)) {
-                                                replaceValue = "";
+                                            var discProp = disc.GetProperty(propName);
+                                            if (discProp != null) {
+                                                replaceValue = discProp.ToString();
+                                            }
+                                            else {
+                                                if (TryInsertSpecialObjectInRpd(propName, par)) {
+                                                    replaceValue = "";
+                                                }
                                             }
                                         }
+                                        return replaceValue;
                                     }
-                                    return replaceValue;
-                                });
+                                };
+                                par.ReplaceText(replaceOptions);
+
+                                //par.ReplaceText(@"{[^}]+}", m => {
+                                //});                                //par.ReplaceText(@"{[^}]+}", m => {
+                                //});
                             }
+                            docx.Save();// ($"filled_{targetFile}");
                         }
                         files.Add(targetFile);
                     }
@@ -447,10 +457,15 @@ namespace FosMan {
         /// <exception cref="NotImplementedException"></exception>
         private static bool TryInsertSpecialObjectInRpd(string propName, Paragraph par) {
             var result = false;
-            switch (propName?.ToLower()) {
-                case "tablecompetences":
+            switch (propName) {
+                case "TableCompetences":
+                    var newTable = par.InsertTableAfterSelf(5, 3);
+                    //newTable.ad
+                    result = true;
                     break;
-                case "tableeducationworks":
+                case "TableEducationWorks":
+                    var newTable2 = par.InsertTableAfterSelf(5, 4);
+                    result = true;
                     break;
                 default:
                     break;

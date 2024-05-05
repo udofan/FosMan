@@ -15,6 +15,7 @@ namespace FosMan {
         static TypeAccessor m_typeAccesor = TypeAccessor.Create(typeof(CurriculumGroup));
         Dictionary<string, CurriculumDiscipline> m_disciplines = [];
         Dictionary<string, Curriculum> m_curricula = [];
+        string m_formsOfStudyList = null;
 
         /// <summary>
         /// Направление подготовки
@@ -39,7 +40,10 @@ namespace FosMan {
         /// <summary>
         /// Формы обучения в виде списка [исп. для вставки в РПД]
         /// </summary>
-        public string FormsOfStudyList { get => string.Join(", ", FormsOfStudy).ToLower(); }
+        public string FormsOfStudyList {
+            get => m_formsOfStudyList ??= string.Join(", ", FormsOfStudy.Select(f => f.GetDescription())).ToLower();
+            set => m_formsOfStudyList = value;
+        }
         /// <summary>
         /// УП, входящие в группу
         /// </summary>
@@ -83,7 +87,14 @@ namespace FosMan {
         /// <param name="propName"></param>
         /// <returns></returns>
         public object GetProperty(string propName) {
-            return m_typeAccesor[this, propName];
+            object value = null;
+            try {
+                value = m_typeAccesor[this, propName];
+            }
+            catch (Exception ex) {
+            }
+
+            return value;
         }
     }
 }
