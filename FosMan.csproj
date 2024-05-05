@@ -18,4 +18,10 @@
     <PackageReference Include="ObjectListView.Repack.NET6Plus" Version="2.9.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Templates\РПД_шаблон_2024.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -100,7 +100,7 @@ namespace FosMan {
         /// <summary>
         /// Нормализованные компетенции (коды)
         /// </summary>
-        public HashSet<string> CompetenceList { 
+        public HashSet<string> CompetenceList {
             get {
                 if (m_competenceList == null && !string.IsNullOrEmpty(Competences)) {
                     var competenceItems = Competences.Split(';', StringSplitOptions.TrimEntries);
@@ -141,6 +141,11 @@ namespace FosMan {
         /// Описание учебных работ по семестрам
         /// </summary>
         public EducationalWork[] Semesters { get; set; } = new EducationalWork[SEMESTER_COUNT];
+
+        /// <summary>
+        /// Кол-во зачетных единиц (1 ЗЕ = 36 часов)
+        /// </summary>
+        public int? TestUnits { get => TotalByPlanHours / 36; }
 
         /// <summary>
         /// Выявленные ошибки
@@ -243,6 +248,15 @@ namespace FosMan {
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Получить значение свойства по имени
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        public object GetProperty(string propName) {
+            return m_typeAccesor[this, propName];
         }
     }
 }

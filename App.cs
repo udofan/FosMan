@@ -10,8 +10,10 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Policy;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xceed.Document.NET;
+using Xceed.Words.NET;
 
 namespace FosMan {
     /// <summary>
@@ -367,21 +369,94 @@ namespace FosMan {
         /// <param name="curriculumGroup"></param>
         /// <param name="template"></param>
         /// <param name="targetDir"></param>
-        /// <returns>список созданных файлов</returns>
+        /// <returns>список успешно созданных файлов</returns>
         public static List<string> GenerateRpdFiles(CurriculumGroup curriculumGroup, string rpdTemplate, string targetDir, string fileNameTemplate,
                                                     Action<int, CurriculumDiscipline> progressAction, out List<string> errors) {
             var files = new List<string>();
             errors = [];
 
-            var i = 0;
-            foreach (var disc in curriculumGroup.CheckedDisciplines) {
-                i++;
-                progressAction?.Invoke(i, disc);
-                //создание файла
-                //Thread.Sleep(1000);
+            try {
+                if (!File.Exists(rpdTemplate)) {
+                    errors.Add($"Файл шаблона [{rpdTemplate}] не найден.");
+                    return [];
+                }
+                if (!Directory.Exists(targetDir)) {
+                    Directory.CreateDirectory(targetDir);
+                }
+
+                var i = 0;
+                //цикл по дисциплинам
+                foreach (var disc in curriculumGroup.CheckedDisciplines) {
+                    try {
+                        i++;
+                        progressAction?.Invoke(i, disc);
+                        string fileName;
+                        if (!string.IsNullOrEmpty(fileNameTemplate)) {
+                            fileName = Regex.Replace(fileNameTemplate, @"({[^}]+})", (m) => (disc.GetProperty(m.Value.Trim('{', '}'))?.ToString() ?? m.Value));
+                        }
+                        else {  //если шаблон имени файла не задан
+                            fileName = $"РПД_{disc.Index}_{disc.Name}.docx";
+                        }
+                        //создание файла
+                        var targetFile = Path.Combine(targetDir, fileName);
+                        File.Copy(rpdTemplate, targetFile, true);
+                        using (var docx = DocX.Load(fileName)) {
+                            foreach (var par in docx.Paragraphs) {
+                                var updatedText = Regex.Replace(par.Text, @"({[^}]+})", m => {
+                                    var replaceValue = m.Value;
+                                    var propName = m.Value.Trim('{', '}');
+                                    var groupProp = curriculumGroup.GetProperty(propName);
+                                    if (groupProp != null) {
+                                        replaceValue = groupProp.ToString();
+                                    }
+                                    else {
+                                        var discProp = disc.GetProperty(propName);
+                                        if (discProp != null) {
+                                            replaceValue = discProp.ToString();
+                                        }
+                                        else {
+                                            if (TryInsertSpecialObjectInRpd(propName, par)) {
+                                                replaceValue = "";
+                                            }
+                                        }
+                                    }
+                                    return replaceValue;
+                                });
+                            }
+                        }
+                        files.Add(targetFile);
+                    }
+                    catch (Exception e) {
+                        errors.Add($"Не удалось создать РПД для дисциплины [{disc.Name}]:\r\n{e.Message}\r\n{e.StackTrace}");
+                    }
+                }
+            }
+            catch (Exception ex) {
+                errors.Add($"{ex.Message}\r\n{ex.StackTrace}");
             }
 
             return files;
+        }
+        
+        /// <summary>
+        /// Попытка вставить специальный объект в параграф
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="par"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private static bool TryInsertSpecialObjectInRpd(string propName, Paragraph par) {
+            var result = false;
+            switch (propName?.ToLower()) {
+                case "tablecompetences":
+                    break;
+                case "tableeducationworks":
+                    break;
+                default:
+                    break;
+            }
+
+            return result;
         }
     }
 }

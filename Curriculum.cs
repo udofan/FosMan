@@ -94,7 +94,7 @@ namespace FosMan {
             };
 
             try {
-                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
                 using (var fileStream = File.Open(fileName, FileMode.Open, FileAccess.ReadWrite)) {
                     using (var reader = ExcelReaderFactory.CreateReader(fileStream)) {
