@@ -1,9 +1,14 @@
 using BrightIdeasSoftware;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Text;
 
 namespace FosMan {
     public partial class FormMain : Form {
+        const string DIR_TEMPLATES = "Templates";
+        const string DIR_REPORTS = "Reports";
+        const string DIR_LOGS = "Logs";
+
         string m_matrixFileName = null;
         string m_rpdHtmlReport = null;
 
@@ -51,7 +56,7 @@ namespace FosMan {
                     MessageBox.Show("Матрица компетенций успешно загружена.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 if (matrix.Errors.Any()) {
-                    var logDir = Path.Combine(Environment.CurrentDirectory, "Logs");
+                    var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
                     if (!Directory.Exists(logDir)) {
                         Directory.CreateDirectory(logDir);
                     }
@@ -438,7 +443,7 @@ namespace FosMan {
                     labelExcelFileLoading.Text += " завершено.";
                 }
                 if (report.Any()) {
-                    var logDir = Path.Combine(Environment.CurrentDirectory, "Logs");
+                    var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
                     if (!Directory.Exists(logDir)) {
                         Directory.CreateDirectory(logDir);
                     }
@@ -536,7 +541,7 @@ namespace FosMan {
                     labelLoadRpd.Text += " завершено.";
                 }
                 if (report.Any()) {
-                    var logDir = Path.Combine(Environment.CurrentDirectory, "Logs");
+                    var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
                     if (!Directory.Exists(logDir)) {
                         Directory.CreateDirectory(logDir);
                     }
@@ -584,7 +589,7 @@ namespace FosMan {
 
         private void buttonSaveRpdReport_Click(object sender, EventArgs e) {
             if (!string.IsNullOrEmpty(m_rpdHtmlReport)) {
-                var repDir = Path.Combine(Environment.CurrentDirectory, "Reports");
+                var repDir = Path.Combine(Environment.CurrentDirectory, DIR_REPORTS);
                 if (!Directory.Exists(repDir)) {
                     Directory.CreateDirectory(repDir);
                 }
@@ -598,17 +603,116 @@ namespace FosMan {
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) {
             if (tabControl1.SelectedTab == tabPageRpdGeneration) {
-                comboBoxSelectCurriculum.Items.AddRange(fastObjectListViewCurricula.Objects.Cast<Curriculum>().ToArray());
+                //группы УП
+                var newGroups = App.CurriculumGroups.Values.Except(comboBoxRpdGenCurriculumGroups.Items.Cast<CurriculumGroup>());
+                if (newGroups.Any()) {
+                    comboBoxRpdGenCurriculumGroups.Items.AddRange(newGroups.ToArray());
+                }
+                //список шаблонов
+                var templateDir = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES);
+                if (Directory.Exists(templateDir)) {
+                    var files = Directory.GetFiles(templateDir, "*.docx");
+                    var newTemplates = files.Select(f => Path.GetFileName(f)).Except(comboBoxRpdGenTemplates.Items.Cast<string>());
+                    if (newTemplates.Any()) {
+                        comboBoxRpdGenTemplates.Items.AddRange(newTemplates.ToArray());
+                    }
+                    if (comboBoxRpdGenTemplates.SelectedIndex < 0 && comboBoxRpdGenTemplates.Items.Count > 0) {
+                        comboBoxRpdGenTemplates.SelectedIndex = 0;
+                    }
+                }
+                if (string.IsNullOrEmpty(textBoxRpdGenTargetDir.Text)) {
+                    textBoxRpdGenTargetDir.Text = Path.Combine(Environment.CurrentDirectory, $"РПД_{DateTime.Now:yyyy-MM-dd}");
+                    textBoxRpdGenTargetDir.SelectionStart = textBoxRpdGenTargetDir.Text.Length - 1;
+                }
             }
         }
 
         private void comboBoxSelectCurriculum_SelectedIndexChanged(object sender, EventArgs e) {
-            var curriculum = comboBoxSelectCurriculum.SelectedItem as Curriculum;
-            if (curriculum != null) {
+            var curriculumGroup = comboBoxRpdGenCurriculumGroups.SelectedItem as CurriculumGroup;
+            if (curriculumGroup != null) {
                 fastObjectListViewDisciplineListForGeneration.BeginUpdate();
                 fastObjectListViewDisciplineListForGeneration.ClearObjects();
-                fastObjectListViewDisciplineListForGeneration.SetObjects(curriculum.Disciplines.Values);
+                fastObjectListViewDisciplineListForGeneration.SetObjects(curriculumGroup.Disciplines.Values);
                 fastObjectListViewDisciplineListForGeneration.EndUpdate();
+
+                textBoxRpdGenDirectionCode.Text = curriculumGroup.DirectionCode;
+                textBoxRpdGenDirectionName.Text = curriculumGroup.DirectionName;
+                textBoxRpdGenProfile.Text = curriculumGroup.Profile;
+                textBoxRpdGenDepartment.Text = curriculumGroup.Department;
+            }
+        }
+
+        private void fastObjectListViewDisciplineListForGeneration_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
+            if (e.Model is CurriculumDiscipline discipline) {
+                if (e.Column.AspectName.Equals("Errors")) {
+                    e.Text = string.Join("\r\n", discipline.Errors);
+                    e.StandardIcon = ToolTipControl.StandardIcons.Error;
+                    e.IsBalloon = true;
+                }
+            }
+        }
+
+        private void fastObjectListViewDisciplineListForGeneration_FormatRow(object sender, FormatRowEventArgs e) {
+            if (e.Model is CurriculumDiscipline discipline) {
+                if (discipline.Errors?.Any() ?? false) {
+                    e.Item.BackColor = Color.Pink;
+                }
+                if (fastObjectListViewDisciplineListForGeneration.IsChecked(e.Model)) {
+                    e.Item.Font = new Font(fastObjectListViewDisciplineListForGeneration.Font, FontStyle.Bold);
+                }
+            }
+        }
+
+        private void buttonSelectRpdTargetDir_Click(object sender, EventArgs e) {
+            var initDir = Directory.Exists(textBoxRpdGenTargetDir.Text) ? textBoxRpdGenTargetDir.Text : Environment.CurrentDirectory;
+            folderBrowserDialogRpdTargetDir.InitialDirectory = initDir;
+
+            if (folderBrowserDialogRpdTargetDir.ShowDialog() == DialogResult.OK) {
+                textBoxRpdGenTargetDir.Text = folderBrowserDialogRpdTargetDir.SelectedPath;
+            }
+        }
+
+        private void buttonGenerate_Click(object sender, EventArgs e) {
+            var disciplines = fastObjectListViewDisciplineListForGeneration.CheckedObjects?.Cast<CurriculumDiscipline>().ToList();
+            if (disciplines?.Any() ?? false) {
+                var disciplineList = string.Join("\r\n  * ", disciplines.Select(d => d.Name));
+
+                if (MessageBox.Show($"Вы уверены, что хотите сгенерировать РПД для следующих дисциплин:\r\n  * {disciplineList}\r\n" +
+                                    $"в целевой директории:\r\n{textBoxRpdGenTargetDir.Text}\r\n?" +
+                                    $"Ранее созданные файлы в целевой директории будут перезаписаны.\r\n" +
+                                    $"Продолжить?",
+                                    "Генерация РПД", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                    var curriculumGroup = comboBoxRpdGenCurriculumGroups.SelectedItem as CurriculumGroup;
+                    curriculumGroup.DirectionCode = textBoxRpdGenDirectionCode.Text;
+                    curriculumGroup.DirectionName = textBoxRpdGenDirectionName.Text;
+                    curriculumGroup.Department = textBoxRpdGenDepartment.Text;
+                    curriculumGroup.Profile = textBoxRpdGenProfile.Text;
+
+                    curriculumGroup.CheckedDisciplines = disciplines;
+                    var rpdTemplate = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES, comboBoxRpdGenTemplates.SelectedItem.ToString());
+
+                    labelRpdGenStatus.Visible = true;
+                    Application.UseWaitCursor = true;
+                    labelRpdGenStatus.Text = "";
+
+                    var newRpdFiles = App.GenerateRpdFiles(curriculumGroup, rpdTemplate, textBoxRpdGenTargetDir.Text,
+                                                           textBoxRpdGenFileNameTemplate.Text, 
+                                                           (int idx, CurriculumDiscipline discipline) => {
+                                                               this.Invoke(new MethodInvoker(() => {
+                                                                   labelRpdGenStatus.Text = $"Генерация РПД для дисциплины\r\n[{discipline.Name}]\r\n" +
+                                                                                            $"({idx} из {curriculumGroup.CheckedDisciplines.Count})... ";
+                                                                   Application.DoEvents();
+                                                               }));
+                                                           },
+                                                           out var errors);
+
+                    Application.UseWaitCursor = false;
+                    labelRpdGenStatus.Text += " завершено.";
+                }
+            }
+            else {
+                MessageBox.Show($"Для генерации РПД необходимо предварительно выбрать группу учебных планов и отметить нужные дисциплины в списке.", "Генерация РПД", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }

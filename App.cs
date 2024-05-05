@@ -21,20 +21,48 @@ namespace FosMan {
         static CompetenceMatrix m_competenceMatrix = null;
         static Dictionary<string, Curriculum> m_curriculumDic = [];
         static Dictionary<string, Rpd> m_rpdDic = [];
+        static Dictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
 
         public static CompetenceMatrix CompetenceMatrix { get => m_competenceMatrix; }
 
         public static Dictionary<string, Rpd> RpdList { get => m_rpdDic; }
 
+        /// <summary>
+        /// Учебные планы в сторе
+        /// </summary>
         public static Dictionary<string, Curriculum> Curricula { get => m_curriculumDic; }
+        /// <summary>
+        /// Группы УП
+        /// </summary>
+        public static Dictionary<string, CurriculumGroup> CurriculumGroups { get => m_curriculumGroupDic; }
 
         public static bool HasCurriculumFile(string fileName) => m_curriculumDic.ContainsKey(fileName);
 
         public static bool HasRpdFile(string fileName) => m_rpdDic.ContainsKey(fileName);
 
+        /// <summary>
+        /// Добавить УП в общий стор
+        /// </summary>
+        /// <param name="curriculum"></param>
+        /// <returns></returns>
         static public bool AddCurriculum(Curriculum curriculum) {
-            return m_curriculumDic.TryAdd(curriculum.SourceFileName, curriculum);
+            var result = false;
+            if (m_curriculumDic.TryAdd(curriculum.SourceFileName, curriculum)) {
+                if (!m_curriculumGroupDic.TryGetValue(curriculum.GroupKey, out var group)) {
+                    group = new() {
+                        Department = curriculum.Department, 
+                        DirectionCode = curriculum.DirectionCode, 
+                        DirectionName = curriculum.DirectionName, 
+                        Profile = curriculum.Profile
+                    };
+                    m_curriculumGroupDic[curriculum.GroupKey] = group;
+                }
+                group.AddCurriculum(curriculum);
+                result = true;
+            }
+            return result;
         }
+
         static public bool AddRpd(Rpd rpd) {
             return m_rpdDic.TryAdd(rpd.SourceFileName, rpd);
         }
@@ -331,6 +359,29 @@ namespace FosMan {
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Генерация РПД
+        /// </summary>
+        /// <param name="curriculumGroup"></param>
+        /// <param name="template"></param>
+        /// <param name="targetDir"></param>
+        /// <returns>список созданных файлов</returns>
+        public static List<string> GenerateRpdFiles(CurriculumGroup curriculumGroup, string rpdTemplate, string targetDir, string fileNameTemplate,
+                                                    Action<int, CurriculumDiscipline> progressAction, out List<string> errors) {
+            var files = new List<string>();
+            errors = [];
+
+            var i = 0;
+            foreach (var disc in curriculumGroup.CheckedDisciplines) {
+                i++;
+                progressAction?.Invoke(i, disc);
+                //создание файла
+                //Thread.Sleep(1000);
+            }
+
+            return files;
         }
     }
 }

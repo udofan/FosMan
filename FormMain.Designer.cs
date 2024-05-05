@@ -52,14 +52,34 @@
             buttonSaveRpdReport = new Button();
             webView2RpdReport = new Microsoft.Web.WebView2.WinForms.WebView2();
             tabPageRpdGeneration = new TabPage();
+            labelRpdGenStatus = new Label();
+            label10 = new Label();
+            textBoxRpdGenDepartment = new TextBox();
+            label9 = new Label();
+            textBoxRpdGenProfile = new TextBox();
+            textBoxRpdGenDirectionName = new TextBox();
+            label8 = new Label();
+            textBoxRpdGenDirectionCode = new TextBox();
+            label7 = new Label();
+            groupBox2 = new GroupBox();
+            comboBoxRpdGenTemplates = new ComboBox();
+            buttonSelectRpdTargetDir = new Button();
+            label4 = new Label();
+            textBoxRpdGenTargetDir = new TextBox();
+            label6 = new Label();
+            textBoxRpdGenFileNameTemplate = new TextBox();
+            label5 = new Label();
+            buttonGenerate = new Button();
             groupBox1 = new GroupBox();
             fastObjectListViewDisciplineListForGeneration = new BrightIdeasSoftware.FastObjectListView();
             label3 = new Label();
-            comboBoxSelectCurriculum = new ComboBox();
+            comboBoxRpdGenCurriculumGroups = new ComboBox();
             openFileDialog1 = new OpenFileDialog();
             openFileDialog2 = new OpenFileDialog();
             openFileDialog3 = new OpenFileDialog();
             openFileDialog4 = new OpenFileDialog();
+            openFileDialogRpdTemplate = new OpenFileDialog();
+            folderBrowserDialogRpdTargetDir = new FolderBrowserDialog();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
@@ -74,6 +94,7 @@
             tabPageRpdCheck.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)webView2RpdReport).BeginInit();
             tabPageRpdGeneration.SuspendLayout();
+            groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).BeginInit();
             SuspendLayout();
@@ -142,9 +163,9 @@
             webView21.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             webView21.CreationProperties = null;
             webView21.DefaultBackgroundColor = Color.White;
-            webView21.Location = new Point(20, 59);
+            webView21.Location = new Point(8, 59);
             webView21.Name = "webView21";
-            webView21.Size = new Size(1001, 546);
+            webView21.Size = new Size(1023, 550);
             webView21.TabIndex = 4;
             webView21.ZoomFactor = 1D;
             // 
@@ -203,9 +224,9 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 370);
+            groupBoxDisciplines.Location = new Point(8, 379);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
-            groupBoxDisciplines.Size = new Size(1023, 244);
+            groupBoxDisciplines.Size = new Size(1023, 233);
             groupBoxDisciplines.TabIndex = 3;
             groupBoxDisciplines.TabStop = false;
             groupBoxDisciplines.Text = "Дисциплины программы";
@@ -219,7 +240,7 @@
             fastObjectListViewDisciplines.Location = new Point(3, 18);
             fastObjectListViewDisciplines.Name = "fastObjectListViewDisciplines";
             fastObjectListViewDisciplines.ShowGroups = false;
-            fastObjectListViewDisciplines.Size = new Size(1017, 223);
+            fastObjectListViewDisciplines.Size = new Size(1017, 212);
             fastObjectListViewDisciplines.TabIndex = 4;
             fastObjectListViewDisciplines.UseFilterIndicator = true;
             fastObjectListViewDisciplines.UseFiltering = true;
@@ -249,7 +270,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1023, 307);
+            fastObjectListViewCurricula.Size = new Size(1023, 316);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -314,7 +335,7 @@
             fastObjectListViewRpdList.Location = new Point(8, 57);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1023, 600);
+            fastObjectListViewRpdList.Size = new Size(1023, 554);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -396,9 +417,20 @@
             // 
             // tabPageRpdGeneration
             // 
+            tabPageRpdGeneration.Controls.Add(labelRpdGenStatus);
+            tabPageRpdGeneration.Controls.Add(label10);
+            tabPageRpdGeneration.Controls.Add(textBoxRpdGenDepartment);
+            tabPageRpdGeneration.Controls.Add(label9);
+            tabPageRpdGeneration.Controls.Add(textBoxRpdGenProfile);
+            tabPageRpdGeneration.Controls.Add(textBoxRpdGenDirectionName);
+            tabPageRpdGeneration.Controls.Add(label8);
+            tabPageRpdGeneration.Controls.Add(textBoxRpdGenDirectionCode);
+            tabPageRpdGeneration.Controls.Add(label7);
+            tabPageRpdGeneration.Controls.Add(groupBox2);
+            tabPageRpdGeneration.Controls.Add(buttonGenerate);
             tabPageRpdGeneration.Controls.Add(groupBox1);
             tabPageRpdGeneration.Controls.Add(label3);
-            tabPageRpdGeneration.Controls.Add(comboBoxSelectCurriculum);
+            tabPageRpdGeneration.Controls.Add(comboBoxRpdGenCurriculumGroups);
             tabPageRpdGeneration.Location = new Point(4, 23);
             tabPageRpdGeneration.Name = "tabPageRpdGeneration";
             tabPageRpdGeneration.Padding = new Padding(3);
@@ -407,19 +439,184 @@
             tabPageRpdGeneration.Text = "Генерация РПД";
             tabPageRpdGeneration.UseVisualStyleBackColor = true;
             // 
+            // labelRpdGenStatus
+            // 
+            labelRpdGenStatus.AutoEllipsis = true;
+            labelRpdGenStatus.Location = new Point(667, 549);
+            labelRpdGenStatus.Name = "labelRpdGenStatus";
+            labelRpdGenStatus.Size = new Size(361, 52);
+            labelRpdGenStatus.TabIndex = 23;
+            labelRpdGenStatus.Text = "label11";
+            labelRpdGenStatus.Visible = false;
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Location = new Point(704, 49);
+            label10.Name = "label10";
+            label10.Size = new Size(278, 28);
+            label10.TabIndex = 22;
+            label10.Text = "<-- Данные поля будут подставлять в шаблон, \r\nздесь их можно переопределить";
+            label10.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // textBoxRpdGenDepartment
+            // 
+            textBoxRpdGenDepartment.Location = new Point(168, 103);
+            textBoxRpdGenDepartment.Name = "textBoxRpdGenDepartment";
+            textBoxRpdGenDepartment.Size = new Size(481, 22);
+            textBoxRpdGenDepartment.TabIndex = 21;
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new Point(101, 106);
+            label9.Name = "label9";
+            label9.Size = new Size(61, 14);
+            label9.TabIndex = 20;
+            label9.Text = "Кафедра:";
+            // 
+            // textBoxRpdGenProfile
+            // 
+            textBoxRpdGenProfile.Location = new Point(168, 75);
+            textBoxRpdGenProfile.Name = "textBoxRpdGenProfile";
+            textBoxRpdGenProfile.Size = new Size(481, 22);
+            textBoxRpdGenProfile.TabIndex = 19;
+            // 
+            // textBoxRpdGenDirectionName
+            // 
+            textBoxRpdGenDirectionName.Location = new Point(274, 47);
+            textBoxRpdGenDirectionName.Name = "textBoxRpdGenDirectionName";
+            textBoxRpdGenDirectionName.Size = new Size(375, 22);
+            textBoxRpdGenDirectionName.TabIndex = 18;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new Point(99, 78);
+            label8.Name = "label8";
+            label8.Size = new Size(63, 14);
+            label8.TabIndex = 17;
+            label8.Text = "Профиль:";
+            // 
+            // textBoxRpdGenDirectionCode
+            // 
+            textBoxRpdGenDirectionCode.Location = new Point(168, 47);
+            textBoxRpdGenDirectionCode.Name = "textBoxRpdGenDirectionCode";
+            textBoxRpdGenDirectionCode.Size = new Size(100, 22);
+            textBoxRpdGenDirectionCode.TabIndex = 16;
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(76, 50);
+            label7.Name = "label7";
+            label7.Size = new Size(86, 14);
+            label7.TabIndex = 15;
+            label7.Text = "Направление:";
+            // 
+            // groupBox2
+            // 
+            groupBox2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            groupBox2.Controls.Add(comboBoxRpdGenTemplates);
+            groupBox2.Controls.Add(buttonSelectRpdTargetDir);
+            groupBox2.Controls.Add(label4);
+            groupBox2.Controls.Add(textBoxRpdGenTargetDir);
+            groupBox2.Controls.Add(label6);
+            groupBox2.Controls.Add(textBoxRpdGenFileNameTemplate);
+            groupBox2.Controls.Add(label5);
+            groupBox2.Location = new Point(8, 513);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new Size(622, 103);
+            groupBox2.TabIndex = 14;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Настройки";
+            // 
+            // comboBoxRpdGenTemplates
+            // 
+            comboBoxRpdGenTemplates.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxRpdGenTemplates.FormattingEnabled = true;
+            comboBoxRpdGenTemplates.Location = new Point(147, 17);
+            comboBoxRpdGenTemplates.Name = "comboBoxRpdGenTemplates";
+            comboBoxRpdGenTemplates.Size = new Size(430, 22);
+            comboBoxRpdGenTemplates.TabIndex = 14;
+            // 
+            // buttonSelectRpdTargetDir
+            // 
+            buttonSelectRpdTargetDir.Location = new Point(583, 73);
+            buttonSelectRpdTargetDir.Name = "buttonSelectRpdTargetDir";
+            buttonSelectRpdTargetDir.Size = new Size(32, 23);
+            buttonSelectRpdTargetDir.TabIndex = 13;
+            buttonSelectRpdTargetDir.Text = "...";
+            buttonSelectRpdTargetDir.UseVisualStyleBackColor = true;
+            buttonSelectRpdTargetDir.Click += buttonSelectRpdTargetDir_Click;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(22, 20);
+            label4.Name = "label4";
+            label4.Size = new Size(119, 14);
+            label4.TabIndex = 5;
+            label4.Text = "Шаблон документа:";
+            // 
+            // textBoxRpdGenTargetDir
+            // 
+            textBoxRpdGenTargetDir.Location = new Point(147, 73);
+            textBoxRpdGenTargetDir.Name = "textBoxRpdGenTargetDir";
+            textBoxRpdGenTargetDir.Size = new Size(430, 22);
+            textBoxRpdGenTargetDir.TabIndex = 12;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(10, 76);
+            label6.Name = "label6";
+            label6.Size = new Size(131, 14);
+            label6.TabIndex = 11;
+            label6.Text = "Целевая директория:";
+            // 
+            // textBoxRpdGenFileNameTemplate
+            // 
+            textBoxRpdGenFileNameTemplate.Location = new Point(147, 45);
+            textBoxRpdGenFileNameTemplate.Name = "textBoxRpdGenFileNameTemplate";
+            textBoxRpdGenFileNameTemplate.Size = new Size(430, 22);
+            textBoxRpdGenFileNameTemplate.TabIndex = 10;
+            textBoxRpdGenFileNameTemplate.Text = "РПД_{DisciplineName}_2024.docx";
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(6, 48);
+            label5.Name = "label5";
+            label5.Size = new Size(135, 14);
+            label5.TabIndex = 9;
+            label5.Text = "Шаблон имени файла:";
+            // 
+            // buttonGenerate
+            // 
+            buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonGenerate.Location = new Point(667, 513);
+            buttonGenerate.Name = "buttonGenerate";
+            buttonGenerate.Size = new Size(164, 23);
+            buttonGenerate.TabIndex = 6;
+            buttonGenerate.Text = "Сгенерировать РПД...";
+            buttonGenerate.UseVisualStyleBackColor = true;
+            buttonGenerate.Click += buttonGenerate_Click;
+            // 
             // groupBox1
             // 
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBox1.Controls.Add(fastObjectListViewDisciplineListForGeneration);
-            groupBox1.Location = new Point(8, 189);
+            groupBox1.Location = new Point(8, 131);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(1023, 423);
+            groupBox1.Size = new Size(1023, 376);
             groupBox1.TabIndex = 4;
             groupBox1.TabStop = false;
-            groupBox1.Text = "Дисциплины программы";
+            groupBox1.Text = "Выбор дисциплин";
             // 
             // fastObjectListViewDisciplineListForGeneration
             // 
+            fastObjectListViewDisciplineListForGeneration.CheckBoxes = true;
             fastObjectListViewDisciplineListForGeneration.Dock = DockStyle.Fill;
             fastObjectListViewDisciplineListForGeneration.FullRowSelect = true;
             fastObjectListViewDisciplineListForGeneration.GridLines = true;
@@ -427,7 +624,8 @@
             fastObjectListViewDisciplineListForGeneration.Location = new Point(3, 18);
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(1017, 402);
+            fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(1017, 355);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -436,25 +634,27 @@
             fastObjectListViewDisciplineListForGeneration.UseTranslucentSelection = true;
             fastObjectListViewDisciplineListForGeneration.View = View.Details;
             fastObjectListViewDisciplineListForGeneration.VirtualMode = true;
+            fastObjectListViewDisciplineListForGeneration.CellToolTipShowing += fastObjectListViewDisciplineListForGeneration_CellToolTipShowing;
+            fastObjectListViewDisciplineListForGeneration.FormatRow += fastObjectListViewDisciplineListForGeneration_FormatRow;
             // 
             // label3
             // 
             label3.AutoSize = true;
             label3.Location = new Point(16, 22);
             label3.Name = "label3";
-            label3.Size = new Size(92, 14);
+            label3.Size = new Size(146, 14);
             label3.TabIndex = 1;
-            label3.Text = "Учебный план:";
+            label3.Text = "Группа учебных планов:";
             // 
-            // comboBoxSelectCurriculum
+            // comboBoxRpdGenCurriculumGroups
             // 
-            comboBoxSelectCurriculum.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBoxSelectCurriculum.FormattingEnabled = true;
-            comboBoxSelectCurriculum.Location = new Point(114, 19);
-            comboBoxSelectCurriculum.Name = "comboBoxSelectCurriculum";
-            comboBoxSelectCurriculum.Size = new Size(903, 22);
-            comboBoxSelectCurriculum.TabIndex = 0;
-            comboBoxSelectCurriculum.SelectedIndexChanged += comboBoxSelectCurriculum_SelectedIndexChanged;
+            comboBoxRpdGenCurriculumGroups.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxRpdGenCurriculumGroups.FormattingEnabled = true;
+            comboBoxRpdGenCurriculumGroups.Location = new Point(168, 19);
+            comboBoxRpdGenCurriculumGroups.Name = "comboBoxRpdGenCurriculumGroups";
+            comboBoxRpdGenCurriculumGroups.Size = new Size(847, 22);
+            comboBoxRpdGenCurriculumGroups.TabIndex = 0;
+            comboBoxRpdGenCurriculumGroups.SelectedIndexChanged += comboBoxSelectCurriculum_SelectedIndexChanged;
             // 
             // openFileDialog2
             // 
@@ -471,6 +671,10 @@
             openFileDialog4.FileName = "openFileDialog2";
             openFileDialog4.Filter = "Excel-файлы|*.xlsx|Все файлы|*.*";
             openFileDialog4.Multiselect = true;
+            // 
+            // openFileDialogRpdTemplate
+            // 
+            openFileDialogRpdTemplate.Filter = "Docx-файлы|*.docx|Все файлы|*.*";
             // 
             // FormMain
             // 
@@ -502,6 +706,8 @@
             ((System.ComponentModel.ISupportInitialize)webView2RpdReport).EndInit();
             tabPageRpdGeneration.ResumeLayout(false);
             tabPageRpdGeneration.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).EndInit();
             ResumeLayout(false);
@@ -541,8 +747,30 @@
         private Button buttonSaveRpdReport;
         private TabPage tabPageRpdGeneration;
         private Label label3;
-        private ComboBox comboBoxSelectCurriculum;
+        private ComboBox comboBoxRpdGenCurriculumGroups;
         private GroupBox groupBox1;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewDisciplineListForGeneration;
+        private Button buttonSelectRpdTemplate;
+        private TextBox textBoxRpdTemplate;
+        private Button buttonGenerate;
+        private Label label4;
+        private OpenFileDialog openFileDialogRpdTemplate;
+        private TextBox textBoxRpdGenFileNameTemplate;
+        private Label label5;
+        private Button buttonSelectRpdTargetDir;
+        private TextBox textBoxRpdGenTargetDir;
+        private Label label6;
+        private GroupBox groupBox2;
+        private FolderBrowserDialog folderBrowserDialogRpdTargetDir;
+        private TextBox textBoxRpdGenDirectionCode;
+        private Label label7;
+        private TextBox textBoxRpdGenDepartment;
+        private Label label9;
+        private TextBox textBoxRpdGenProfile;
+        private TextBox textBoxRpdGenDirectionName;
+        private Label label8;
+        private ComboBox comboBoxRpdGenTemplates;
+        private Label label10;
+        private Label labelRpdGenStatus;
     }
 }
