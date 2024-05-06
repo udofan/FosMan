@@ -418,7 +418,7 @@ namespace FosMan {
                                                 replaceValue = discProp.ToString();
                                             }
                                             else {
-                                                if (TryInsertSpecialObjectInRpd(propName, par)) {
+                                                if (TryInsertSpecialObjectInRpd(propName, par, disc)) {
                                                     replaceValue = "";
                                                 }
                                             }
@@ -455,12 +455,12 @@ namespace FosMan {
         /// <param name="par"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static bool TryInsertSpecialObjectInRpd(string propName, Paragraph par) {
+        private static bool TryInsertSpecialObjectInRpd(string propName, Paragraph par, CurriculumDiscipline discipline) {
             var result = false;
             switch (propName) {
                 case "TableCompetences":
-                    var newTable = par.InsertTableAfterSelf(5, 3);
-                    //newTable.ad
+                    var newTable = par.InsertTableAfterSelf(1, 3);
+                    CreateCompetencesTable(newTable, discipline);
                     result = true;
                     break;
                 case "TableEducationWorks":
@@ -472,6 +472,74 @@ namespace FosMan {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Создание таблицы с компетенциями
+        /// </summary>
+        /// <param name="table">пустая таблицы (1 ряд, 3 колонки)</param>
+        /// <param name="discipline"></param>
+        static void CreateCompetencesTable(Table table, CurriculumDiscipline discipline) {
+            //заголовок
+            var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
+            header0.InsertText("Код и наименование", false, formatting: new Formatting() { Bold = true });
+            header0.Alignment = Alignment.center;
+            header0.IndentationFirstLine = 0.1f;
+            var header02 = header0.InsertParagraphAfterSelf("компетенций", false, formatting: new Formatting() { Bold = true });
+            header02.Alignment = Alignment.center;
+            header02.IndentationFirstLine = 0.1f;
+
+            var header1 = table.Rows[0].Cells[1].Paragraphs.FirstOrDefault();
+            header1.InsertText("Коды и индикаторы", formatting: new Formatting() { Bold = true });
+            header1.Alignment = Alignment.center;
+            header1.IndentationFirstLine = 0.1f;
+            var header12 = header1.InsertParagraphAfterSelf("достижения компетенций", false, formatting: new Formatting() { Bold = true });
+            header12.Alignment = Alignment.center;
+            header12.IndentationFirstLine = 0.1f;
+
+            var header2 = table.Rows[0].Cells[2].Paragraphs.FirstOrDefault();
+            header2.InsertText("Коды и результаты обучения", formatting: new Formatting() { Bold = true });
+            header2.Alignment = Alignment.center;
+            header2.IndentationFirstLine = 0.1f;
+            //ряды матрицы
+            foreach (var item in App.CompetenceMatrix.Items) {
+                var competenceStartRow = table.RowCount;
+
+                foreach (var achi in item.Achievements) {
+                    var achiStartRow = table.RowCount;
+                    foreach (var res in achi.Results) {
+                        var resRowIdx = table.RowCount;
+                        var newRow = table.InsertRow();
+                        if (resRowIdx == competenceStartRow) {
+                            //ячейка компетенции
+                            var cellCompetence = newRow.Cells[0].Paragraphs.FirstOrDefault();
+                            //table.MergeCellsInColumn(0, firstRowIdx, firstRowIdx + rowSpan - 1);
+                            cellCompetence.InsertText($"{item.Code}.", formatting: new Formatting() { Bold = true });
+                            cellCompetence.InsertText($" {item.Title}", formatting: new Formatting() { Bold = false });
+                            cellCompetence.IndentationFirstLine = 0.1f;
+                        }
+                        if (resRowIdx == achiStartRow) {
+                            //ячейка индикатора
+                            var cellIndicator = newRow.Cells[1].Paragraphs.FirstOrDefault();
+                            cellIndicator.InsertText($"{achi.Code}. {achi.Indicator}", formatting: new Formatting() { Bold = false });
+                            cellIndicator.IndentationFirstLine = 0.1f;
+                        }
+
+                        //ячейка результата
+                        var cellResult = newRow.Cells[2].Paragraphs.FirstOrDefault();
+                        cellResult.InsertText($"{res.Code}:", formatting: new Formatting() { Bold = false });
+                        cellResult.IndentationFirstLine = 0.1f;
+                        var cellResult2 = cellResult.InsertParagraphAfterSelf($"{res.Description}", false, formatting: new Formatting() { Bold = false });
+                        cellResult2.IndentationFirstLine = 0.1f;
+                    }
+                    if (table.RowCount - 1 > achiStartRow) {
+                        table.MergeCellsInColumn(1, achiStartRow, table.RowCount - 1);
+                    }
+                }
+                if (table.RowCount - 1 > competenceStartRow) {
+                    table.MergeCellsInColumn(0, competenceStartRow, table.RowCount - 1);
+                }
+            }
         }
     }
 }

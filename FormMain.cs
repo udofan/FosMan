@@ -306,6 +306,20 @@ namespace FosMan {
                 };
                 list.Columns.Add(olvColumnSemControl);
             }
+            var olvColumnTotalCompetenceList = new OLVColumn("Компетенции", "CompetenceList") {
+                Width = 100,
+                IsEditable = false, 
+                FillsFreeSpace = true,
+                AspectGetter = x => {
+                    var value = x?.ToString();
+                    var discipline = x as CurriculumDiscipline;
+                    if (discipline != null && discipline.CompetenceList != null) {
+                        value = string.Join("; ", discipline.CompetenceList);
+                    }
+                    return value;
+                }
+            };
+            list.Columns.Add(olvColumnTotalCompetenceList);
         }
 
         void TuneRpdList(FastObjectListView list) {
@@ -679,7 +693,7 @@ namespace FosMan {
                 var disciplineList = string.Join("\r\n  * ", disciplines.Select(d => d.Name));
 
                 if (MessageBox.Show($"Вы уверены, что хотите сгенерировать РПД для следующих дисциплин:\r\n  * {disciplineList}\r\n" +
-                                    $"в целевой директории:\r\n{textBoxRpdGenTargetDir.Text}\r\n?" +
+                                    $"в целевой директории:\r\n{textBoxRpdGenTargetDir.Text}\r\n?\r\n" +
                                     $"Ранее созданные файлы в целевой директории будут перезаписаны.\r\n" +
                                     $"Продолжить?",
                                     "Генерация РПД", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {

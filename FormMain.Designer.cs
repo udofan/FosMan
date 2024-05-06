@@ -207,7 +207,7 @@
             textBoxMatrixFileName.Name = "textBoxMatrixFileName";
             textBoxMatrixFileName.Size = new Size(530, 22);
             textBoxMatrixFileName.TabIndex = 0;
-            textBoxMatrixFileName.Text = "c:\\FosMan\\Матрицы_компетенций\\test3.docx";
+            textBoxMatrixFileName.Text = "c:\\FosMan\\Матрицы_компетенций\\test4.docx";
             // 
             // tabPageСurriculum
             // 
@@ -428,10 +428,10 @@
             tabPageRpdGeneration.Controls.Add(groupBox1);
             tabPageRpdGeneration.Controls.Add(label3);
             tabPageRpdGeneration.Controls.Add(comboBoxRpdGenCurriculumGroups);
-            tabPageRpdGeneration.Location = new Point(4, 23);
+            tabPageRpdGeneration.Location = new Point(4, 24);
             tabPageRpdGeneration.Name = "tabPageRpdGeneration";
             tabPageRpdGeneration.Padding = new Padding(3);
-            tabPageRpdGeneration.Size = new Size(1039, 617);
+            tabPageRpdGeneration.Size = new Size(1039, 616);
             tabPageRpdGeneration.TabIndex = 5;
             tabPageRpdGeneration.Text = "Генерация РПД";
             tabPageRpdGeneration.UseVisualStyleBackColor = true;
@@ -557,7 +557,7 @@
             groupBox2.Controls.Add(textBoxRpdGenFileNameTemplate);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(8, 504);
+            groupBox2.Location = new Point(8, 505);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 109);
             groupBox2.TabIndex = 14;
@@ -636,7 +636,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(667, 504);
+            buttonGenerate.Location = new Point(667, 505);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -651,7 +651,7 @@
             groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBox1.Location = new Point(8, 193);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(1023, 305);
+            groupBox1.Size = new Size(1023, 306);
             groupBox1.TabIndex = 4;
             groupBox1.TabStop = false;
             groupBox1.Text = "3. Выбор дисциплин";
@@ -668,7 +668,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(1017, 284);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(1017, 285);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
