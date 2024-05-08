@@ -55,6 +55,8 @@
             linkLabelRpdGenCompetenceMatrix = new LinkLabel();
             label11 = new Label();
             groupBox3 = new GroupBox();
+            textBoxRpdGenFSES = new TextBox();
+            label12 = new Label();
             textBoxRpdGenFormsOfStudy = new TextBox();
             label10 = new Label();
             textBoxRpdGenDirectionCode = new TextBox();
@@ -464,6 +466,8 @@
             // 
             // groupBox3
             // 
+            groupBox3.Controls.Add(textBoxRpdGenFSES);
+            groupBox3.Controls.Add(label12);
             groupBox3.Controls.Add(textBoxRpdGenFormsOfStudy);
             groupBox3.Controls.Add(label10);
             groupBox3.Controls.Add(textBoxRpdGenDirectionCode);
@@ -476,10 +480,28 @@
             groupBox3.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBox3.Location = new Point(8, 68);
             groupBox3.Name = "groupBox3";
-            groupBox3.Size = new Size(818, 140);
+            groupBox3.Size = new Size(818, 163);
             groupBox3.TabIndex = 24;
             groupBox3.TabStop = false;
             groupBox3.Text = "2. Настройка полей шаблона";
+            // 
+            // textBoxRpdGenFSES
+            // 
+            textBoxRpdGenFSES.Font = new Font("Tahoma", 9F);
+            textBoxRpdGenFSES.Location = new Point(120, 133);
+            textBoxRpdGenFSES.Name = "textBoxRpdGenFSES";
+            textBoxRpdGenFSES.Size = new Size(682, 22);
+            textBoxRpdGenFSES.TabIndex = 25;
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Font = new Font("Tahoma", 9F);
+            label12.Location = new Point(71, 136);
+            label12.Name = "label12";
+            label12.Size = new Size(43, 14);
+            label12.TabIndex = 24;
+            label12.Text = "ФГОС:";
             // 
             // textBoxRpdGenFormsOfStudy
             // 
@@ -566,7 +588,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(667, 637);
+            labelRpdGenStatus.Location = new Point(667, 647);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -584,7 +606,7 @@
             groupBox2.Controls.Add(textBoxRpdGenFileNameTemplate);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(8, 595);
+            groupBox2.Location = new Point(8, 605);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 109);
             groupBox2.TabIndex = 14;
@@ -663,7 +685,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(667, 595);
+            buttonGenerate.Location = new Point(667, 605);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -676,9 +698,9 @@
             groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBox1.Controls.Add(fastObjectListViewDisciplineListForGeneration);
             groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox1.Location = new Point(8, 214);
+            groupBox1.Location = new Point(8, 237);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(984, 375);
+            groupBox1.Size = new Size(984, 362);
             groupBox1.TabIndex = 4;
             groupBox1.TabStop = false;
             groupBox1.Text = "3. Выбор дисциплин";
@@ -695,7 +717,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 354);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 341);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -850,5 +872,7 @@
         private Label label10;
         private LinkLabel linkLabelRpdGenCompetenceMatrix;
         private Label label11;
+        private TextBox textBoxRpdGenFSES;
+        private Label label12;
     }
 }

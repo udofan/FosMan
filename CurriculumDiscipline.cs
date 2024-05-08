@@ -90,6 +90,22 @@ namespace FosMan {
             }
         }
         /// <summary>
+        /// Описание типа дисциплины [поле для РПД]
+        /// </summary>
+        public string TypeDescription {
+            get {
+                var text = "";
+                if (Type == EDisciplineType.Required) {
+                    text = "обязательным дисциплинам";
+                }
+                else if (Type == EDisciplineType.ByChoice) {
+                    text = "дисциплинам по выбору части, формируемой участниками образовательных отношений";
+                }
+                return text;
+            }
+        }
+
+        /// <summary>
         /// Закрепленная кафедра
         /// </summary>
         public string Department { get; set; }
@@ -151,9 +167,14 @@ namespace FosMan {
         /// Выявленные ошибки
         /// </summary>
         public List<string> Errors { get; set; }
+        /// <summary>
+        /// Доп. ошибки (исп. при проверке по загруженной матрице компетенций)
+        /// </summary>
+        public List<string> ExtraErrors { get; set; }
 
         public CurriculumDiscipline() {
             Errors = [];
+            ExtraErrors = [];
 
             for (var i = 0; i < Semesters.Length; i++) {
                 Semesters[i] = new();
@@ -248,6 +269,28 @@ namespace FosMan {
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Проверка компетенций по указанной матрице
+        /// </summary>
+        /// <returns></returns>
+        internal bool CheckCompetences(CompetenceMatrix matrix) {
+            ExtraErrors = [];
+
+            if (matrix == null) {
+                ExtraErrors.Add("Матрица компетенций не загружена. Проверить компетенции не удалось.");
+                return false;
+            }
+
+            var achiCodeList = matrix.GetAllAchievementCodes();
+            foreach (var achiCode in CompetenceList) { 
+                if (!achiCodeList.Contains(achiCode)) {
+                    ExtraErrors.Add($"В загруженной матрице компетенций не найден индикатор достижений [{achiCode}].");
+                }
+            }
+
+            return ExtraErrors.Count == 0;
         }
 
         /// <summary>

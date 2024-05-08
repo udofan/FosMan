@@ -153,7 +153,7 @@ namespace FosMan {
             for (int rowIdx = 0; rowIdx < tableTitle.Rows.Count; rowIdx++) {
                 var row = tableTitle.Rows[rowIdx];
                 for (int colIdx = 0; colIdx < tableTitle.Columns.Count; colIdx++) {
-                    var cellValue = (row[colIdx] as string)?.ToUpper();
+                    var cellValue = row[colIdx] as string;//)?.ToUpper();
                     if (cellValue != null) {
                         if (!programIsDetected) {
                             var match = m_regexTestDirectionName.Match(cellValue);

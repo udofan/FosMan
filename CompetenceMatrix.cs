@@ -38,10 +38,10 @@ namespace FosMan {
             try {
                 using (var docx = DocX.Load(fileName)) {
                     if (docx.Tables.Count > 0) {
-                        foreach (var ttable in docx.Tables) {
-                            var table = docx.Tables[1];
+                        foreach (var table in docx.Tables) {
+                            //var table = docx.Tables[1];
                             TryParseTable(table, matrix);
-                            break;
+                            //break;
                         }
                     }
                     else {
@@ -200,6 +200,16 @@ namespace FosMan {
             html += "</body></html>";
 
             return html;
+        }
+
+        /// <summary>
+        /// Список кодов всех достижений матрицы
+        /// </summary>
+        /// <returns></returns>
+        public HashSet<string> GetAllAchievementCodes() {
+            var achiCodeList = new List<string>();
+            Items.ForEach(x => achiCodeList.AddRange(x.Achievements.Select(a => a.Code)));
+            return achiCodeList.ToHashSet();
         }
     }
 }

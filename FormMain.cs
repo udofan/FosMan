@@ -190,7 +190,7 @@ namespace FosMan {
                     var value = x?.ToString();
                     var discipline = x as CurriculumDiscipline;
                     if (discipline != null) {
-                        if (discipline.Errors?.Any() ?? false) {
+                        if ((discipline.Errors?.Any() ?? false) || (discipline.ExtraErrors?.Any() ?? false)) {
                             value = "есть";
                         }
                         else {
@@ -512,7 +512,7 @@ namespace FosMan {
         private void fastObjectListViewDisciplines_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
             if (e.Model is CurriculumDiscipline discipline) {
                 if (e.Column.AspectName.Equals("Errors")) {
-                    e.Text = string.Join("\r\n", discipline.Errors);
+                    e.Text = string.Join("\r\n", discipline.Errors.Concat(discipline.ExtraErrors));
                     e.StandardIcon = ToolTipControl.StandardIcons.Error;
                     e.IsBalloon = true;
                 }
@@ -521,7 +521,7 @@ namespace FosMan {
 
         private void fastObjectListViewDisciplines_FormatRow(object sender, FormatRowEventArgs e) {
             if (e.Model is CurriculumDiscipline discipline) {
-                if (discipline.Errors?.Any() ?? false) {
+                if ((discipline.Errors?.Any() ?? false) || (discipline.ExtraErrors?.Any() ?? false)) {
                     e.Item.BackColor = Color.Pink;
                 }
             }
@@ -666,13 +666,14 @@ namespace FosMan {
                 textBoxRpdGenProfile.Text = curriculumGroup.Profile;
                 textBoxRpdGenDepartment.Text = curriculumGroup.Department;
                 textBoxRpdGenFormsOfStudy.Text = curriculumGroup.FormsOfStudyList;
+                textBoxRpdGenFSES.Text = curriculumGroup.FSES;
             }
         }
 
         private void fastObjectListViewDisciplineListForGeneration_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
             if (e.Model is CurriculumDiscipline discipline) {
                 if (e.Column.AspectName.Equals("Errors")) {
-                    e.Text = string.Join("\r\n", discipline.Errors);
+                    e.Text = string.Join("\r\n", discipline.Errors.Concat(discipline.ExtraErrors));
                     e.StandardIcon = ToolTipControl.StandardIcons.Error;
                     e.IsBalloon = true;
                 }
@@ -681,7 +682,7 @@ namespace FosMan {
 
         private void fastObjectListViewDisciplineListForGeneration_FormatRow(object sender, FormatRowEventArgs e) {
             if (e.Model is CurriculumDiscipline discipline) {
-                if (discipline.Errors?.Any() ?? false) {
+                if ((discipline.Errors?.Any() ?? false) || (discipline.ExtraErrors?.Any() ?? false)) {
                     e.Item.BackColor = Color.Pink;
                 }
                 if (fastObjectListViewDisciplineListForGeneration.IsChecked(e.Model)) {
@@ -715,6 +716,7 @@ namespace FosMan {
                     curriculumGroup.Department = textBoxRpdGenDepartment.Text;
                     curriculumGroup.Profile = textBoxRpdGenProfile.Text;
                     curriculumGroup.FormsOfStudyList = textBoxRpdGenFormsOfStudy.Text;
+                    curriculumGroup.FSES = textBoxRpdGenFSES.Text;
 
                     curriculumGroup.CheckedDisciplines = disciplines;
                     var rpdTemplate = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES, comboBoxRpdGenTemplates.SelectedItem.ToString());

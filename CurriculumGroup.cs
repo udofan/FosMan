@@ -34,6 +34,10 @@ namespace FosMan {
         /// </summary>
         public string Department { get; set; }
         /// <summary>
+        /// Образовательный стандарт (ФГОС)
+        /// </summary>
+        public string FSES { get; set; }
+        /// <summary>
         /// Формы обучения по всем УП из группы
         /// </summary>
         public List<EFormOfStudy> FormsOfStudy { get => Curricula?.Values.Select(c => c.FormOfStudy).ToList(); }

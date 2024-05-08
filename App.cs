@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Web.WebView2.Core;
+using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -55,11 +56,13 @@ namespace FosMan {
                         Department = curriculum.Department, 
                         DirectionCode = curriculum.DirectionCode, 
                         DirectionName = curriculum.DirectionName, 
-                        Profile = curriculum.Profile
+                        Profile = curriculum.Profile, 
+                        FSES = curriculum.FSES
                     };
                     m_curriculumGroupDic[curriculum.GroupKey] = group;
                 }
                 group.AddCurriculum(curriculum);
+                CheckDisciplines();
                 result = true;
             }
             return result;
@@ -69,8 +72,22 @@ namespace FosMan {
             return m_rpdDic.TryAdd(rpd.SourceFileName, rpd);
         }
 
+        /// <summary>
+        /// Проверка дисциплин на списки компетенций
+        /// </summary>
+        static void CheckDisciplines() {
+            //if (m_competenceMatrix != null) {
+                foreach (var curr in m_curriculumDic.Values) {
+                    foreach (var disc in curr.Disciplines.Values) {
+                        disc.CheckCompetences(m_competenceMatrix);
+                    }
+                }
+            //}
+        }
+
         static public void SetCompetenceMatrix(CompetenceMatrix matrix) {
             m_competenceMatrix = matrix;
+            CheckDisciplines();
         }
 
         /// <summary>
@@ -269,8 +286,7 @@ namespace FosMan {
 
                             if (checkCompetences) {
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций", (eduWork) => {
-                                    var achiCodeList = new List<string>();
-                                    rpd.CompetenceMatrix.Items.ForEach(x => achiCodeList.AddRange(x.Achievements.Select(a => a.Code)));
+                                    var achiCodeList = rpd.CompetenceMatrix.GetAllAchievementCodes();
                                     var content = "";
                                     var matrixError = false;
                                     foreach (var code in discipline.CompetenceList) {
@@ -416,6 +432,9 @@ namespace FosMan {
                                             var discProp = disc.GetProperty(propName);
                                             if (discProp != null) {
                                                 replaceValue = discProp.ToString();
+                                                if (string.IsNullOrEmpty(replaceValue)) {
+                                                    replaceValue = m;
+                                                }
                                             }
                                             else {
                                                 if (TryInsertSpecialObjectInRpd(propName, par, disc)) {
@@ -467,6 +486,15 @@ namespace FosMan {
                     var newTable2 = par.InsertTableAfterSelf(5, 4);
                     result = true;
                     break;
+                //case "DisciplineTypeDescription":
+                //    var text = "";
+                //    if (discipline.Type == EDisciplineType.Required) {
+                //        text = "обязательным дисциплинам";
+                //    }
+                //    else if (discipline.Type == EDisciplineType.ByChoice) {
+                //        text = "дисциплинам по выбору части, формируемой участниками образовательных отношений";
+                //    }
+                //    break;
                 default:
                     break;
             }
