@@ -12,6 +12,8 @@ namespace FosMan {
         //Regex m_regexParseResult = new(@"(.+)[:\r\n]+(.+)", RegexOptions.Multiline | RegexOptions.Compiled);
         //static Regex m_regexParseResult = new(@"(.+\.\d{1,})([:\.\r\n ]|$)+(.*)", RegexOptions.Multiline | RegexOptions.Compiled);
         static Regex m_regexParseResult = new(@"(\S{3})[ -]+(.+\.\d{1,})([:\.\r\n ]|$)+(.*)", RegexOptions.Multiline | RegexOptions.Compiled);
+        //доп. парсер, если первый не сработал
+        static Regex m_regexParseResult2 = new(@"(\S{3})[ -]+(.+\d{1,})([:\.\r\n ]|$)+(.*)", RegexOptions.Multiline | RegexOptions.Compiled);
 
         /// <summary>
         /// Код результата
@@ -36,14 +38,13 @@ namespace FosMan {
             };
 
             var match = m_regexParseResult.Match(text);
+            if (!match.Success) {
+                match = m_regexParseResult2.Match(text);
+            }
 
             if (match.Success) {
-                //var code = string.Join("", match.Groups[1].Value.Trim(' ', ':', '\r', '\n').Split(' ')).ToUpper();
-
                 var val = string.Join("-", match.Groups[2].Value.Split(' ', '-').Where(x => x.Trim(' ','-').Length > 0));
                 result.Code = $"{match.Groups[1].Value} {val}".ToUpper();
-
-                //result.Code = $"{code[..3]} {result.Code}";
                 result.Description = match.Groups[4].Value.Trim();
             }
 

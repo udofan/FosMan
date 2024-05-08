@@ -38,9 +38,11 @@ namespace FosMan {
             try {
                 using (var docx = DocX.Load(fileName)) {
                     if (docx.Tables.Count > 0) {
-                        var table = docx.Tables[0];
-
-                        TryParseTable(table, matrix);
+                        foreach (var ttable in docx.Tables) {
+                            var table = docx.Tables[1];
+                            TryParseTable(table, matrix);
+                            break;
+                        }
                     }
                     else {
                         matrix.Errors.Add("В документе не найдено таблиц.");
@@ -151,47 +153,47 @@ namespace FosMan {
         /// <returns></returns>
         public string CreateHtmlReport() {
             var html = "<html><body>";
-            var tdStyle = " style='border: 1px solid; vertical-align: top'";
+            var tdStyle = " style='border: 1px solid; vertical-align: top;'";
 
             //если есть ошибки
             if (Errors?.Any() ?? false) {
-                html += "<div style='color: red'><b>ОШИБКИ:</b></div>";
+                html += "<div style='color: red;'><b>ОШИБКИ:</b></div>";
                 html += string.Join("", Errors.Select(e => $"<div style='color: red'>{e}</div>"));
             }
 
             //формирование матрицы
             html += "<table style='border: 1px solid'>";
             html += $"<tr><th {tdStyle}><b>Код и наименование компетенций</b></th>" +
-                        $"<th {tdStyle}><b>Коды и индикаторы достижения компетенций\r\n</b></tdh>" +
-                        $"<th {tdStyle}><b>Коды и результаты обучения</b></td></th></tr>";
+                        $"<th {tdStyle}><b>Коды и индикаторы достижения компетенций</b></th>" +
+                        $"<th {tdStyle}><b>Коды и результаты обучения</b><</th></tr>";
             foreach (var item in Items) {
+                //var item = Items[3]; //отладка
                 html += "<tr>";
-                var rowSpan = item.Achievements.Sum(a => a.Results.Count);
-                html += $"<td {tdStyle} rowspan='{rowSpan}'><b>{item.Code}</b>. {item.Title}</td>";
+                var rowSpan = item.Achievements.Sum(a => Math.Max(a.Results.Count, 1));
+                html += $"<td {tdStyle} {(rowSpan > 1 ? $"rowspan='{rowSpan}'" : "")}><b>{item.Code}</b>. {item.Title}</td>";
 
-                var firstAchi = true;
-                foreach (var achi in item.Achievements) {
-                    if (!firstAchi) {
-                        html += $"<tr>";
-                    }
-                    html += $"<td {tdStyle} rowspan='{achi.Results.Count}'>{achi.Code}. {achi.Indicator}</td>";
-                    var firstResult = true;
-                    foreach (var res in achi.Results) {
-                        if (!firstResult) {
-                            html += "<tr>";
-                        }
+                for (var achiIdx = 0; achiIdx < item.Achievements.Count; achiIdx++) {
+                    var achi = item.Achievements[achiIdx];
+                    if (achiIdx > 0) html += $"<tr>";
+                    var achiCellRowSpan = achi.Results.Count > 1 ? $"rowspan='{achi.Results.Count}'" : "";
+                    html += $"<td {tdStyle} {achiCellRowSpan}'>{achi.Code}. {achi.Indicator}</td>";
+
+                    for (var resIdx = 0; resIdx < achi.Results.Count; resIdx++) {
+                        var res = achi.Results[resIdx];
+                        if (resIdx > 0) html += "<tr>";
                         html += $"<td {tdStyle}>{res.Code}:<br />{res.Description}</td>";
-                        if (!firstResult) {
-                            html += "</tr>";
-                        }
-                        firstResult = false;
-                    }
-                    if (!firstAchi) {
+                        //if (resIdx > 0) 
                         html += "</tr>";
                     }
-                    firstAchi = false;
+                    if (achi.Results.Count == 0) {
+                        html += $"<td {tdStyle}>???</td>";
+                        html += "</tr>";
+                    }
+                    //if (achiIdx > 0) 
+                    //html += "</tr>";
                 }
-                html += "</tr>";
+                //html += "</tr>";
+                //break; //отладка
             }
             html += "</table>";
 
