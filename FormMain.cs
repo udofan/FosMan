@@ -1,4 +1,5 @@
 using BrightIdeasSoftware;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace FosMan {
@@ -15,7 +16,7 @@ namespace FosMan {
         }
 
         private void button1_Click(object sender, EventArgs e) {
-            if (!string.IsNullOrEmpty(m_matrixFileName)) {
+            if (!string.IsNullOrEmpty(textBoxMatrixFileName.Text) && File.Exists(textBoxMatrixFileName.Text)) {
                 openFileDialog1.FileName = textBoxMatrixFileName.Text;
                 openFileDialog1.InitialDirectory = Path.GetDirectoryName(textBoxMatrixFileName.Text);
             }
@@ -319,7 +320,6 @@ namespace FosMan {
                     return value;
                 }
             };
-
             list.Columns.Add(olvColumnTotalCompetenceList);
         }
 
@@ -427,49 +427,67 @@ namespace FosMan {
             TuneRpdList(fastObjectListViewRpdList);
             TuneDisciplineList(fastObjectListViewDisciplines, true);
             TuneDisciplineList(fastObjectListViewDisciplineListForGeneration, false);
+
+            //отладка
+            textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
+            buttonLoadCompetenceMatrix.PerformClick();
+            var files = new string[] { 
+                @"c:\FosMan\Учебные_планы\Бизнес- информатика 38.03.05 очное 23.plx.xlsx",
+                @"c:\FosMan\Учебные_планы\Бизнес-информатика 38.03.05 ОЗ 23.plx.xlsx",
+                @"c:\FosMan\Учебные_планы\Бизнес-информатика заочн 38.03.05.plx.xlsx"
+            };
+            LoadCurriculumFiles(files);
+        }
+
+        /// <summary>
+        /// Загрузка УП по списку имен файлов
+        /// </summary>
+        /// <param name="files"></param>
+        void LoadCurriculumFiles(string[] files) {
+            labelExcelFileLoading.Visible = true;
+            Application.UseWaitCursor = true;
+            labelExcelFileLoading.Text = "";
+
+            var report = new List<string>();
+            var idx = 1;
+            foreach (var file in files) {
+                labelExcelFileLoading.Text = $"Загрузка файлов ({idx} из {files.Length})...";
+                var curriculum = Curriculum.LoadFromFile(file);
+                App.AddCurriculum(curriculum);
+
+                fastObjectListViewCurricula.AddObject(curriculum);
+                idx++;
+                Application.DoEvents();
+
+                if (curriculum.Errors.Any()) {
+                    if (report.Count > 0) report.Add(new string('-', 30));
+                    report.Add(file);
+                    report.AddRange(curriculum.Errors);
+                }
+            }
+            if (idx > 1) {
+                labelExcelFileLoading.Text += " завершено.";
+            }
+            if (report.Any()) {
+                var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
+                if (!Directory.Exists(logDir)) {
+                    Directory.CreateDirectory(logDir);
+                }
+                var dt = DateTime.Now;
+                var reportFile = Path.Combine(logDir, $"уп.{dt:yyyy-MM-dd_HH-mm-ss}.log");
+                File.WriteAllLines(reportFile, report, Encoding.UTF8);
+                MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            Application.UseWaitCursor = false;
         }
 
         private void buttonSelectExcelFiles_Click(object sender, EventArgs e) {
             if (openFileDialog2.ShowDialog(this) == DialogResult.OK) {
                 var files = openFileDialog2.FileNames.Where(x => !App.HasCurriculumFile(x)).ToArray();
 
-                labelExcelFileLoading.Visible = true;
-                Application.UseWaitCursor = true;
-                labelExcelFileLoading.Text = "";
-
-                var report = new List<string>();
-                var idx = 1;
-                foreach (var file in files) {
-                    labelExcelFileLoading.Text = $"Загрузка файлов ({idx} из {files.Length})...";
-                    var curriculum = Curriculum.LoadFromFile(file);
-                    App.AddCurriculum(curriculum);
-
-                    fastObjectListViewCurricula.AddObject(curriculum);
-                    idx++;
-                    Application.DoEvents();
-
-                    if (curriculum.Errors.Any()) {
-                        if (report.Count > 0) report.Add(new string('-', 30));
-                        report.Add(file);
-                        report.AddRange(curriculum.Errors);
-                    }
-                }
-                if (idx > 1) {
-                    labelExcelFileLoading.Text += " завершено.";
-                }
-                if (report.Any()) {
-                    var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
-                    if (!Directory.Exists(logDir)) {
-                        Directory.CreateDirectory(logDir);
-                    }
-                    var dt = DateTime.Now;
-                    var reportFile = Path.Combine(logDir, $"уп.{dt:yyyy-MM-dd_HH-mm-ss}.log");
-                    File.WriteAllLines(reportFile, report, Encoding.UTF8);
-                    MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-
-                Application.UseWaitCursor = false;
+                LoadCurriculumFiles(files);
             }
         }
 

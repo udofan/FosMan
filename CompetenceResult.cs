@@ -45,7 +45,7 @@ namespace FosMan {
             if (match.Success) {
                 var val = string.Join("-", match.Groups[2].Value.Split(' ', '-').Where(x => x.Trim(' ','-').Length > 0));
                 result.Code = $"{match.Groups[1].Value} {val}".ToUpper();
-                result.Description = match.Groups[4].Value.Trim();
+                result.Description = text.Substring(match.Groups[4].Index).Trim();
             }
 
             return match.Success;

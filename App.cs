@@ -76,13 +76,11 @@ namespace FosMan {
         /// Проверка дисциплин на списки компетенций
         /// </summary>
         static void CheckDisciplines() {
-            //if (m_competenceMatrix != null) {
-                foreach (var curr in m_curriculumDic.Values) {
-                    foreach (var disc in curr.Disciplines.Values) {
-                        disc.CheckCompetences(m_competenceMatrix);
-                    }
+            foreach (var curr in m_curriculumDic.Values) {
+                foreach (var disc in curr.Disciplines.Values) {
+                    disc.CheckCompetences(m_competenceMatrix);
                 }
-            //}
+            }
         }
 
         static public void SetCompetenceMatrix(CompetenceMatrix matrix) {
@@ -446,10 +444,6 @@ namespace FosMan {
                                     }
                                 };
                                 par.ReplaceText(replaceOptions);
-
-                                //par.ReplaceText(@"{[^}]+}", m => {
-                                //});                                //par.ReplaceText(@"{[^}]+}", m => {
-                                //});
                             }
                             docx.Save();// ($"filled_{targetFile}");
                         }
@@ -479,11 +473,13 @@ namespace FosMan {
             switch (propName) {
                 case "TableCompetences":
                     var newTable = par.InsertTableAfterSelf(1, 3);
-                    CreateCompetencesTable(newTable, discipline);
+                    CreateTableCompetences(newTable, discipline);
                     result = true;
                     break;
                 case "TableEducationWorks":
-                    var newTable2 = par.InsertTableAfterSelf(5, 4);
+                    par.IndentationFirstLine = 0.1f;
+                    var newTable2 = par.InsertTableAfterSelf(8, 4);
+                    CreateTableEducationWorks(newTable2, discipline);
                     result = true;
                     break;
                 //case "DisciplineTypeDescription":
@@ -503,11 +499,44 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Создание/заполнение таблицы учебных работ
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="discipline"></param>
+        private static void CreateTableEducationWorks(Table table, CurriculumDiscipline discipline) {
+            var widths = new double[4] { 8.46 * 28.35, 2.5 * 28.35, 2.66 * 28.35, 2.79 * 28.35 };
+            //заголовок
+            var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
+            table.Rows[0].Cells[0].Width = widths[0];
+            header0.InsertText("Виды учебной работы", false, formatting: new Formatting() { Bold = true });
+            header0.Alignment = Alignment.center;
+            header0.IndentationFirstLine = 0.1f;
+
+            var header1 = table.Rows[0].Cells[1].Paragraphs.FirstOrDefault();
+            table.Rows[0].Cells[1].Width = widths[1];
+            header1.InsertText("очная форма\r\nобучения", formatting: new Formatting() { Bold = false });
+            header1.Alignment = Alignment.center;
+            header1.IndentationFirstLine = 0.1f;
+
+            var header2 = table.Rows[0].Cells[2].Paragraphs.FirstOrDefault();
+            table.Rows[0].Cells[2].Width = widths[2];
+            header2.InsertText("очно-заочная\r\nобучения", formatting: new Formatting() { Bold = false });
+            header2.Alignment = Alignment.center;
+            header2.IndentationFirstLine = 0.1f;
+
+            var header3 = table.Rows[0].Cells[3].Paragraphs.FirstOrDefault();
+            table.Rows[0].Cells[3].Width = widths[3];
+            header3.InsertText("заочная форма\r\nобучения", formatting: new Formatting() { Bold = false });
+            header3.Alignment = Alignment.center;
+            header3.IndentationFirstLine = 0.1f;
+        }
+
+        /// <summary>
         /// Создание таблицы с компетенциями
         /// </summary>
         /// <param name="table">пустая таблицы (1 ряд, 3 колонки)</param>
         /// <param name="discipline"></param>
-        static void CreateCompetencesTable(Table table, CurriculumDiscipline discipline) {
+        static void CreateTableCompetences(Table table, CurriculumDiscipline discipline) {
             //заголовок
             var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
             header0.InsertText("Код и наименование", false, formatting: new Formatting() { Bold = true });
@@ -530,10 +559,15 @@ namespace FosMan {
             header2.Alignment = Alignment.center;
             header2.IndentationFirstLine = 0.1f;
             //ряды матрицы
-            foreach (var item in App.CompetenceMatrix.Items) {
+            var items = App.CompetenceMatrix.GetItems(discipline.CompetenceList); //отбор по списку индикаторов
+            foreach (var item in items) {
                 var competenceStartRow = table.RowCount;
 
                 foreach (var achi in item.Achievements) {
+                    if (!discipline.CompetenceList.Contains(achi.Code)) {
+                        continue;
+                    }
+
                     var achiStartRow = table.RowCount;
                     foreach (var res in achi.Results) {
                         var resRowIdx = table.RowCount;

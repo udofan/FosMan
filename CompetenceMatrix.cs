@@ -43,6 +43,7 @@ namespace FosMan {
                             TryParseTable(table, matrix);
                             //break;
                         }
+                        matrix?.Check();
                     }
                     else {
                         matrix.Errors.Add("В документе не найдено таблиц.");
@@ -111,15 +112,13 @@ namespace FosMan {
                 }
             }
 
-            matrix.Check();
-
             return matrix.Items.Any();
         }
 
         /// <summary>
         /// Проверка матрицы
         /// </summary>
-        private void Check() {
+        public void Check() {
             if (!Items.Any()) {
                 Errors.Add("Список компетенций не определён");
             }
@@ -209,7 +208,17 @@ namespace FosMan {
         public HashSet<string> GetAllAchievementCodes() {
             var achiCodeList = new List<string>();
             Items.ForEach(x => achiCodeList.AddRange(x.Achievements.Select(a => a.Code)));
-            return achiCodeList.ToHashSet();
+            return [.. achiCodeList];
+        }
+
+        /// <summary>
+        /// Получить список элементов матрицы по списку кодов индикаторов
+        /// </summary>
+        /// <param name="achievementCodes"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        internal List<CompetenceMatrixItem> GetItems(HashSet<string> achievementCodes) {
+            return Items?.Where(i => i.Achievements?.Any(a => achievementCodes?.Contains(a.Code) ?? false) ?? false).ToList();
         }
     }
 }
