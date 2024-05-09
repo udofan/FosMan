@@ -231,7 +231,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 384);
+            groupBoxDisciplines.Location = new Point(8, 389);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(1023, 233);
             groupBoxDisciplines.TabIndex = 3;
@@ -277,7 +277,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1023, 321);
+            fastObjectListViewCurricula.Size = new Size(1023, 326);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;

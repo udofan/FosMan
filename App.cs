@@ -1,4 +1,5 @@
-﻿using Microsoft.Web.WebView2.Core;
+﻿using FastMember;
+using Microsoft.Web.WebView2.Core;
 using System;
 using System.CodeDom;
 using System.Collections.Generic;
@@ -21,6 +22,24 @@ namespace FosMan {
     /// Загруженные данные
     /// </summary>
     static internal class App {
+        //таблица учебных работ по формам обучения
+        static Regex m_regexEduWorkType = new(@"вид.+ учеб.+ работ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexFormFullTime = new(@"^очная", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexFormMixedTime = new(@"^очно-заоч", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexFormPartTime = new(@"^заочная", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexTotalHours = new(@"(общ|всего)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexContactHours = new(@"(аудит|контакт)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexLectureHours = new(@"лекц", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexLabHours = new(@"лабор", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexPracticalHours = new(@"практич", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexSelfStudyHours = new(@"самост", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexControlHours = new(@"контроль", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexControlForm = new(@"форма", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        //тест на вид итогового контроля
+        static Regex m_regexControlExam = new(@"экзам", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexControlTest = new(@"зач", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexControlTestGrade = new(@"зач.+с.+оц", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         static CompetenceMatrix m_competenceMatrix = null;
         static Dictionary<string, Curriculum> m_curriculumDic = [];
         static Dictionary<string, Rpd> m_rpdDic = [];
@@ -205,43 +224,49 @@ namespace FosMan {
                             })) {
                                 //проверка времен учебной работы
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Итоговое время", (eduWork) => {
-                                    var result = discipline.TotalByPlanHours == eduWork.TotalHours;
-                                    var msg = result ? "" : $"Итоговое время [{discipline.TotalByPlanHours}] не соответствует УП (д.б. {eduWork.TotalHours}).";
+                                    var result = discipline.EducationalWork.TotalHours == eduWork.TotalHours;
+                                    var msg = result ? "" : $"Итоговое время [{discipline.EducationalWork.TotalHours}] не соответствует УП (д.б. {eduWork.TotalHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время контактной работы", (eduWork) => {
-                                    var result = discipline.TotalContactWorkHours == eduWork.ContactWorkHours;
-                                    var msg = result ? "" : $"Время контактной работы [{discipline.TotalContactWorkHours}] не соответствует УП (д.б. {eduWork.ContactWorkHours}).";
+                                    var result = discipline.EducationalWork.ContactWorkHours == eduWork.ContactWorkHours;
+                                    var msg = result ? "" : $"Время контактной работы [{discipline.EducationalWork.ContactWorkHours}] не соответствует УП (д.б. {eduWork.ContactWorkHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время контроля", (eduWork) => {
-                                    var result = discipline.TotalControlHours == eduWork.ControlHours;
-                                    var msg = result ? "" : $"Время контроля [{discipline.TotalControlHours}] не соответствует УП (д.б. {eduWork.ControlHours}).";
+                                    var result = discipline.EducationalWork.ControlHours == eduWork.ControlHours;
+                                    var msg = result ? "" : $"Время контроля [{discipline.EducationalWork.ControlHours}] не соответствует УП (д.б. {eduWork.ControlHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время самостоятельной работы", (eduWork) => {
-                                    var result = discipline.TotalSelfStudyHours == eduWork.SelfStudyHours;
-                                    var msg = result ? "" : $"Время самостоятельных работ [{discipline.TotalSelfStudyHours}] не соответствует УП (д.б. {eduWork.SelfStudyHours}).";
+                                    var result = discipline.EducationalWork.SelfStudyHours == eduWork.SelfStudyHours;
+                                    var msg = result ? "" : $"Время самостоятельных работ [{discipline.EducationalWork.SelfStudyHours}] не соответствует УП (д.б. {eduWork.SelfStudyHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время практических работ", (eduWork) => {
-                                    var practicalHours = discipline.Semesters.Sum(s => s.PracticalHours);
-                                    var result = practicalHours == eduWork.PracticalHours;
-                                    var msg = result ? "" : $"Время практических работ [{practicalHours}] не соответствует УП (д.б. {eduWork.PracticalHours}).";
+                                    var result = discipline.EducationalWork.PracticalHours == eduWork.PracticalHours;
+                                    var msg = result ? "" : $"Время практических работ [{discipline.EducationalWork.PracticalHours}] не соответствует УП (д.б. {eduWork.PracticalHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время лекций", (eduWork) => {
-                                    var lectureHours = discipline.Semesters.Sum(s => s.LectureHours);
-                                    var result = lectureHours == eduWork.LectureHours;
-                                    var msg = result ? "" : $"Время лекций [{lectureHours}] не соответствует УП (д.б. {eduWork.LectureHours}).";
+                                    var result = discipline.EducationalWork.LectureHours == eduWork.LectureHours;
+                                    var msg = result ? "" : $"Время лекций [{discipline.EducationalWork.LectureHours}] не соответствует УП (д.б. {eduWork.LectureHours}).";
                                     return (result, msg);
                                 });
                                 //проверка итогового контроля
-                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Тип итогового контроля", (eduWork) => {
-                                    var error = eduWork.ControlForm == EControlForm.Exam && (!discipline.ControlFormExamHours.HasValue || discipline.ControlFormExamHours == 0) ||
-                                                eduWork.ControlForm == EControlForm.Test && (!discipline.ControlFormTestHours.HasValue || discipline.ControlFormTestHours == 0) ||
-                                                eduWork.ControlForm == EControlForm.TestWithAGrade && (!discipline.ControlFormTestWithAGradeHours.HasValue || discipline.ControlFormTestWithAGradeHours == 0);
-                                    var msg = error ? $"Для типа контроля [{eduWork.ControlForm.GetDescription()}] в УП не определено значение." : "";
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Итоговый контроль", (eduWork) => {
+                                    var error = false;
+                                    var msg = "";
+                                    if (discipline.EducationalWork.ControlForm == EControlForm.Unknown) {
+                                        msg = "Не определен тип контроля.";
+                                    }
+                                    else if (eduWork.ControlForm == EControlForm.Unknown) {
+                                        msg = $"В УП не определен тип контроля."; // [{eduWork.ControlForm.GetDescription()}] в УП не определено значение.";
+                                    }
+                                    else if (discipline.EducationalWork.ControlForm != eduWork.ControlForm) {
+                                        msg = $"Тип контроля [{discipline.EducationalWork.ControlForm.GetDescription()}] не соответствует " +
+                                              $"типу контроля из УП - [{eduWork.ControlForm.GetDescription()}]";
+                                    }
                                     return (!error, msg);
                                 });
                             }
@@ -406,7 +431,7 @@ namespace FosMan {
                         progressAction?.Invoke(i, disc);
                         string fileName;
                         if (!string.IsNullOrEmpty(fileNameTemplate)) {
-                            fileName = Regex.Replace(fileNameTemplate, @"({[^}]+})", (m) => (disc.GetProperty(m.Value.Trim('{', '}'))?.ToString() ?? m.Value));
+                            fileName = Regex.Replace(fileNameTemplate, @"({[^}]+})", (m) => disc.GetProperty(m.Value.Trim('{', '}'))?.ToString() ?? m.Value);
                         }
                         else {  //если шаблон имени файла не задан
                             fileName = $"РПД_{disc.Index}_{disc.Name}.docx";
@@ -414,7 +439,17 @@ namespace FosMan {
                         //создание файла
                         var targetFile = Path.Combine(targetDir, fileName);
                         File.Copy(rpdTemplate, targetFile, true);
+                        
+                        var eduWorksIsOk = false;
+                        var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
+                        foreach (var curr in curriculumGroup.Curricula.Values) {
+                            if (curr.Disciplines.TryGetValue(disc.Key, out CurriculumDiscipline currDisc)) {
+                                eduWorks[curr.FormOfStudy] = currDisc.EducationalWork;
+                            }
+                        }
+
                         using (var docx = DocX.Load(targetFile)) {
+                            //этап 1. подстановка полей {...}
                             foreach (var par in docx.Paragraphs.ToList()) {
                                 var replaceOptions = new FunctionReplaceTextOptions() {
                                     ContainerLocation = ReplaceTextContainer.All,
@@ -444,6 +479,16 @@ namespace FosMan {
                                     }
                                 };
                                 par.ReplaceText(replaceOptions);
+                            }
+                            //этап 2. заполнение/исправление таблиц
+                            foreach (var table in docx.Tables) {
+                                if (!eduWorksIsOk) {
+                                    //заполнение таблицы учебных работ
+                                    eduWorksIsOk = TestTableForEducationalWorks(table, eduWorks, false /*установка значений в таблицу*/);
+                                    if (eduWorksIsOk) {
+                                        break;
+                                    }
+                                }
                             }
                             docx.Save();// ($"filled_{targetFile}");
                         }
@@ -476,12 +521,12 @@ namespace FosMan {
                     CreateTableCompetences(newTable, discipline);
                     result = true;
                     break;
-                case "TableEducationWorks":
-                    par.IndentationFirstLine = 0.1f;
-                    var newTable2 = par.InsertTableAfterSelf(8, 4);
-                    CreateTableEducationWorks(newTable2, discipline);
-                    result = true;
-                    break;
+                //case "TableEducationWorks":
+                //    par.IndentationFirstLine = 0.1f;
+                //    var newTable2 = par.InsertTableAfterSelf(8, 4);
+                //    CreateTableEducationWorks(newTable2, discipline);
+                //    result = true;
+                //    break;
                 //case "DisciplineTypeDescription":
                 //    var text = "";
                 //    if (discipline.Type == EDisciplineType.Required) {
@@ -495,6 +540,132 @@ namespace FosMan {
                     break;
             }
 
+            return result;
+        }
+
+
+        /// <summary>
+        /// Получить или установить значение свойства из/в параграф(а)
+        /// </summary>
+        /// <param name="par"></param>
+        /// <param name="propMatchCheck"></param>
+        /// <param name="testText"></param>
+        /// <param name="getValue"></param>
+        /// <param name="value"></param>
+        /// <param name="prop"></param>
+        static void GetOrSetPropValue(Paragraph par, Regex propMatchCheck, string testText, bool getValue, TypeAccessor typeAccessor, 
+                                      object obj, string propName, Type propType) {
+            if (propMatchCheck.IsMatch(testText)) {
+                if (getValue) {
+                    var text = par.Text;
+                    if (propType == typeof(int)) {
+                        if (int.TryParse(text, out int intVal)) {
+                            typeAccessor[obj, propName] = intVal;
+                        }
+                    }
+                }
+                else {
+                    var replaceText = typeAccessor[obj, propName]?.ToString();
+                    if (!string.IsNullOrEmpty(replaceText)) {
+                        var replaceTextOptions = new FunctionReplaceTextOptions() {
+                            FindPattern = @"^.*$",
+                            ContainerLocation = ReplaceTextContainer.All,
+                            RegexMatchHandler = m => replaceText
+                        };
+                        par.ReplaceText(replaceTextOptions);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Проверка с чтением или заполнением полей таблицы на учебные работы по формам обучения
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="eduWorks">словарь либо для получения, либо для простановки времен учебной работы</param>
+        /// <param name="getValues">режим работы: получить или установить значения</param>
+        public static bool TestTableForEducationalWorks(Table table, Dictionary<EFormOfStudy, EducationalWork> eduWorks, bool getValues) {
+            var result = false;
+
+            if (table.RowCount > 5 && table.ColumnCount >= 2) {
+                eduWorks ??= [];
+
+                var headerRow = table.Rows[0];
+                var cellText = headerRow.Cells[0].GetText();
+                //проверка левой верхней ячейки
+                if (m_regexEduWorkType.IsMatch(cellText) ||
+                    string.IsNullOrWhiteSpace(cellText) /* встречаются РПД, где в этой ячейке таблицы пусто */) {
+                    Dictionary<EFormOfStudy, int> formColIdx = new() {
+                        { EFormOfStudy.FullTime, -1 },
+                        { EFormOfStudy.MixedTime, -1 },
+                        { EFormOfStudy.PartTime, -1 }
+                    };
+                    for (var colIdx = 1; colIdx < headerRow.Cells.Count; colIdx++) {
+                        var text = headerRow.Cells[colIdx].GetText();
+                        if (!string.IsNullOrEmpty(text)) {
+                            if (m_regexFormFullTime.IsMatch(text)) {
+                                formColIdx[EFormOfStudy.FullTime] = colIdx;
+                                if (getValues) eduWorks[EFormOfStudy.FullTime] = new();
+                            }
+                            else if (m_regexFormMixedTime.IsMatch(text)) {
+                                formColIdx[EFormOfStudy.MixedTime] = colIdx;
+                                if (getValues) eduWorks[EFormOfStudy.MixedTime] = new();
+                            }
+                            else if (m_regexFormPartTime.IsMatch(text)) {
+                                formColIdx[EFormOfStudy.PartTime] = colIdx;
+                                if (getValues) eduWorks[EFormOfStudy.PartTime] = new();
+                            }
+                        }
+                    }
+                    //если колонки форм обучения обнаружены
+                    if (formColIdx.Any(x => x.Value >= 0)) {
+                        foreach (var item in formColIdx) {
+                            if (eduWorks.TryGetValue(item.Key, out var eduWork)) {
+                                //выявление рядов
+                                for (var rowIdx = 1; rowIdx < table.RowCount; rowIdx++) {
+                                    var par = table.Rows[rowIdx].Cells[item.Value].Paragraphs?.FirstOrDefault();
+                                    var text = par.Text;
+
+                                    var header = table.Rows[rowIdx].Cells[0].GetText();
+                                    GetOrSetPropValue(par, m_regexTotalHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.TotalHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexContactHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.ContactWorkHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexControlHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.ControlHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexLectureHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.LectureHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexLabHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.LabHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexPracticalHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.PracticalHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexSelfStudyHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.SelfStudyHours), typeof(int));
+                                    //форма итогового контроля
+                                    if (m_regexControlForm.IsMatch(header)) {
+                                        if (getValues) {
+                                            if (m_regexControlExam.IsMatch(text)) {
+                                                eduWork.ControlForm = EControlForm.Exam;
+                                            }
+                                            else if (m_regexControlTestGrade.IsMatch(text)) {
+                                                eduWork.ControlForm = EControlForm.TestWithAGrade;
+                                            }
+                                            else if (m_regexControlTest.IsMatch(text)) {
+                                                eduWork.ControlForm = EControlForm.Test;
+                                            }
+                                            else {
+                                                eduWork.ControlForm = EControlForm.Unknown;
+                                            }
+                                        }
+                                        else {
+                                            var replaceOptions = new FunctionReplaceTextOptions() {
+                                                ContainerLocation = ReplaceTextContainer.All,
+                                                FindPattern = @"^.*$",
+                                                RegexMatchHandler = m => eduWork.ControlForm.GetDescription().ToLower()
+                                            };
+                                            par.ReplaceText(replaceOptions);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        result = true;
+                    }
+                }
+            }
             return result;
         }
 

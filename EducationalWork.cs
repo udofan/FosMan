@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FastMember;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,11 @@ namespace FosMan {
     /// Описание учебной работы
     /// </summary>
     internal class EducationalWork {
+        /// <summary>
+        /// Аксессор для типа для прямой работы со свойствами через их имя
+        /// </summary>
+        static public TypeAccessor TypeAccessor { get; } = TypeAccessor.Create(typeof(EducationalWork));
+
         /// <summary>
         /// Общая трудоемкость
         /// </summary>

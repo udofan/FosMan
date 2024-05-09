@@ -30,23 +30,6 @@ namespace FosMan {
         static Regex m_regexFormsOfStudy = new(@"Форма\s+обучения[:]*\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
         static Regex m_regexRpdMarker = new(@"рабочая\s+программа\s+дисциплины", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        //таблица учебных работ по формам обучения
-        static Regex m_regexEduWorkType = new(@"вид.+ учеб.+ работ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexFormFullTime = new(@"^очная", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexFormMixedTime = new(@"^очно-заоч", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexFormPartTime = new(@"^заочная", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexTotalHours = new(@"(общ|всего)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexContactHours = new(@"(аудит|контакт)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexLectureHours = new(@"лекц", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexLabHours = new(@"лабор", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexPracticalHours = new(@"практич", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexSelfStudyHours = new(@"самост", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexControlHours = new(@"контроль", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexControlForm = new(@"форма", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        //тест на вид итогового контроля
-        static Regex m_regexControlExam = new(@"экзам", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexControlTest = new(@"зач", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexControlTestGrade = new(@"зач.+с.+оц", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Факультет
@@ -235,7 +218,7 @@ namespace FosMan {
                     //проверка таблиц
                     foreach (var table in docx.Tables) {
                         if (!rpd.EducationalWorks.Any()) {
-                            TestTableForEducationalWorks(table, rpd);
+                            App.TestTableForEducationalWorks(table, rpd.EducationalWorks, true);
                         }
                         if (rpd.CompetenceMatrix == null) {
                             TestTableForCompetenceMatrix(table, rpd);
@@ -271,84 +254,6 @@ namespace FosMan {
             if (CompetenceMatrix.TryParseTable(table, matrix)) {
                 rpd.CompetenceMatrix = matrix;
                 rpd.Errors.AddRange(matrix.Errors);
-            }
-        }
-
-        /// <summary>
-        /// Проверка таблицы на учебные работы по формам обучения
-        /// </summary>
-        /// <param name="table"></param>
-        /// <param name="rpd"></param>
-        static void TestTableForEducationalWorks(Table table, Rpd rpd) {
-            if (table.RowCount > 5 && table.ColumnCount >= 2) { 
-                var headerRow = table.Rows[0];
-                var cellText = headerRow.Cells[0].GetText();
-                //проверка левой верхней ячейки
-                if (m_regexEduWorkType.IsMatch(cellText) || 
-                    string.IsNullOrWhiteSpace(cellText) /* встречаются РПД, где в этой ячейке таблицы пусто */) {
-                    Dictionary<EFormOfStudy, int> formColIdx = new() {
-                        { EFormOfStudy.FullTime, -1 },
-                        { EFormOfStudy.MixedTime, -1 },
-                        { EFormOfStudy.PartTime, -1 }
-                    };
-                    for (var colIdx = 1; colIdx < headerRow.Cells.Count; colIdx++) {
-                        var text = headerRow.Cells[colIdx].GetText();
-                        if (!string.IsNullOrEmpty(text)) {
-                            if (m_regexFormFullTime.IsMatch(text)) {
-                                formColIdx[EFormOfStudy.FullTime] = colIdx;
-                                rpd.EducationalWorks[EFormOfStudy.FullTime] = new();
-                            }
-                            else if (m_regexFormMixedTime.IsMatch(text)) {
-                                formColIdx[EFormOfStudy.MixedTime] = colIdx;
-                                rpd.EducationalWorks[EFormOfStudy.MixedTime] = new();
-                            }
-                            else if (m_regexFormPartTime.IsMatch(text)) {
-                                formColIdx[EFormOfStudy.PartTime] = colIdx;
-                                rpd.EducationalWorks[EFormOfStudy.PartTime] = new();
-                            }
-                        }
-                    }
-                    //если колонки форм обучения обнаружены
-                    if (formColIdx.Any(x => x.Value >= 0)) {
-                        foreach (var item in formColIdx) {
-                            if (rpd.EducationalWorks.TryGetValue(item.Key, out var eduWork)) {
-                                //выявление рядов
-                                for (var rowIdx = 1; rowIdx < table.RowCount; rowIdx++) {
-                                    int? intValue = null;
-                                    var text = table.Rows[rowIdx].Cells[item.Value].GetText();
-                                    if (int.TryParse(text, out int intVal)) {
-                                        intValue = intVal;
-                                    }
-
-                                    var header = table.Rows[rowIdx].Cells[0].GetText();
-
-                                    if (m_regexTotalHours.IsMatch(header)) eduWork.TotalHours = intValue;
-                                    if (m_regexContactHours.IsMatch(header)) eduWork.ContactWorkHours = intValue;
-                                    if (m_regexControlHours.IsMatch(header)) eduWork.ControlHours = intValue;
-                                    if (m_regexLectureHours.IsMatch(header)) eduWork.LectureHours = intValue;
-                                    if (m_regexLabHours.IsMatch(header)) eduWork.LabHours = intValue;
-                                    if (m_regexPracticalHours.IsMatch(header)) eduWork.PracticalHours = intValue;
-                                    if (m_regexSelfStudyHours.IsMatch(header)) eduWork.SelfStudyHours = intValue;
-                                    //форма итогового контроля
-                                    if (m_regexControlForm.IsMatch(header)) {
-                                        if (m_regexControlExam.IsMatch(text)) {
-                                            eduWork.ControlForm = EControlForm.Exam;
-                                        }
-                                        else if (m_regexControlTestGrade.IsMatch(text)) {
-                                            eduWork.ControlForm = EControlForm.TestWithAGrade;
-                                        }
-                                        else if (m_regexControlTest.IsMatch(text)) {
-                                            eduWork.ControlForm = EControlForm.Test;
-                                        }
-                                        else {
-                                            eduWork.ControlForm = EControlForm.Unknown;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }

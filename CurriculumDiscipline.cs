@@ -54,6 +54,7 @@ namespace FosMan {
         static Regex m_regexTestTypeByChoice = new(@"^[^\.]+\.В\.", RegexOptions.Compiled);
         static Regex m_regexTestTypeOptional = new(@"^ФТД", RegexOptions.Compiled);
         HashSet<string> m_competenceList = null;
+        EducationalWork m_eduWork = null;
 
         string m_competences = null;
         EDisciplineType? m_type = null;
@@ -132,7 +133,7 @@ namespace FosMan {
         /// <summary>
         /// Формы контроля
         /// </summary>
-        public List<EControlForm> ControlForms { get; set; }
+        //public List<EControlForm> ControlForms { get; set; }
         public int? ControlFormExamHours { get; set; }
         public int? ControlFormTestHours { get; set; }
         public int? ControlFormTestWithAGradeHours { get; set; }
@@ -178,6 +179,32 @@ namespace FosMan {
 
             for (var i = 0; i < Semesters.Length; i++) {
                 Semesters[i] = new();
+            }
+        }
+
+        /// <summary>
+        /// Объект описания учебной работы
+        /// </summary>
+        public EducationalWork EducationalWork {
+            get {
+                if (m_eduWork == null) {
+                    m_eduWork = new() {
+                        ContactWorkHours = TotalContactWorkHours, 
+                        ControlForm = EControlForm.Unknown, 
+                        ControlHours = TotalControlHours, 
+                        LabHours = Semesters.Sum(s => s.LabHours ?? 0),
+                        LectureHours = Semesters.Sum(s => s.LectureHours ?? 0),
+                        PracticalHours = Semesters.Sum(s => s.PracticalHours ?? 0), 
+                        SelfStudyHours = TotalSelfStudyHours, 
+                        TotalHours = TotalByPlanHours
+                    };
+                    if (ControlFormExamHours.HasValue && ControlFormExamHours.Value > 0) m_eduWork.ControlForm = EControlForm.Exam;
+                    if (ControlFormTestHours.HasValue && ControlFormTestHours.Value > 0) m_eduWork.ControlForm = EControlForm.Test;
+                    if (ControlFormTestWithAGradeHours.HasValue && ControlFormTestWithAGradeHours.Value > 0) m_eduWork.ControlForm = EControlForm.TestWithAGrade;
+                    if (ControlFormControlWorkHours.HasValue && ControlFormControlWorkHours.Value > 0) m_eduWork.ControlForm = EControlForm.ControlWork;
+
+                }
+                return m_eduWork;
             }
         }
 
