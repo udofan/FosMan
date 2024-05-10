@@ -47,6 +47,25 @@ namespace FosMan {
         /// Форма итогового контроля
         /// </summary>
         public EControlForm ControlForm { get; set; } = EControlForm.Unknown;
+        /// <summary>
+        /// Значение ControlForm для экрана
+        /// </summary>
+        public string ControlFormForScreen { get => ControlForm.GetDescription(); }
 
+        /// <summary>
+        /// Получить значение свойства по имени
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        public object GetProperty(string propName) {
+            object value = null;
+            try {
+                value = TypeAccessor[this, propName];
+            }
+            catch (Exception ex) {
+            }
+
+            return value;
+        }
     }
 }

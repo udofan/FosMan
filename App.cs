@@ -12,8 +12,14 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Policy;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Text.Unicode;
 using System.Threading.Tasks;
+using System.Web;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 
@@ -22,6 +28,8 @@ namespace FosMan {
     /// Загруженные данные
     /// </summary>
     static internal class App {
+        //const string CONFIG_FILENAME = "appconfig.json";
+
         //таблица учебных работ по формам обучения
         static Regex m_regexEduWorkType = new(@"вид.+ учеб.+ работ", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexFormFullTime = new(@"^очная", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -39,15 +47,24 @@ namespace FosMan {
         static Regex m_regexControlExam = new(@"экзам", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexControlTest = new(@"зач", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexControlTestGrade = new(@"зач.+с.+оц", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        //
+        //static Regex m_regexTestTableCaptionFullTimeEduWorks;
+        //static Regex m_regexTestTableEduWorks = new(@"Наименован.*раздел.*тем", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         static CompetenceMatrix m_competenceMatrix = null;
         static Dictionary<string, Curriculum> m_curriculumDic = [];
         static Dictionary<string, Rpd> m_rpdDic = [];
         static Dictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
+        static Config m_config = new();
 
         public static CompetenceMatrix CompetenceMatrix { get => m_competenceMatrix; }
 
         public static Dictionary<string, Rpd> RpdList { get => m_rpdDic; }
+
+        /// <summary>
+        /// Конфигурация
+        /// </summary>
+        public static Config Config { get => m_config; }
 
         /// <summary>
         /// Учебные планы в сторе
@@ -440,7 +457,6 @@ namespace FosMan {
                         var targetFile = Path.Combine(targetDir, fileName);
                         File.Copy(rpdTemplate, targetFile, true);
                         
-                        var eduWorksIsOk = false;
                         var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
                         foreach (var curr in curriculumGroup.Curricula.Values) {
                             if (curr.Disciplines.TryGetValue(disc.Key, out CurriculumDiscipline currDisc)) {
@@ -470,8 +486,8 @@ namespace FosMan {
                                                 }
                                             }
                                             else {
-                                                if (TryInsertSpecialObjectInRpd(propName, par, disc)) {
-                                                    replaceValue = "";
+                                                if (TryProcessSpecialField(propName, par, curriculumGroup, disc, out var specialValue)) {
+                                                    replaceValue = specialValue;
                                                 }
                                             }
                                         }
@@ -480,13 +496,19 @@ namespace FosMan {
                                 };
                                 par.ReplaceText(replaceOptions);
                             }
+                            var eduWorksIsOk = false;
+                            var competenceTableIsOk = false;
+
                             //этап 2. заполнение/исправление таблиц
                             foreach (var table in docx.Tables) {
                                 if (!eduWorksIsOk) {
                                     //заполнение таблицы учебных работ
                                     eduWorksIsOk = TestTableForEducationalWorks(table, eduWorks, false /*установка значений в таблицу*/);
-                                    if (eduWorksIsOk) {
-                                        break;
+                                }
+                                if (!competenceTableIsOk) {
+                                    if (CompetenceMatrix.TestTable(table)) {
+                                        RecreateTableOfCompetences(table, disc, false);
+                                        competenceTableIsOk = true;
                                     }
                                 }
                             }
@@ -507,38 +529,56 @@ namespace FosMan {
         }
         
         /// <summary>
-        /// Попытка вставить специальный объект в параграф
+        /// Попытка обработать специальное поле
         /// </summary>
         /// <param name="propName"></param>
         /// <param name="par"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static bool TryInsertSpecialObjectInRpd(string propName, Paragraph par, CurriculumDiscipline discipline) {
+        private static bool TryProcessSpecialField(string propName, Paragraph par, CurriculumGroup curriculumGroup, CurriculumDiscipline discipline, out string replaceValue) {
             var result = false;
-            switch (propName) {
-                case "TableCompetences":
-                    var newTable = par.InsertTableAfterSelf(1, 3);
-                    CreateTableCompetences(newTable, discipline);
-                    result = true;
-                    break;
-                //case "TableEducationWorks":
-                //    par.IndentationFirstLine = 0.1f;
-                //    var newTable2 = par.InsertTableAfterSelf(8, 4);
-                //    CreateTableEducationWorks(newTable2, discipline);
-                //    result = true;
-                //    break;
-                //case "DisciplineTypeDescription":
-                //    var text = "";
-                //    if (discipline.Type == EDisciplineType.Required) {
-                //        text = "обязательным дисциплинам";
-                //    }
-                //    else if (discipline.Type == EDisciplineType.ByChoice) {
-                //        text = "дисциплинам по выбору части, формируемой участниками образовательных отношений";
-                //    }
-                //    break;
-                default:
-                    break;
+
+            replaceValue = null;
+
+            //проверка на поле типа {FullTime.TotalHours} для таблиц времен учебных работ
+            var parts = propName.Split('.');
+            if (parts.Length == 2) {
+                if (Enum.TryParse(parts[0], true, out EFormOfStudy formOfStudy)) {
+                    var curriculum = curriculumGroup.Curricula.Values.FirstOrDefault(c => c.FormOfStudy == formOfStudy);
+                    if (curriculum != null) {
+                        var disc = curriculum.FindDiscipline(discipline.Name);
+                        if (disc != null) {
+                            var propValue = disc.EducationalWork.GetProperty(parts[1]);
+                            replaceValue = propValue?.ToString() ?? "-";
+                            result = true;
+                        }
+                    }
+                }
             }
+            //switch (propName) {
+            //    ////case "TableCompetences":
+            //    ////    var newTable = par.InsertTableAfterSelf(1, 3);
+            //    ////    RecreateTableOfCompetences(newTable, discipline);
+            //    ////    result = true;
+            //    ////    break;
+            //    //case "TableEducationWorks":
+            //    //    par.IndentationFirstLine = 0.1f;
+            //    //    var newTable2 = par.InsertTableAfterSelf(8, 4);
+            //    //    CreateTableEducationWorks(newTable2, discipline);
+            //    //    result = true;
+            //    //    break;
+            //    //case "DisciplineTypeDescription":
+            //    //    var text = "";
+            //    //    if (discipline.Type == EDisciplineType.Required) {
+            //    //        text = "обязательным дисциплинам";
+            //    //    }
+            //    //    else if (discipline.Type == EDisciplineType.ByChoice) {
+            //    //        text = "дисциплинам по выбору части, формируемой участниками образовательных отношений";
+            //    //    }
+            //    //    break;
+            //    default:
+            //        break;
+            //}
 
             return result;
         }
@@ -674,68 +714,80 @@ namespace FosMan {
         /// </summary>
         /// <param name="table"></param>
         /// <param name="discipline"></param>
-        private static void CreateTableEducationWorks(Table table, CurriculumDiscipline discipline) {
-            var widths = new double[4] { 8.46 * 28.35, 2.5 * 28.35, 2.66 * 28.35, 2.79 * 28.35 };
-            //заголовок
-            var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
-            table.Rows[0].Cells[0].Width = widths[0];
-            header0.InsertText("Виды учебной работы", false, formatting: new Formatting() { Bold = true });
-            header0.Alignment = Alignment.center;
-            header0.IndentationFirstLine = 0.1f;
+        //private static void CreateTableEducationWorks(Table table, CurriculumDiscipline discipline) {
+        //    var widths = new double[4] { 8.46 * 28.35, 2.5 * 28.35, 2.66 * 28.35, 2.79 * 28.35 };
+        //    //заголовок
+        //    var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
+        //    table.Rows[0].Cells[0].Width = widths[0];
+        //    header0.InsertText("Виды учебной работы", false, formatting: new Formatting() { Bold = true });
+        //    header0.Alignment = Alignment.center;
+        //    header0.IndentationFirstLine = 0.1f;
 
-            var header1 = table.Rows[0].Cells[1].Paragraphs.FirstOrDefault();
-            table.Rows[0].Cells[1].Width = widths[1];
-            header1.InsertText("очная форма\r\nобучения", formatting: new Formatting() { Bold = false });
-            header1.Alignment = Alignment.center;
-            header1.IndentationFirstLine = 0.1f;
+        //    var header1 = table.Rows[0].Cells[1].Paragraphs.FirstOrDefault();
+        //    table.Rows[0].Cells[1].Width = widths[1];
+        //    header1.InsertText("очная форма\r\nобучения", formatting: new Formatting() { Bold = false });
+        //    header1.Alignment = Alignment.center;
+        //    header1.IndentationFirstLine = 0.1f;
 
-            var header2 = table.Rows[0].Cells[2].Paragraphs.FirstOrDefault();
-            table.Rows[0].Cells[2].Width = widths[2];
-            header2.InsertText("очно-заочная\r\nобучения", formatting: new Formatting() { Bold = false });
-            header2.Alignment = Alignment.center;
-            header2.IndentationFirstLine = 0.1f;
+        //    var header2 = table.Rows[0].Cells[2].Paragraphs.FirstOrDefault();
+        //    table.Rows[0].Cells[2].Width = widths[2];
+        //    header2.InsertText("очно-заочная\r\nобучения", formatting: new Formatting() { Bold = false });
+        //    header2.Alignment = Alignment.center;
+        //    header2.IndentationFirstLine = 0.1f;
 
-            var header3 = table.Rows[0].Cells[3].Paragraphs.FirstOrDefault();
-            table.Rows[0].Cells[3].Width = widths[3];
-            header3.InsertText("заочная форма\r\nобучения", formatting: new Formatting() { Bold = false });
-            header3.Alignment = Alignment.center;
-            header3.IndentationFirstLine = 0.1f;
-        }
+        //    var header3 = table.Rows[0].Cells[3].Paragraphs.FirstOrDefault();
+        //    table.Rows[0].Cells[3].Width = widths[3];
+        //    header3.InsertText("заочная форма\r\nобучения", formatting: new Formatting() { Bold = false });
+        //    header3.Alignment = Alignment.center;
+        //    header3.IndentationFirstLine = 0.1f;
+        //}
 
         /// <summary>
-        /// Создание таблицы с компетенциями
+        /// Пересоздание таблицы с компетенциями (опциональное пересоздание заголовка, остальные ряды формируются заново)
         /// </summary>
         /// <param name="table">пустая таблицы (1 ряд, 3 колонки)</param>
         /// <param name="discipline"></param>
-        static void CreateTableCompetences(Table table, CurriculumDiscipline discipline) {
-            //заголовок
-            var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
-            header0.InsertText("Код и наименование", false, formatting: new Formatting() { Bold = true });
-            header0.Alignment = Alignment.center;
-            header0.IndentationFirstLine = 0.1f;
-            var header02 = header0.InsertParagraphAfterSelf("компетенций", false, formatting: new Formatting() { Bold = true });
-            header02.Alignment = Alignment.center;
-            header02.IndentationFirstLine = 0.1f;
+        static void RecreateTableOfCompetences(Table table, CurriculumDiscipline discipline, bool recreateHeaders) {
+            //очистка таблицы
+            if (table.ColumnCount < 3) {
+                return;
+            }
+            var topRowIdxToRemove = recreateHeaders ? 0 : 1;
+            for (var rowIdx = table.RowCount - 1; rowIdx >= topRowIdxToRemove; rowIdx--) {
+                table.RemoveRow(rowIdx);
+            }
 
-            var header1 = table.Rows[0].Cells[1].Paragraphs.FirstOrDefault();
-            header1.InsertText("Коды и индикаторы", formatting: new Formatting() { Bold = true });
-            header1.Alignment = Alignment.center;
-            header1.IndentationFirstLine = 0.1f;
-            var header12 = header1.InsertParagraphAfterSelf("достижения компетенций", false, formatting: new Formatting() { Bold = true });
-            header12.Alignment = Alignment.center;
-            header12.IndentationFirstLine = 0.1f;
+            if (recreateHeaders) {
+                //заголовок
+                var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
+                header0.InsertText("Код и наименование", false, formatting: new Formatting() { Bold = true });
+                header0.Alignment = Alignment.center;
+                header0.IndentationFirstLine = 0.1f;
+                var header02 = header0.InsertParagraphAfterSelf("компетенций", false, formatting: new Formatting() { Bold = true });
+                header02.Alignment = Alignment.center;
+                header02.IndentationFirstLine = 0.1f;
 
-            var header2 = table.Rows[0].Cells[2].Paragraphs.FirstOrDefault();
-            header2.InsertText("Коды и результаты обучения", formatting: new Formatting() { Bold = true });
-            header2.Alignment = Alignment.center;
-            header2.IndentationFirstLine = 0.1f;
+                var header1 = table.Rows[0].Cells[1].Paragraphs.FirstOrDefault();
+                header1.InsertText("Коды и индикаторы", formatting: new Formatting() { Bold = true });
+                header1.Alignment = Alignment.center;
+                header1.IndentationFirstLine = 0.1f;
+                var header12 = header1.InsertParagraphAfterSelf("достижения компетенций", false, formatting: new Formatting() { Bold = true });
+                header12.Alignment = Alignment.center;
+                header12.IndentationFirstLine = 0.1f;
+
+                var header2 = table.Rows[0].Cells[2].Paragraphs.FirstOrDefault();
+                header2.InsertText("Коды и результаты обучения", formatting: new Formatting() { Bold = true });
+                header2.Alignment = Alignment.center;
+                header2.IndentationFirstLine = 0.1f;
+            }
+
             //ряды матрицы
-            var items = App.CompetenceMatrix.GetItems(discipline.CompetenceList); //отбор по списку индикаторов
+            var items = CompetenceMatrix.GetItems(discipline.CompetenceList); //отбор строк матрицы по списку индикаторов
             foreach (var item in items) {
                 var competenceStartRow = table.RowCount;
 
                 foreach (var achi in item.Achievements) {
-                    if (!discipline.CompetenceList.Contains(achi.Code)) {
+                    if (!discipline.CompetenceList.Contains(achi.Code)) { //доп. фильтрация только по нужным индикаторам
                         continue;
                     }
 
@@ -772,6 +824,48 @@ namespace FosMan {
                 if (table.RowCount - 1 > competenceStartRow) {
                     table.MergeCellsInColumn(0, competenceStartRow, table.RowCount - 1);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Сохранить конфиг приложения
+        /// </summary>
+        static public void SaveConfig() {
+            var configFile = Path.Combine(Environment.CurrentDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.config.json");
+            if (m_config != null) {
+                var jsonOptions = new JsonSerializerOptions() {
+                    WriteIndented = true, 
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic), 
+                    Converters = { 
+                        new JsonStringEnumConverter()
+                    }
+                };
+                var json = JsonSerializer.Serialize(m_config, jsonOptions);
+                File.WriteAllText(configFile, json, Encoding.UTF8);
+            }
+        }
+
+        /// <summary>
+        /// Загрузить конфиг
+        /// </summary>
+        static public void LoadConfig() {
+            var configFile = Path.Combine(Environment.CurrentDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.config.json");
+            if (File.Exists(configFile)) {
+                var json = File.ReadAllText(configFile);
+                var jsonOptions = new JsonSerializerOptions() {
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+                    Converters = {
+                        new JsonStringEnumConverter()
+                    }
+                };
+                m_config = JsonSerializer.Deserialize<Config>(json, jsonOptions);
+            }
+            else {
+                m_config = new();
+            }
+
+            if (!(m_config.CurriculumDisciplineParseItems?.Any() ?? false)) {
+                m_config.CurriculumDisciplineParseItems = CurriculumDisciplineReader.DefaultHeaders;
             }
         }
     }

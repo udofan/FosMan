@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
@@ -13,6 +14,8 @@ namespace FosMan {
     /// Описание матрицы компетенций
     /// </summary>
     public class CompetenceMatrix {
+        static Regex m_regexCompetenceHeader0 = new(@"код.*наим.*компетенц", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         /// <summary>
         /// Элементы матрицы
         /// </summary>
@@ -219,6 +222,26 @@ namespace FosMan {
         /// <exception cref="NotImplementedException"></exception>
         internal List<CompetenceMatrixItem> GetItems(HashSet<string> achievementCodes) {
             return Items?.Where(i => i.Achievements?.Any(a => achievementCodes?.Contains(a.Code) ?? false) ?? false).ToList();
+        }
+
+        /// <summary>
+        /// Проверка, что передана таблица компетенций
+        /// </summary>
+        /// <param name="table"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        internal bool TestTable(Table table) {
+            var result = false;
+
+            if (table.RowCount > 0 && table.ColumnCount >= 3) {
+                var row = table.Rows[0];
+                var header0 = row.Cells[0].GetText();
+                if (m_regexCompetenceHeader0.IsMatch(header0)) {
+                    result = true;
+                }
+            }
+
+            return result;
         }
     }
 }

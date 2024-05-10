@@ -12,7 +12,7 @@ namespace FosMan {
     /// Группа УП (исп. при генерации РПД)
     /// </summary>
     internal class CurriculumGroup {
-        static TypeAccessor m_typeAccesor = TypeAccessor.Create(typeof(CurriculumGroup));
+        static TypeAccessor m_typeAccessor = TypeAccessor.Create(typeof(CurriculumGroup));
         Dictionary<string, CurriculumDiscipline> m_disciplines = [];
         Dictionary<string, Curriculum> m_curricula = [];
         string m_formsOfStudyList = null;
@@ -93,7 +93,7 @@ namespace FosMan {
         public object GetProperty(string propName) {
             object value = null;
             try {
-                value = m_typeAccesor[this, propName];
+                value = m_typeAccessor[this, propName];
             }
             catch (Exception ex) {
             }

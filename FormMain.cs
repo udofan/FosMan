@@ -17,15 +17,15 @@ namespace FosMan {
 
         private void button1_Click(object sender, EventArgs e) {
             if (!string.IsNullOrEmpty(textBoxMatrixFileName.Text) && File.Exists(textBoxMatrixFileName.Text)) {
-                openFileDialog1.FileName = textBoxMatrixFileName.Text;
-                openFileDialog1.InitialDirectory = Path.GetDirectoryName(textBoxMatrixFileName.Text);
+                openFileDialogSelectCompetenceMatrixFile.FileName = textBoxMatrixFileName.Text;
+                openFileDialogSelectCompetenceMatrixFile.InitialDirectory = Path.GetDirectoryName(textBoxMatrixFileName.Text);
             }
             else {
-                openFileDialog1.InitialDirectory = Environment.CurrentDirectory;
+                openFileDialogSelectCompetenceMatrixFile.InitialDirectory = Environment.CurrentDirectory;
             }
 
-            if (openFileDialog1.ShowDialog(this) == DialogResult.OK) {
-                textBoxMatrixFileName.Text = openFileDialog1.FileName;
+            if (openFileDialogSelectCompetenceMatrixFile.ShowDialog(this) == DialogResult.OK) {
+                textBoxMatrixFileName.Text = openFileDialogSelectCompetenceMatrixFile.FileName;
                 //m_matrixFileName = openFileDialog1.FileName;
             }
         }
@@ -422,16 +422,39 @@ namespace FosMan {
             list.Columns.Add(olvColumnFileName);
         }
 
+        void TuneRpdFindAndReplaceList() {
+            var olvColFind = new OLVColumn("Найти", "FindPattern") {
+                Width = 200,
+                CellEditUseWholeCell = true,
+                IsEditable = true
+            };
+            fastObjectListViewRpdFixFindAndReplaceItems.Columns.Add(olvColFind);
+            var olvColReplace = new OLVColumn("Заменить на", "ReplacePattern") {
+                Width = 200,
+                CellEditUseWholeCell = true,
+                IsEditable = true
+            };
+            fastObjectListViewRpdFixFindAndReplaceItems.Columns.Add(olvColReplace);
+        }
+
         private void FormMain_Load(object sender, EventArgs e) {
+            App.LoadConfig();
+
             TuneCurriculumList();
             TuneRpdList(fastObjectListViewRpdList);
             TuneDisciplineList(fastObjectListViewDisciplines, true);
             TuneDisciplineList(fastObjectListViewDisciplineListForGeneration, false);
+            TuneRpdFindAndReplaceList();
+
+            //восстановим элементы из конфига
+            fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFindAndReplaceItems);
+            textBoxMatrixFileName.Text = App.Config.CompetenceMatrixFileName ?? "";
+            ShowHideRpdFixMode(false);
 
             //отладка
             textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
             buttonLoadCompetenceMatrix.PerformClick();
-            var files = new string[] { 
+            var files = new string[] {
                 @"c:\FosMan\Учебные_планы\Бизнес- информатика 38.03.05 очное 23.plx.xlsx",
                 @"c:\FosMan\Учебные_планы\Бизнес-информатика 38.03.05 ОЗ 23.plx.xlsx",
                 @"c:\FosMan\Учебные_планы\Бизнес-информатика заочн 38.03.05.plx.xlsx"
@@ -484,8 +507,15 @@ namespace FosMan {
         }
 
         private void buttonSelectExcelFiles_Click(object sender, EventArgs e) {
-            if (openFileDialog2.ShowDialog(this) == DialogResult.OK) {
-                var files = openFileDialog2.FileNames.Where(x => !App.HasCurriculumFile(x)).ToArray();
+            openFileDialogSelectCurriculumFiles.InitialDirectory = App.Config.CurriculumLastLocation ?? Environment.CurrentDirectory;
+
+            if (openFileDialogSelectCurriculumFiles.ShowDialog(this) == DialogResult.OK) {
+                if (openFileDialogSelectCurriculumFiles.FileNames.Length > 0) {
+                    App.Config.CurriculumLastLocation = Path.GetDirectoryName(openFileDialogSelectCurriculumFiles.FileNames[0]);
+                    App.SaveConfig();
+                }
+
+                var files = openFileDialogSelectCurriculumFiles.FileNames.Where(x => !App.HasCurriculumFile(x)).ToArray();
 
                 LoadCurriculumFiles(files);
             }
@@ -546,8 +576,15 @@ namespace FosMan {
         }
 
         private void buttonSelectRpdFiles_Click(object sender, EventArgs e) {
-            if (openFileDialog3.ShowDialog(this) == DialogResult.OK) {
-                var files = openFileDialog3.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
+            openFileDialogSelectRpd.InitialDirectory = App.Config.RpdLastLocation ?? Environment.CurrentDirectory;
+
+            if (openFileDialogSelectRpd.ShowDialog(this) == DialogResult.OK) {
+                var files = openFileDialogSelectRpd.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
+
+                if (openFileDialogSelectRpd.FileNames.Length > 0) {
+                    App.Config.RpdLastLocation = Path.GetDirectoryName(openFileDialogSelectRpd.FileNames[0]);
+                    App.SaveConfig();
+                }
 
                 labelLoadRpd.Visible = true;
                 Application.UseWaitCursor = true;
@@ -781,6 +818,72 @@ namespace FosMan {
 
         private void linkLabelRpdGenCompetenceMatrix_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
             tabControl1.SelectTab(tabPageCompetenceMatrix);
+        }
+
+        private void linkLabelRpdPage_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            tabControl1.SelectTab(tabPageRpd);
+        }
+
+        void ShowHideRpdFixMode(bool show) {
+            var maxDist = 200;
+            var delta = 10;
+
+            if (show) {
+                while (splitContainer1.SplitterDistance < 200) {
+                    var newDist = Math.Min(splitContainer1.SplitterDistance + delta, maxDist);
+                    splitContainer1.SplitterDistance = newDist;
+                    //Thread.Sleep(10);
+                    Application.DoEvents();
+                }
+            }
+            else {
+                while (splitContainer1.SplitterDistance > 0) {
+                    var newDist = Math.Max(splitContainer1.SplitterDistance - delta, 0);
+                    splitContainer1.SplitterDistance = newDist;
+                    //Thread.Sleep(10);
+                    Application.DoEvents();
+                }
+            }
+        }
+
+        private void buttonRpdShowFixMode_Click(object sender, EventArgs e) {
+            ShowHideRpdFixMode(splitContainer1.SplitterDistance == 0);
+        }
+
+        private void buttonAddFindAndReplaceItem_Click(object sender, EventArgs e) {
+            var newItem = new RpdFindAndReplaceItem();
+            fastObjectListViewRpdFixFindAndReplaceItems.AddObject(newItem);
+            fastObjectListViewRpdFixFindAndReplaceItems.FocusedObject = newItem;
+            fastObjectListViewRpdFixFindAndReplaceItems.EnsureModelVisible(newItem);
+            fastObjectListViewRpdFixFindAndReplaceItems.EditModel(newItem);
+            fastObjectListViewRpdFixFindAndReplaceItems.CheckObject(newItem);
+
+            App.Config.RpdFindAndReplaceItems.Add(newItem);
+        }
+
+        private void fastObjectListViewRpdFixFindAndReplaceItems_CellEditFinished(object sender, CellEditEventArgs e) {
+            App.SaveConfig();
+        }
+
+        private void buttonRemoveFindAndReplaceItems_Click(object sender, EventArgs e) {
+            if (fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects.Count > 0) {
+                var ret = MessageBox.Show($"Вы уверены, что хотите удалить выделенные элементы ({fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects.Count} шт.)?",
+                    "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (ret == DialogResult.Yes) {
+                    fastObjectListViewRpdFixFindAndReplaceItems.RemoveObjects(fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects);
+
+                    foreach (var item in fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects) {
+                        App.Config.RpdFindAndReplaceItems.Remove(item as RpdFindAndReplaceItem);
+                    }
+
+                    App.SaveConfig();
+                }
+            }
+        }
+
+        private void textBoxMatrixFileName_TextChanged(object sender, EventArgs e) {
+            App.Config.CompetenceMatrixFileName = textBoxMatrixFileName.Text;
+            App.SaveConfig();
         }
     }
 }

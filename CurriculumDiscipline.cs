@@ -48,7 +48,7 @@ namespace FosMan {
     internal class CurriculumDiscipline {
         public const int SEMESTER_COUNT = 10;
 
-        static TypeAccessor m_typeAccesor = TypeAccessor.Create(typeof(CurriculumDiscipline));
+        static TypeAccessor m_typeAccessor = TypeAccessor.Create(typeof(CurriculumDiscipline));
         static Dictionary<Type, TypeAccessor> m_extraTypeAccessors = new();
         static Regex m_regexTestTypeRequired = new(@"^[^\.]+\.О\.", RegexOptions.Compiled);
         static Regex m_regexTestTypeByChoice = new(@"^[^\.]+\.В\.", RegexOptions.Compiled);
@@ -102,6 +102,20 @@ namespace FosMan {
                 else if (Type == EDisciplineType.ByChoice) {
                     text = "дисциплинам по выбору части, формируемой участниками образовательных отношений";
                 }
+                return text;
+            }
+        }
+
+        /// <summary>
+        /// Доп. описание типа дисциплины [поле для РПД]
+        /// </summary>
+        public string TypeDescription2 {
+            get {
+                var text = "";
+                if (Type == EDisciplineType.Optional) {
+                    text = " и относится к факультативной дисциплине";
+                }
+                
                 return text;
             }
         }
@@ -187,23 +201,21 @@ namespace FosMan {
         /// </summary>
         public EducationalWork EducationalWork {
             get {
-                if (m_eduWork == null) {
-                    m_eduWork = new() {
-                        ContactWorkHours = TotalContactWorkHours, 
-                        ControlForm = EControlForm.Unknown, 
-                        ControlHours = TotalControlHours, 
-                        LabHours = Semesters.Sum(s => s.LabHours ?? 0),
-                        LectureHours = Semesters.Sum(s => s.LectureHours ?? 0),
-                        PracticalHours = Semesters.Sum(s => s.PracticalHours ?? 0), 
-                        SelfStudyHours = TotalSelfStudyHours, 
-                        TotalHours = TotalByPlanHours
-                    };
-                    if (ControlFormExamHours.HasValue && ControlFormExamHours.Value > 0) m_eduWork.ControlForm = EControlForm.Exam;
-                    if (ControlFormTestHours.HasValue && ControlFormTestHours.Value > 0) m_eduWork.ControlForm = EControlForm.Test;
-                    if (ControlFormTestWithAGradeHours.HasValue && ControlFormTestWithAGradeHours.Value > 0) m_eduWork.ControlForm = EControlForm.TestWithAGrade;
-                    if (ControlFormControlWorkHours.HasValue && ControlFormControlWorkHours.Value > 0) m_eduWork.ControlForm = EControlForm.ControlWork;
-
-                }
+                m_eduWork ??= new() {
+                    ContactWorkHours = TotalContactWorkHours,
+                    ControlForm = EControlForm.Unknown,
+                    ControlHours = TotalControlHours,
+                    LabHours = Semesters.Sum(s => s.LabHours ?? 0),
+                    LectureHours = Semesters.Sum(s => s.LectureHours ?? 0),
+                    PracticalHours = Semesters.Sum(s => s.PracticalHours ?? 0),
+                    SelfStudyHours = TotalSelfStudyHours,
+                    TotalHours = TotalByPlanHours
+                };
+                if (ControlFormExamHours.HasValue && ControlFormExamHours.Value > 0) m_eduWork.ControlForm = EControlForm.Exam;
+                if (ControlFormTestHours.HasValue && ControlFormTestHours.Value > 0) m_eduWork.ControlForm = EControlForm.Test;
+                if (ControlFormTestWithAGradeHours.HasValue && ControlFormTestWithAGradeHours.Value > 0) m_eduWork.ControlForm = EControlForm.TestWithAGrade;
+                if (ControlFormControlWorkHours.HasValue && ControlFormControlWorkHours.Value > 0) m_eduWork.ControlForm = EControlForm.ControlWork;
+                
                 return m_eduWork;
             }
         }
@@ -231,20 +243,20 @@ namespace FosMan {
             }
 
             if (index >= 0 && !string.IsNullOrEmpty(subProperty)) {
-                var arrayObj = m_typeAccesor[this, targetProperty] as object[];
+                var arrayObj = m_typeAccessor[this, targetProperty] as object[];
                 if (arrayObj != null) {
                     var extraType = arrayObj.FirstOrDefault()?.GetType();
                     if (extraType != null) {
-                        if (!m_extraTypeAccessors.TryGetValue(extraType, out var extraTypeAccesor)) {
-                            extraTypeAccesor = TypeAccessor.Create(extraType);
-                            m_extraTypeAccessors[extraType] = extraTypeAccesor;
+                        if (!m_extraTypeAccessors.TryGetValue(extraType, out var extratypeAccessor)) {
+                            extratypeAccessor = TypeAccessor.Create(extraType);
+                            m_extraTypeAccessors[extraType] = extratypeAccessor;
                         }
-                        extraTypeAccesor[arrayObj[index], subProperty] = value;
+                        extratypeAccessor[arrayObj[index], subProperty] = value;
                     }
                 }
             }
             else {
-                m_typeAccesor[this, targetProperty] = value;
+                m_typeAccessor[this, targetProperty] = value;
             }
         }
 
@@ -294,6 +306,7 @@ namespace FosMan {
                 curriculum.Errors.Add(err);
                 Errors.Add(err);
             }
+            //if (TotalContactWorkHours != prac)
 
             return true;
         }
@@ -328,7 +341,7 @@ namespace FosMan {
         public object GetProperty(string propName) {
             object value = null;
             try {
-                value = m_typeAccesor[this, propName];
+                value = m_typeAccessor[this, propName];
             }
             catch (Exception ex) {
             }

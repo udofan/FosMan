@@ -11,7 +11,7 @@ namespace FosMan {
         /// <summary>
         /// Описание искомых колонок в Excel-листе
         /// </summary>
-        static List<CurriculumDisciplineHeader> m_headers { get; } = [
+        public static List<CurriculumDisciplineHeader> DefaultHeaders { get; } = [
             new CurriculumDisciplineHeader() {
                 Text = "ИНДЕКС",
                 TestFunction = EPropertyTestFunction.Contains,
@@ -571,7 +571,7 @@ namespace FosMan {
                     var cellValue = row[colIdx] as string;
 
                     if (!string.IsNullOrEmpty(cellValue)) {
-                        foreach (var header in m_headers) {
+                        foreach (var header in App.Config.CurriculumDisciplineParseItems) { // m_headers) {
                             if (header.Match(cellValue)) {
                                 //кол-во заголовков с одинаковым текстом
                                 var matchCount = detectedColumns.Values.Where(x => x.Text == header.Text).Count();
@@ -588,7 +588,7 @@ namespace FosMan {
 
                 if (result) {
                     //проверка, что какие-то заголовки не нашли в таблице
-                    foreach (var header in m_headers) {
+                    foreach (var header in App.Config.CurriculumDisciplineParseItems) { // m_headers) {
                         if (!detectedColumns.ContainsValue(header)) {
                             var err = $"Не удалось найти заголовок [{header.Text}] для свойства {header.TargetProperty}";
                             if (!string.IsNullOrEmpty(header.SubProperty) && header.PropertyIndex >= 0) {
