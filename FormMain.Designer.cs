@@ -31,18 +31,22 @@
             fastObjectListViewFosList = new BrightIdeasSoftware.FastObjectListView();
             tabControl1 = new TabControl();
             tabPageCompetenceMatrix = new TabPage();
+            checkBoxCompetenceMatrixAutoload = new CheckBox();
             webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             buttonLoadCompetenceMatrix = new Button();
             buttonSelectMatrixFile = new Button();
             label2 = new Label();
             textBoxMatrixFileName = new TextBox();
             tabPageСurriculum = new TabPage();
+            checkBoxStoreCurriculumList = new CheckBox();
+            buttonCurriculumClearList = new Button();
             groupBoxDisciplines = new GroupBox();
             fastObjectListViewDisciplines = new BrightIdeasSoftware.FastObjectListView();
             labelExcelFileLoading = new Label();
             fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
             buttonSelectExcelFiles = new Button();
             tabPageRpd = new TabPage();
+            checkBoxStoreRpdList = new CheckBox();
             buttonRpdShowFixMode = new Button();
             splitContainer1 = new SplitContainer();
             groupBox4 = new GroupBox();
@@ -172,6 +176,7 @@
             // 
             // tabPageCompetenceMatrix
             // 
+            tabPageCompetenceMatrix.Controls.Add(checkBoxCompetenceMatrixAutoload);
             tabPageCompetenceMatrix.Controls.Add(webView21);
             tabPageCompetenceMatrix.Controls.Add(buttonLoadCompetenceMatrix);
             tabPageCompetenceMatrix.Controls.Add(buttonSelectMatrixFile);
@@ -184,6 +189,20 @@
             tabPageCompetenceMatrix.TabIndex = 2;
             tabPageCompetenceMatrix.Text = "Матрица компетенций";
             tabPageCompetenceMatrix.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxCompetenceMatrixAutoload
+            // 
+            checkBoxCompetenceMatrixAutoload.AutoSize = true;
+            checkBoxCompetenceMatrixAutoload.Checked = true;
+            checkBoxCompetenceMatrixAutoload.CheckState = CheckState.Checked;
+            checkBoxCompetenceMatrixAutoload.Location = new Point(792, 17);
+            checkBoxCompetenceMatrixAutoload.Name = "checkBoxCompetenceMatrixAutoload";
+            checkBoxCompetenceMatrixAutoload.Size = new Size(99, 18);
+            checkBoxCompetenceMatrixAutoload.TabIndex = 5;
+            checkBoxCompetenceMatrixAutoload.Text = "Автозагрузка";
+            toolTip1.SetToolTip(checkBoxCompetenceMatrixAutoload, "Загружать последнюю выбранную матрицу \r\nкомпетенций при запуске приложения");
+            checkBoxCompetenceMatrixAutoload.UseVisualStyleBackColor = true;
+            checkBoxCompetenceMatrixAutoload.CheckedChanged += checkBoxCompetenceMatrixAutoload_CheckedChanged;
             // 
             // webView21
             // 
@@ -239,23 +258,50 @@
             // 
             // tabPageСurriculum
             // 
+            tabPageСurriculum.Controls.Add(checkBoxStoreCurriculumList);
+            tabPageСurriculum.Controls.Add(buttonCurriculumClearList);
             tabPageСurriculum.Controls.Add(groupBoxDisciplines);
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Location = new Point(4, 24);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1000, 702);
+            tabPageСurriculum.Size = new Size(1000, 701);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxStoreCurriculumList
+            // 
+            checkBoxStoreCurriculumList.AutoSize = true;
+            checkBoxStoreCurriculumList.Checked = true;
+            checkBoxStoreCurriculumList.CheckState = CheckState.Checked;
+            checkBoxStoreCurriculumList.Location = new Point(699, 22);
+            checkBoxStoreCurriculumList.Name = "checkBoxStoreCurriculumList";
+            checkBoxStoreCurriculumList.Size = new Size(135, 18);
+            checkBoxStoreCurriculumList.TabIndex = 6;
+            checkBoxStoreCurriculumList.Text = "Запоминать список";
+            toolTip1.SetToolTip(checkBoxStoreCurriculumList, "Запоминать список файлов для восстановления \r\nпри следующем запуске приложения\r\n");
+            checkBoxStoreCurriculumList.UseVisualStyleBackColor = true;
+            checkBoxStoreCurriculumList.CheckedChanged += checkBoxStoreCurriculumList_CheckedChanged;
+            // 
+            // buttonCurriculumClearList
+            // 
+            buttonCurriculumClearList.Location = new Point(865, 19);
+            buttonCurriculumClearList.Name = "buttonCurriculumClearList";
+            buttonCurriculumClearList.Size = new Size(124, 23);
+            buttonCurriculumClearList.TabIndex = 4;
+            buttonCurriculumClearList.Text = "Очистить список";
+            toolTip1.SetToolTip(buttonCurriculumClearList, "Очистить список файлов");
+            buttonCurriculumClearList.UseVisualStyleBackColor = true;
+            buttonCurriculumClearList.Click += buttonCurriculumClearList_Click;
             // 
             // groupBoxDisciplines
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 394);
+            groupBoxDisciplines.Location = new Point(8, 404);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(984, 305);
             groupBoxDisciplines.TabIndex = 3;
@@ -301,7 +347,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(984, 331);
+            fastObjectListViewCurricula.Size = new Size(984, 341);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -327,18 +373,30 @@
             // 
             // tabPageRpd
             // 
+            tabPageRpd.Controls.Add(checkBoxStoreRpdList);
             tabPageRpd.Controls.Add(buttonRpdShowFixMode);
             tabPageRpd.Controls.Add(splitContainer1);
             tabPageRpd.Controls.Add(buttonRpdCheck);
             tabPageRpd.Controls.Add(labelLoadRpd);
             tabPageRpd.Controls.Add(buttonSelectRpdFiles);
-            tabPageRpd.Location = new Point(4, 24);
+            tabPageRpd.Location = new Point(4, 23);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1000, 701);
+            tabPageRpd.Size = new Size(1000, 702);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxStoreRpdList
+            // 
+            checkBoxStoreRpdList.AutoSize = true;
+            checkBoxStoreRpdList.Location = new Point(523, 21);
+            checkBoxStoreRpdList.Name = "checkBoxStoreRpdList";
+            checkBoxStoreRpdList.Size = new Size(135, 18);
+            checkBoxStoreRpdList.TabIndex = 9;
+            checkBoxStoreRpdList.Text = "Запоминать список";
+            checkBoxStoreRpdList.UseVisualStyleBackColor = true;
+            checkBoxStoreRpdList.CheckedChanged += checkBoxStoreRpdList_CheckedChanged;
             // 
             // buttonRpdShowFixMode
             // 
@@ -367,7 +425,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(984, 660);
+            splitContainer1.Size = new Size(984, 666);
             splitContainer1.SplitterDistance = 202;
             splitContainer1.TabIndex = 7;
             // 
@@ -482,7 +540,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(984, 454);
+            fastObjectListViewRpdList.Size = new Size(984, 460);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -497,7 +555,7 @@
             // buttonRpdCheck
             // 
             buttonRpdCheck.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonRpdCheck.Location = new Point(567, 18);
+            buttonRpdCheck.Location = new Point(677, 18);
             buttonRpdCheck.Name = "buttonRpdCheck";
             buttonRpdCheck.Size = new Size(132, 23);
             buttonRpdCheck.TabIndex = 6;
@@ -556,10 +614,10 @@
             tabPageRpdCheck.Controls.Add(label13);
             tabPageRpdCheck.Controls.Add(buttonSaveRpdReport);
             tabPageRpdCheck.Controls.Add(webView2RpdReport);
-            tabPageRpdCheck.Location = new Point(4, 24);
+            tabPageRpdCheck.Location = new Point(4, 23);
             tabPageRpdCheck.Name = "tabPageRpdCheck";
             tabPageRpdCheck.Padding = new Padding(3);
-            tabPageRpdCheck.Size = new Size(1000, 701);
+            tabPageRpdCheck.Size = new Size(1000, 702);
             tabPageRpdCheck.TabIndex = 4;
             tabPageRpdCheck.Text = "Проверка РПД";
             tabPageRpdCheck.UseVisualStyleBackColor = true;
@@ -605,7 +663,7 @@
             webView2RpdReport.DefaultBackgroundColor = Color.White;
             webView2RpdReport.Location = new Point(3, 35);
             webView2RpdReport.Name = "webView2RpdReport";
-            webView2RpdReport.Size = new Size(994, 667);
+            webView2RpdReport.Size = new Size(994, 668);
             webView2RpdReport.TabIndex = 5;
             webView2RpdReport.ZoomFactor = 1D;
             // 
@@ -970,6 +1028,7 @@
             Name = "FormMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Менеджер РПД и ФОС";
+            FormClosed += FormMain_FormClosed;
             Load += FormMain_Load;
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).EndInit();
             tabControl1.ResumeLayout(false);
@@ -1086,5 +1145,9 @@
         private Button buttonAddFindAndReplaceItem;
         private Button buttonRemoveFindAndReplaceItems;
         private ToolTip toolTip1;
+        private Button buttonCurriculumClearList;
+        private CheckBox checkBoxStoreCurriculumList;
+        private CheckBox checkBoxCompetenceMatrixAutoload;
+        private CheckBox checkBoxStoreRpdList;
     }
 }

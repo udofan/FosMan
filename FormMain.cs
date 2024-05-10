@@ -1,6 +1,7 @@
 using BrightIdeasSoftware;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Forms;
 
 namespace FosMan {
     public partial class FormMain : Form {
@@ -31,44 +32,7 @@ namespace FosMan {
         }
 
         private void buttonLoadCompetenceMatrix_Click(object sender, EventArgs e) {
-            var loadMatrix = true;
-
-            if (string.IsNullOrEmpty(textBoxMatrixFileName.Text) || !File.Exists(textBoxMatrixFileName.Text)) {
-                MessageBox.Show("Файл матрицы компетенций не задан.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                loadMatrix = false;
-            }
-
-            if (loadMatrix && App.CompetenceMatrix != null && App.CompetenceMatrix.IsLoaded) {
-                if (MessageBox.Show("Матрица уже загружена.\r\nОбновить?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation) != DialogResult.Yes) {
-                    loadMatrix = false;
-                }
-            }
-
-            if (loadMatrix) {
-                var matrix = CompetenceMatrix.LoadFromFile(textBoxMatrixFileName.Text);
-
-                if (matrix.IsLoaded) {
-                    App.SetCompetenceMatrix(matrix);
-                    m_matrixFileName = textBoxMatrixFileName.Text;
-
-                    ShowMatrix(matrix);
-                    //MessageBox.Show("Матрица компетенций успешно загружена.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                if (matrix.Errors.Any()) {
-                    var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
-                    if (!Directory.Exists(logDir)) {
-                        Directory.CreateDirectory(logDir);
-                    }
-                    var dt = DateTime.Now;
-                    var reportFile = Path.Combine(logDir, $"компетенции.{dt:yyyy-MM-dd_HH-mm-ss}.log");
-                    var lines = new List<string>() { textBoxMatrixFileName.Text };
-                    lines.AddRange(matrix.Errors);
-                    File.WriteAllLines(reportFile, lines, Encoding.UTF8);
-                    var errorList = string.Join("\r\n", matrix.Errors);
-                    MessageBox.Show($"Во время загрузки обнаружены ошибки:\r\n{errorList}\r\n\r\nОни сохранены в журнале {reportFile}.", "Загрузка матрицы",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
+            LoadCompetenceMatrix(textBoxMatrixFileName.Text, false);
         }
 
         /// <summary>
@@ -450,16 +414,89 @@ namespace FosMan {
             fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFindAndReplaceItems);
             textBoxMatrixFileName.Text = App.Config.CompetenceMatrixFileName ?? "";
             ShowHideRpdFixMode(false);
+            checkBoxStoreCurriculumList.Checked = App.Config.StoreCurriculumList;
+            checkBoxCompetenceMatrixAutoload.Checked = App.Config.CompetenceMatrixAutoload;
+            checkBoxStoreRpdList.Checked = App.Config.StoreRpdList;
 
             //отладка
-            textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
-            buttonLoadCompetenceMatrix.PerformClick();
-            var files = new string[] {
-                @"c:\FosMan\Учебные_планы\Бизнес- информатика 38.03.05 очное 23.plx.xlsx",
-                @"c:\FosMan\Учебные_планы\Бизнес-информатика 38.03.05 ОЗ 23.plx.xlsx",
-                @"c:\FosMan\Учебные_планы\Бизнес-информатика заочн 38.03.05.plx.xlsx"
-            };
-            LoadCurriculumFiles(files);
+            //textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
+            //buttonLoadCompetenceMatrix.PerformClick();
+            //var files = new string[] {
+            //    @"c:\FosMan\Учебные_планы\Бизнес- информатика 38.03.05 очное 23.plx.xlsx",
+            //    @"c:\FosMan\Учебные_планы\Бизнес-информатика 38.03.05 ОЗ 23.plx.xlsx",
+            //    @"c:\FosMan\Учебные_планы\Бизнес-информатика заочн 38.03.05.plx.xlsx"
+            //};
+            Task.Run(() => {
+                this.Invoke(new MethodInvoker(() => {
+                    tabControl1.SelectTab(tabPageCompetenceMatrix);
+                    if (App.Config.CompetenceMatrixAutoload) {
+                        textBoxMatrixFileName.Text = App.Config.CompetenceMatrixFileName;
+                        LoadCompetenceMatrix(textBoxMatrixFileName.Text, true);
+                    }
+
+                    if (App.Config.CurriculumList?.Any() ?? false) {
+                        tabControl1.SelectTab(tabPageСurriculum);
+                        LoadCurriculumFiles(App.Config.CurriculumList.ToArray());
+                    }
+                    if (App.Config.RpdList?.Any() ?? false) {
+                        tabControl1.SelectTab(tabPageRpd);
+                        LoadRpdFiles(App.Config.RpdList.ToArray());
+                    }
+                }));
+            });
+        }
+
+        /// <summary>
+        /// Загрузка матрицы компетенций
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void LoadCompetenceMatrix(string fileName, bool silent) {
+            var loadMatrix = true;
+
+            if (string.IsNullOrEmpty(fileName) || !File.Exists(fileName)) {
+                if (!silent) {
+                    MessageBox.Show("Файл матрицы компетенций не задан.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                loadMatrix = false;
+            }
+
+            if (loadMatrix && App.CompetenceMatrix != null && App.CompetenceMatrix.IsLoaded) {
+                if (!silent) {
+                    if (MessageBox.Show("Матрица уже загружена.\r\nОбновить?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Exclamation) != DialogResult.Yes) {
+                        loadMatrix = false;
+                    }
+                }
+            }
+
+            if (loadMatrix) {
+                var matrix = CompetenceMatrix.LoadFromFile(fileName);
+
+                if (matrix.IsLoaded) {
+                    App.SetCompetenceMatrix(matrix);
+                    m_matrixFileName = fileName;
+
+                    ShowMatrix(matrix);
+                    //MessageBox.Show("Матрица компетенций успешно загружена.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                if (matrix.Errors.Any()) {
+                    var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
+                    if (!Directory.Exists(logDir)) {
+                        Directory.CreateDirectory(logDir);
+                    }
+                    var dt = DateTime.Now;
+                    var reportFile = Path.Combine(logDir, $"компетенции.{dt:yyyy-MM-dd_HH-mm-ss}.log");
+                    var lines = new List<string>() { fileName };
+                    lines.AddRange(matrix.Errors);
+                    File.WriteAllLines(reportFile, lines, Encoding.UTF8);
+
+                    if (!silent) {
+                        var errorList = string.Join("\r\n", matrix.Errors);
+                        MessageBox.Show($"Во время загрузки обнаружены ошибки:\r\n{errorList}\r\n\r\nОни сохранены в журнале {reportFile}.", "Загрузка матрицы",
+                                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -475,17 +512,19 @@ namespace FosMan {
             var idx = 1;
             foreach (var file in files) {
                 labelExcelFileLoading.Text = $"Загрузка файлов ({idx} из {files.Length})...";
-                var curriculum = Curriculum.LoadFromFile(file);
-                App.AddCurriculum(curriculum);
+                if (File.Exists(file)) {
+                    var curriculum = Curriculum.LoadFromFile(file);
+                    App.AddCurriculum(curriculum);
 
-                fastObjectListViewCurricula.AddObject(curriculum);
-                idx++;
-                Application.DoEvents();
+                    fastObjectListViewCurricula.AddObject(curriculum);
+                    idx++;
+                    Application.DoEvents();
 
-                if (curriculum.Errors.Any()) {
-                    if (report.Count > 0) report.Add(new string('-', 30));
-                    report.Add(file);
-                    report.AddRange(curriculum.Errors);
+                    if (curriculum.Errors.Any()) {
+                        if (report.Count > 0) report.Add(new string('-', 30));
+                        report.Add(file);
+                        report.AddRange(curriculum.Errors);
+                    }
                 }
             }
             if (idx > 1) {
@@ -586,14 +625,24 @@ namespace FosMan {
                     App.SaveConfig();
                 }
 
-                labelLoadRpd.Visible = true;
-                Application.UseWaitCursor = true;
-                labelLoadRpd.Text = "";
+                LoadRpdFiles(files);
+            }
+        }
 
-                var report = new List<string>();
-                var idx = 1;
-                foreach (var file in files) {
-                    labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})...";
+        /// <summary>
+        /// Загрузка РПД-файлов
+        /// </summary>
+        /// <param name="files"></param>
+        private void LoadRpdFiles(string[] files) {
+            labelLoadRpd.Visible = true;
+            Application.UseWaitCursor = true;
+            labelLoadRpd.Text = "";
+
+            var report = new List<string>();
+            var idx = 1;
+            foreach (var file in files) {
+                labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})...";
+                if (File.Exists(file)) {
                     var rpd = Rpd.LoadFromFile(file);
                     App.AddRpd(rpd);
 
@@ -607,23 +656,23 @@ namespace FosMan {
                         report.AddRange(rpd.Errors);
                     }
                 }
-                if (idx > 1) {
-                    labelLoadRpd.Text += " завершено.";
-                }
-                if (report.Any()) {
-                    var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
-                    if (!Directory.Exists(logDir)) {
-                        Directory.CreateDirectory(logDir);
-                    }
-                    var dt = DateTime.Now;
-                    var reportFile = Path.Combine(logDir, $"рпд.{dt:yyyy-MM-dd_HH-mm-ss}.log");
-                    File.WriteAllLines(reportFile, report, Encoding.UTF8);
-                    MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
-                                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-
-                Application.UseWaitCursor = false;
             }
+            if (idx > 1) {
+                labelLoadRpd.Text += " завершено.";
+            }
+            if (report.Any()) {
+                var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
+                if (!Directory.Exists(logDir)) {
+                    Directory.CreateDirectory(logDir);
+                }
+                var dt = DateTime.Now;
+                var reportFile = Path.Combine(logDir, $"рпд.{dt:yyyy-MM-dd_HH-mm-ss}.log");
+                File.WriteAllLines(reportFile, report, Encoding.UTF8);
+                MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            Application.UseWaitCursor = false;
         }
 
         private void fastObjectListViewRpdList_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
@@ -870,19 +919,53 @@ namespace FosMan {
                 var ret = MessageBox.Show($"Вы уверены, что хотите удалить выделенные элементы ({fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects.Count} шт.)?",
                     "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (ret == DialogResult.Yes) {
-                    fastObjectListViewRpdFixFindAndReplaceItems.RemoveObjects(fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects);
-
                     foreach (var item in fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects) {
                         App.Config.RpdFindAndReplaceItems.Remove(item as RpdFindAndReplaceItem);
                     }
-
                     App.SaveConfig();
+
+                    fastObjectListViewRpdFixFindAndReplaceItems.RemoveObjects(fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects);
                 }
             }
         }
 
         private void textBoxMatrixFileName_TextChanged(object sender, EventArgs e) {
             App.Config.CompetenceMatrixFileName = textBoxMatrixFileName.Text;
+            App.SaveConfig();
+        }
+
+        private void checkBoxStoreCurriculumList_CheckedChanged(object sender, EventArgs e) {
+            App.Config.StoreCurriculumList = checkBoxStoreCurriculumList.Checked;
+            App.SaveConfig();
+        }
+
+        private void FormMain_FormClosed(object sender, FormClosedEventArgs e) {
+            App.Config.CurriculumList = [];
+            if (App.Config.StoreCurriculumList) {
+                App.Config.CurriculumList = App.Curricula?.Values.Select(c => c.SourceFileName).ToList() ?? [];
+            }
+            App.Config.RpdList = [];
+            if (App.Config.StoreRpdList) {
+                App.Config.RpdList = App.RpdList?.Values.Select(r => r.SourceFileName).ToList() ?? [];
+            }
+            App.SaveConfig();
+        }
+
+        private void buttonCurriculumClearList_Click(object sender, EventArgs e) {
+            if (MessageBox.Show("Вы уверены, что хотите очистить список загруженных учебных планов?",
+                "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                App.Curricula.Clear();
+                fastObjectListViewCurricula.ClearObjects();
+            }
+        }
+
+        private void checkBoxCompetenceMatrixAutoload_CheckedChanged(object sender, EventArgs e) {
+            App.Config.CompetenceMatrixAutoload = checkBoxCompetenceMatrixAutoload.Checked;
+            App.SaveConfig();
+        }
+
+        private void checkBoxStoreRpdList_CheckedChanged(object sender, EventArgs e) {
+            App.Config.StoreRpdList = checkBoxStoreRpdList.Checked;
             App.SaveConfig();
         }
     }
