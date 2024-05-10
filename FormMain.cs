@@ -10,8 +10,8 @@ namespace FosMan {
         const string DIR_REPORTS = "Reports";
         const string DIR_LOGS = "Logs";
 
-        string m_matrixFileName = null;
-        string m_rpdHtmlReport = null;
+        //string m_matrixFileName = null;
+        //string m_rpdHtmlReport = null;
 
         public FormMain() {
             InitializeComponent();
@@ -418,6 +418,9 @@ namespace FosMan {
             checkBoxStoreCurriculumList.Checked = App.Config.StoreCurriculumList;
             checkBoxCompetenceMatrixAutoload.Checked = App.Config.CompetenceMatrixAutoload;
             checkBoxStoreRpdList.Checked = App.Config.StoreRpdList;
+            checkBoxRpdFixTableOfCompetences.Checked = App.Config.RpdFixTableOfCompetences;
+            checkBoxRpdFixTableOfEduWorks.Checked = App.Config.RpdFixTableOfEduWorks;
+            textBoxRpdGenFileNameTemplate.Text = App.Config.RpdGenFileNameTemplate;
 
             //отладка
             //textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
@@ -475,7 +478,7 @@ namespace FosMan {
 
                 if (matrix.IsLoaded) {
                     App.SetCompetenceMatrix(matrix);
-                    m_matrixFileName = fileName;
+                    //m_matrixFileName = fileName;
 
                     ShowMatrix(matrix);
                     //MessageBox.Show("Матрица компетенций успешно загружена.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -735,14 +738,18 @@ namespace FosMan {
         }
 
         private void buttonSaveRpdReport_Click(object sender, EventArgs e) {
-            if (!string.IsNullOrEmpty(m_rpdHtmlReport)) {
+            var htmlReport = tabControlReports.SelectedTab?.Tag as string;
+
+            if (!string.IsNullOrEmpty(htmlReport)) {
                 var repDir = Path.Combine(Environment.CurrentDirectory, DIR_REPORTS);
                 if (!Directory.Exists(repDir)) {
                     Directory.CreateDirectory(repDir);
                 }
                 var dt = DateTime.Now;
-                var reportFile = Path.Combine(repDir, $"РПД.{dt:yyyy-MM-dd_HH-mm-ss}.html");
-                File.WriteAllText(reportFile, m_rpdHtmlReport, Encoding.UTF8);
+                var pos = tabControlReports.SelectedTab.Text.IndexOf('[');
+                var repName = tabControlReports.SelectedTab.Text.Substring(0, pos - 1).Trim();
+                var reportFile = Path.Combine(repDir, $"Отчёт.{repName}.{dt:yyyy-MM-dd_HH-mm-ss}.html");
+                File.WriteAllText(reportFile, htmlReport, Encoding.UTF8);
                 MessageBox.Show($"Отчет сохранён в файл\r\n{reportFile}", "Сохранение отчёта",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -1004,13 +1011,55 @@ namespace FosMan {
         }
 
         private void tabControlReports_MouseDown(object sender, MouseEventArgs e) {
-            Rectangle r = tabControl1.GetTabRect(tabControlReports.SelectedIndex);
+            Rectangle r = tabControlReports.GetTabRect(tabControlReports.SelectedIndex);
             Rectangle closeButton = new Rectangle(r.Right - 22, r.Top + 3, 15, 9);
             if (closeButton.Contains(e.Location)) {
                 if (MessageBox.Show("Закрыть вкладку?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
                     tabControlReports.TabPages.Remove(tabControlReports.SelectedTab);
                 }
             }
+        }
+
+        private void tabControlReports_MouseMove(object sender, MouseEventArgs e) {
+            //NativeMethods.TCHITTESTINFO HTI = new NativeMethods.TCHITTESTINFO(tabControl.PointToClient(Cursor.Position));
+            //int tabID = NativeMethods.SendMessage(tabControl.Handle, NativeMethods.TCM_HITTEST, IntPtr.Zero, ref HTI);
+            //return tabID == -1 ? null : tabControl.TabPages[tabID];
+
+            Rectangle r = tabControlReports.GetTabRect(tabControlReports.SelectedIndex);
+            Rectangle closeButton = new Rectangle(r.Right - 22, r.Top + 3, 15, 9);
+            if (closeButton.Contains(e.Location)) {
+                tabControlReports.Cursor = Cursors.Hand;
+            }
+            else {
+                tabControlReports.Cursor = Cursors.Default;
+            }
+        }
+
+        private void checkBoxRpdFixTableOfCompetences_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixTableOfCompetences = checkBoxRpdFixTableOfCompetences.Checked;
+            App.SaveConfig();
+        }
+
+        private void checkBoxRpdFixTableOfEduWorks_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixTableOfEduWorks = checkBoxRpdFixTableOfEduWorks.Checked;
+            App.SaveConfig();
+        }
+
+        private void buttonRpdFix_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                App.FixRpdFiles(rpdList, out var htmlReport);
+
+                AddReport("Исправление РПД", htmlReport);
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Исправление РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+        private void textBoxRpdGenFileNameTemplate_TextChanged(object sender, EventArgs e) {
+            App.Config.RpdGenFileNameTemplate = textBoxRpdGenFileNameTemplate.Text;
+            App.SaveConfig();
         }
     }
 }

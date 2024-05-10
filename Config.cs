@@ -34,6 +34,16 @@ namespace FosMan {
         [JsonInclude]
         public List<string> RpdList { get; set; } = [];
         /// <summary>
+        /// Фикс таблицы компетенций
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixTableOfCompetences { get; set; } = true;
+        /// <summary>
+        /// Фикс таблицы учебных работ
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixTableOfEduWorks { get; set; } = true;
+        /// <summary>
         /// Последняя выбранная локация файлов УП
         /// </summary>
         [JsonInclude]
@@ -58,5 +68,10 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public List<CurriculumDisciplineHeader> CurriculumDisciplineParseItems { get; set; }
+        /// <summary>
+        /// Шаблона для имени файла генерируемого РПД
+        /// </summary>
+        [JsonInclude]
+        public string RpdGenFileNameTemplate { get; set; } = "РПД_{Index}_{Name}_2024.docx";
     }
 }

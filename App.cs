@@ -22,12 +22,14 @@ using System.Threading.Tasks;
 using System.Web;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
+using static System.Resources.ResXFileRef;
 
 namespace FosMan {
     /// <summary>
     /// Загруженные данные
     /// </summary>
     static internal class App {
+        const string FIXED_RPD_DIRECTORY = "FixedRpd";
         //const string CONFIG_FILENAME = "appconfig.json";
 
         //таблица учебных работ по формам обучения
@@ -56,6 +58,13 @@ namespace FosMan {
         static Dictionary<string, Rpd> m_rpdDic = [];
         static Dictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
         static Config m_config = new();
+        static JsonSerializerOptions m_jsonOptions = new() {
+            WriteIndented = true,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
+            Converters = {
+                new JsonStringEnumConverter()
+            }
+        };
 
         public static CompetenceMatrix CompetenceMatrix { get => m_competenceMatrix; }
 
@@ -747,10 +756,12 @@ namespace FosMan {
         /// </summary>
         /// <param name="table">пустая таблицы (1 ряд, 3 колонки)</param>
         /// <param name="discipline"></param>
-        static void RecreateTableOfCompetences(Table table, CurriculumDiscipline discipline, bool recreateHeaders) {
+        static bool RecreateTableOfCompetences(Table table, CurriculumDiscipline discipline, bool recreateHeaders) {
+            var result = false;
+
             //очистка таблицы
             if (table.ColumnCount < 3) {
-                return;
+                return false;
             }
             var topRowIdxToRemove = recreateHeaders ? 0 : 1;
             for (var rowIdx = table.RowCount - 1; rowIdx >= topRowIdxToRemove; rowIdx--) {
@@ -825,6 +836,8 @@ namespace FosMan {
                     table.MergeCellsInColumn(0, competenceStartRow, table.RowCount - 1);
                 }
             }
+
+            return result;
         }
 
         /// <summary>
@@ -833,14 +846,7 @@ namespace FosMan {
         static public void SaveConfig() {
             var configFile = Path.Combine(Environment.CurrentDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.config.json");
             if (m_config != null) {
-                var jsonOptions = new JsonSerializerOptions() {
-                    WriteIndented = true, 
-                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic), 
-                    Converters = { 
-                        new JsonStringEnumConverter()
-                    }
-                };
-                var json = JsonSerializer.Serialize(m_config, jsonOptions);
+                var json = JsonSerializer.Serialize(m_config, m_jsonOptions);
                 File.WriteAllText(configFile, json, Encoding.UTF8);
             }
         }
@@ -852,13 +858,7 @@ namespace FosMan {
             var configFile = Path.Combine(Environment.CurrentDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.config.json");
             if (File.Exists(configFile)) {
                 var json = File.ReadAllText(configFile);
-                var jsonOptions = new JsonSerializerOptions() {
-                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
-                    Converters = {
-                        new JsonStringEnumConverter()
-                    }
-                };
-                m_config = JsonSerializer.Deserialize<Config>(json, jsonOptions);
+                m_config = JsonSerializer.Deserialize<Config>(json, m_jsonOptions);
             }
             else {
                 m_config = new();
@@ -867,6 +867,161 @@ namespace FosMan {
             if (!(m_config.CurriculumDisciplineParseItems?.Any() ?? false)) {
                 m_config.CurriculumDisciplineParseItems = CurriculumDisciplineReader.DefaultHeaders;
             }
+        }
+
+        /// <summary>
+        /// Режим фикса РПД
+        /// </summary>
+        /// <param name="rpdList"></param>
+        internal static void FixRpdFiles(List<Rpd> rpdList, out string htmlReport) {
+            var html = new StringBuilder("<html><body><h2>Отчёт по исправлению РПД</h2>");
+
+            try {
+                html.Append("<div><b>Режим работы:</b></div><ul>");
+                if (Config.RpdFixTableOfCompetences) {
+                    html.Append("<li>Исправление таблицы компетенций</li>");
+                }
+                if (Config.RpdFixTableOfEduWorks) {
+                    html.Append("<li>Исправление таблицы учебных работ</li>");
+                }
+                var findAndReplaceItems = Config.RpdFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
+                if (findAndReplaceItems != null) {
+                    var tdStyle = "style='border: 1px solid;'";
+                    html.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
+                    foreach (var item in findAndReplaceItems) {
+                        html.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
+                    }
+                    html.Append("</table></li>");
+                }
+                html.Append("</ul>");
+
+                foreach (var rpd in rpdList) {
+                    html.Append("<p />");
+                    if (File.Exists(rpd.SourceFileName)) {
+                        html.Append($"<div>Исходный файл: <b>{rpd.SourceFileName}</b></div>");
+                        html.Append($"<div>Дисциплина: <b>{rpd.DisciplineName}</b></div>");
+
+                        var fixCompetences = true;
+                        var discipline = FindDiscipline(rpd);
+                        if (discipline == null) {
+                            fixCompetences = false;
+                            html.Append($"<div style='color: red'>Не удалось найти дисциплину [{rpd.DisciplineName}] в загруженных учебных планах</div>");
+                        }
+                        var fixEduWorks = true;
+                        var eduWorks = GetEducationWorks(rpd);
+                        //if (!(eduWorks?.Any() ?? false)) {
+                        //    fixEduWorks = false;
+                        //    html.Append($"<div style='color: red'>Не удалось найти учебные работы для дисциплины [{rpd.DisciplineName}] в загруженных учебных планах</div>");
+                        //}
+                        if (rpd.FormsOfStudy.Count != eduWorks.Count) {
+                            fixEduWorks = false;
+                            foreach (var form in rpd.FormsOfStudy) {
+                                if (!eduWorks.ContainsKey(form)) {
+                                    html.Append($"<div style='color: red'>Учебный план для формы обучения [{form.GetDescription()}] не загружен</div>");
+                                }
+                            }
+                        }
+
+                        var targetDir = Path.Combine(Environment.CurrentDirectory, FIXED_RPD_DIRECTORY);
+
+                        using (var docx = DocX.Load(rpd.SourceFileName)) {
+                            foreach (var table in docx.Tables) {
+                                var backup = table.Xml;
+                                if (fixCompetences && CompetenceMatrix.TestTable(table)) {
+                                    if (RecreateTableOfCompetences(table, discipline, false)) {
+                                        html.Append("<div style='color: green'>Таблица компетенций сформирована по матрице компетенций.</div>");
+                                    }
+                                    else {
+                                        html.Append("<div style='color: red'>Не удалось сформировать обновленную таблицу компетенций.</div>");
+                                        table.Xml = backup;
+                                    }
+                                }
+                                if (fixEduWorks) {
+                                    if (TestTableForEducationalWorks(table, eduWorks, false /*установка значений в таблицу*/)) {
+                                        html.Append("<div style='color: green'>Таблица учебных работ заполнена по учебным планам.</div>");
+                                    }
+                                    else {
+                                        html.Append("<div style='color: red'>Не удалось сформировать таблицу учебных работ.</div>");
+                                        table.Xml = backup;
+                                    }
+                                }
+                            }
+                            //обработка "найти и заменить"
+                            var replaceCount = 0;
+                            if (findAndReplaceItems?.Any() ?? false) {
+                                foreach (var par in docx.Paragraphs) {
+                                    foreach (var findItem in findAndReplaceItems) {
+                                        var replaceOptions = new FunctionReplaceTextOptions() {
+                                            FindPattern = findItem.FindPattern,
+                                            ContainerLocation = ReplaceTextContainer.All,
+                                            StopAfterOneReplacement = false,
+                                            RegexMatchHandler = m => findItem.ReplacePattern, 
+                                            RegExOptions = RegexOptions.IgnoreCase
+                                        };
+                                        if (par.ReplaceText(replaceOptions)) {
+                                            replaceCount++;
+                                        }
+                                    }
+                                }
+                                html.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
+                            }
+                            var fileName = Path.GetFileName(rpd.SourceFileName);
+                            var newFileName = Path.Combine(targetDir, fileName);
+                            if (!Directory.Exists(targetDir)) {
+                                Directory.CreateDirectory(targetDir);
+                            }
+                            docx.SaveAs(newFileName);
+                            html.Append($"<div>Итоговый файл: <b>{newFileName}</b></div>");
+                        }
+                    }
+                    else {
+                        html.Append($"<div style='color:red'>Файл <b>{rpd.SourceFileName}</b> не найден</div>");
+                    }
+                }
+            }
+            catch (Exception ex) {
+                html.Append($"<div>{ex.Message}</div>");
+                html.Append($"<div>{ex.StackTrace}</div>");
+            }
+            finally {
+                html.Append("</body></html>");
+            }
+
+            htmlReport = html.ToString();
+        }
+
+        /// <summary>
+        /// Получить коллекцию учебных работ для указанного РПД
+        /// </summary>
+        /// <param name="rpd"></param>
+        /// <returns></returns>
+        private static Dictionary<EFormOfStudy, EducationalWork> GetEducationWorks(Rpd rpd) {
+            var curricula = FindCurriculums(rpd.DirectionCode, rpd.Profile, rpd.Department);
+            var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
+            foreach (var curr in curricula.Values) {
+                var disc = curr.FindDiscipline(rpd.DisciplineName);
+                if (disc != null) {
+                    eduWorks[curr.FormOfStudy] = disc.EducationalWork;
+                }
+            }
+            return eduWorks;
+        }
+
+        /// <summary>
+        /// Найти дисциплину для указанного РПД
+        /// </summary>
+        /// <param name="rpd"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private static CurriculumDiscipline FindDiscipline(Rpd rpd) {
+            CurriculumDiscipline discipline = null;
+            var curricula = FindCurriculums(rpd.DirectionCode, rpd.Profile, rpd.Department);
+            if (curricula != null) {
+                discipline = curricula.Values.FirstOrDefault()?.FindDiscipline(rpd.DisciplineName);
+                //var curriculum = curricula.Values.Select(c => c.FormOfStudy == rpd.FormsOfStudy)
+            }
+
+            return discipline;
         }
     }
 }
