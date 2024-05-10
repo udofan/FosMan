@@ -1,4 +1,5 @@
 using BrightIdeasSoftware;
+using Microsoft.Web.WebView2.WinForms;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -696,13 +697,40 @@ namespace FosMan {
         private async void buttonRpdCheck_Click(object sender, EventArgs e) {
             App.CheckRdp(out var report);
 
-            if (!string.IsNullOrEmpty(report)) {
-                await webView2RpdReport.EnsureCoreWebView2Async();
-                webView2RpdReport.NavigateToString(report);
+            //if (!string.IsNullOrEmpty(report)) {
+            //    await webView2RpdReport.EnsureCoreWebView2Async();
+            //    webView2RpdReport.NavigateToString(report);
 
-                m_rpdHtmlReport = report;
+            //    m_rpdHtmlReport = report;
 
-                tabControl1.SelectedTab = tabPageRpdCheck;
+            //    tabControl1.SelectedTab = tabPageRpdCheck;
+            //}
+            AddReport("Проверка РПД", report);
+        }
+
+        /// <summary>
+        /// Добавить вкладку с отчетом
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="html"></param>
+        async void AddReport(string name, string html) {
+            if (!string.IsNullOrEmpty(html)) {
+                var tabCount = tabControlReports.TabPages.Cast<TabPage>().Select(t => t.Name.StartsWith(name, StringComparison.CurrentCultureIgnoreCase)).Count();
+                name += $" ({tabCount + 1})  [x]";
+
+                var tabPageNewReport = new TabPage(name);
+
+                var webView = new WebView2();
+                await webView.EnsureCoreWebView2Async();
+                webView.NavigateToString(html);
+                tabPageNewReport.Controls.Add(webView);
+                webView.Dock = DockStyle.Fill;
+
+                tabPageNewReport.Tag = html;    //запоминаем на случай сохранения
+                tabControlReports.TabPages.Add(tabPageNewReport);
+                tabControlReports.SelectTab(tabPageNewReport);
+
+                tabControl1.SelectTab(tabPageReports);
             }
         }
 
@@ -967,6 +995,22 @@ namespace FosMan {
         private void checkBoxStoreRpdList_CheckedChanged(object sender, EventArgs e) {
             App.Config.StoreRpdList = checkBoxStoreRpdList.Checked;
             App.SaveConfig();
+        }
+
+        private void tabControlReports_DrawItem(object sender, DrawItemEventArgs e) {
+            //e.Graphics.DrawString("x", e.Font, Brushes.Black, e.Bounds.Right - 15, e.Bounds.Top + 4);
+            //e.Graphics.DrawString(this.tabControl1.TabPages[e.Index].Text, e.Font, Brushes.Black, e.Bounds.Left + 12, e.Bounds.Top + 4);
+            //e.DrawFocusRectangle();
+        }
+
+        private void tabControlReports_MouseDown(object sender, MouseEventArgs e) {
+            Rectangle r = tabControl1.GetTabRect(tabControlReports.SelectedIndex);
+            Rectangle closeButton = new Rectangle(r.Right - 22, r.Top + 3, 15, 9);
+            if (closeButton.Contains(e.Location)) {
+                if (MessageBox.Show("Закрыть вкладку?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                    tabControlReports.TabPages.Remove(tabControlReports.SelectedTab);
+                }
+            }
         }
     }
 }

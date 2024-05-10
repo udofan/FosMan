@@ -63,11 +63,9 @@
             buttonSelectRpdFiles = new Button();
             tabPage2 = new TabPage();
             label1 = new Label();
-            tabPageRpdCheck = new TabPage();
-            linkLabelRpdPage = new LinkLabel();
-            label13 = new Label();
+            tabPageReports = new TabPage();
             buttonSaveRpdReport = new Button();
-            webView2RpdReport = new Microsoft.Web.WebView2.WinForms.WebView2();
+            tabControlReports = new TabControl();
             tabPageRpdGeneration = new TabPage();
             linkLabelRpdGenCompetenceMatrix = new LinkLabel();
             label11 = new Label();
@@ -122,8 +120,7 @@
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdFixFindAndReplaceItems).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).BeginInit();
             tabPage2.SuspendLayout();
-            tabPageRpdCheck.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)webView2RpdReport).BeginInit();
+            tabPageReports.SuspendLayout();
             tabPageRpdGeneration.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -164,7 +161,7 @@
             tabControl1.Controls.Add(tabPageСurriculum);
             tabControl1.Controls.Add(tabPageRpd);
             tabControl1.Controls.Add(tabPage2);
-            tabControl1.Controls.Add(tabPageRpdCheck);
+            tabControl1.Controls.Add(tabPageReports);
             tabControl1.Controls.Add(tabPageRpdGeneration);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
@@ -379,10 +376,10 @@
             tabPageRpd.Controls.Add(buttonRpdCheck);
             tabPageRpd.Controls.Add(labelLoadRpd);
             tabPageRpd.Controls.Add(buttonSelectRpdFiles);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1000, 702);
+            tabPageRpd.Size = new Size(1000, 701);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -608,45 +605,22 @@
             label1.TabIndex = 2;
             label1.Text = "Расположение:";
             // 
-            // tabPageRpdCheck
+            // tabPageReports
             // 
-            tabPageRpdCheck.Controls.Add(linkLabelRpdPage);
-            tabPageRpdCheck.Controls.Add(label13);
-            tabPageRpdCheck.Controls.Add(buttonSaveRpdReport);
-            tabPageRpdCheck.Controls.Add(webView2RpdReport);
-            tabPageRpdCheck.Location = new Point(4, 23);
-            tabPageRpdCheck.Name = "tabPageRpdCheck";
-            tabPageRpdCheck.Padding = new Padding(3);
-            tabPageRpdCheck.Size = new Size(1000, 702);
-            tabPageRpdCheck.TabIndex = 4;
-            tabPageRpdCheck.Text = "Проверка РПД";
-            tabPageRpdCheck.UseVisualStyleBackColor = true;
-            // 
-            // linkLabelRpdPage
-            // 
-            linkLabelRpdPage.ActiveLinkColor = Color.Blue;
-            linkLabelRpdPage.AutoSize = true;
-            linkLabelRpdPage.Location = new Point(408, 10);
-            linkLabelRpdPage.Name = "linkLabelRpdPage";
-            linkLabelRpdPage.Size = new Size(30, 14);
-            linkLabelRpdPage.TabIndex = 8;
-            linkLabelRpdPage.TabStop = true;
-            linkLabelRpdPage.Text = "РПД";
-            linkLabelRpdPage.LinkClicked += linkLabelRpdPage_LinkClicked;
-            // 
-            // label13
-            // 
-            label13.AutoSize = true;
-            label13.Location = new Point(17, 10);
-            label13.Name = "label13";
-            label13.Size = new Size(396, 14);
-            label13.TabIndex = 7;
-            label13.Text = "На данной вкладке отображается отчёт по проверке загруженных ";
+            tabPageReports.Controls.Add(buttonSaveRpdReport);
+            tabPageReports.Controls.Add(tabControlReports);
+            tabPageReports.Location = new Point(4, 23);
+            tabPageReports.Name = "tabPageReports";
+            tabPageReports.Padding = new Padding(3);
+            tabPageReports.Size = new Size(1000, 702);
+            tabPageReports.TabIndex = 4;
+            tabPageReports.Text = "Отчёты";
+            tabPageReports.UseVisualStyleBackColor = true;
             // 
             // buttonSaveRpdReport
             // 
             buttonSaveRpdReport.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonSaveRpdReport.Location = new Point(878, 6);
+            buttonSaveRpdReport.Location = new Point(852, 34);
             buttonSaveRpdReport.Name = "buttonSaveRpdReport";
             buttonSaveRpdReport.Size = new Size(114, 23);
             buttonSaveRpdReport.TabIndex = 6;
@@ -655,17 +629,16 @@
             buttonSaveRpdReport.UseVisualStyleBackColor = true;
             buttonSaveRpdReport.Click += buttonSaveRpdReport_Click;
             // 
-            // webView2RpdReport
+            // tabControlReports
             // 
-            webView2RpdReport.AllowExternalDrop = false;
-            webView2RpdReport.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            webView2RpdReport.CreationProperties = null;
-            webView2RpdReport.DefaultBackgroundColor = Color.White;
-            webView2RpdReport.Location = new Point(3, 35);
-            webView2RpdReport.Name = "webView2RpdReport";
-            webView2RpdReport.Size = new Size(994, 668);
-            webView2RpdReport.TabIndex = 5;
-            webView2RpdReport.ZoomFactor = 1D;
+            tabControlReports.Dock = DockStyle.Fill;
+            tabControlReports.Location = new Point(3, 3);
+            tabControlReports.Name = "tabControlReports";
+            tabControlReports.SelectedIndex = 0;
+            tabControlReports.Size = new Size(994, 696);
+            tabControlReports.TabIndex = 9;
+            tabControlReports.DrawItem += tabControlReports_DrawItem;
+            tabControlReports.MouseDown += tabControlReports_MouseDown;
             // 
             // tabPageRpdGeneration
             // 
@@ -1053,9 +1026,7 @@
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).EndInit();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
-            tabPageRpdCheck.ResumeLayout(false);
-            tabPageRpdCheck.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)webView2RpdReport).EndInit();
+            tabPageReports.ResumeLayout(false);
             tabPageRpdGeneration.ResumeLayout(false);
             tabPageRpdGeneration.PerformLayout();
             groupBox3.ResumeLayout(false);
@@ -1096,8 +1067,7 @@
         private OpenFileDialog openFileDialogSelectRpd;
         private OpenFileDialog openFileDialog4;
         private Button buttonRpdCheck;
-        private TabPage tabPageRpdCheck;
-        private Microsoft.Web.WebView2.WinForms.WebView2 webView2RpdReport;
+        private TabPage tabPageReports;
         private Button buttonSaveRpdReport;
         private TabPage tabPageRpdGeneration;
         private Label label3;
@@ -1132,8 +1102,6 @@
         private Label label11;
         private TextBox textBoxRpdGenFSES;
         private Label label12;
-        private LinkLabel linkLabelRpdPage;
-        private Label label13;
         private Button buttonRpdShowFixMode;
         private SplitContainer splitContainer1;
         private GroupBox groupBox4;
@@ -1149,5 +1117,6 @@
         private CheckBox checkBoxStoreCurriculumList;
         private CheckBox checkBoxCompetenceMatrixAutoload;
         private CheckBox checkBoxStoreRpdList;
+        private TabControl tabControlReports;
     }
 }
