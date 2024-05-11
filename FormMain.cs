@@ -420,7 +420,9 @@ namespace FosMan {
             checkBoxStoreRpdList.Checked = App.Config.StoreRpdList;
             checkBoxRpdFixTableOfCompetences.Checked = App.Config.RpdFixTableOfCompetences;
             checkBoxRpdFixTableOfEduWorks.Checked = App.Config.RpdFixTableOfEduWorks;
+            textBoxRpdFixTargetDir.Text = App.Config.RpdFixTargetDir;
             textBoxRpdGenFileNameTemplate.Text = App.Config.RpdGenFileNameTemplate;
+            textBoxRpdGenTargetDir.Text = App.Config.RpdGenTargetDir;
 
             //отладка
             //textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
@@ -790,6 +792,12 @@ namespace FosMan {
                     textBoxRpdGenTargetDir.SelectionStart = textBoxRpdGenTargetDir.Text.Length - 1;
                 }
             }
+            if (tabControl1.SelectedTab == tabPageRpd) {
+                if (string.IsNullOrEmpty(textBoxRpdFixTargetDir.Text)) {
+                    textBoxRpdFixTargetDir.Text = Path.Combine(Environment.CurrentDirectory, $"Исправленные_РПД_{DateTime.Now:yyyy-MM-dd}");
+                    textBoxRpdFixTargetDir.SelectionStart = textBoxRpdFixTargetDir.Text.Length - 1;
+                }
+            }
         }
 
         private void comboBoxSelectCurriculum_SelectedIndexChanged(object sender, EventArgs e) {
@@ -832,10 +840,10 @@ namespace FosMan {
 
         private void buttonSelectRpdTargetDir_Click(object sender, EventArgs e) {
             var initDir = Directory.Exists(textBoxRpdGenTargetDir.Text) ? textBoxRpdGenTargetDir.Text : Environment.CurrentDirectory;
-            folderBrowserDialogRpdTargetDir.InitialDirectory = initDir;
+            folderBrowserDialogSelectDir.InitialDirectory = initDir;
 
-            if (folderBrowserDialogRpdTargetDir.ShowDialog() == DialogResult.OK) {
-                textBoxRpdGenTargetDir.Text = folderBrowserDialogRpdTargetDir.SelectedPath;
+            if (folderBrowserDialogSelectDir.ShowDialog() == DialogResult.OK) {
+                textBoxRpdGenTargetDir.Text = folderBrowserDialogSelectDir.SelectedPath;
             }
         }
 
@@ -863,8 +871,11 @@ namespace FosMan {
                     labelRpdGenStatus.Visible = true;
                     Application.UseWaitCursor = true;
                     labelRpdGenStatus.Text = "";
-
-                    var newRpdFiles = App.GenerateRpdFiles(curriculumGroup, rpdTemplate, textBoxRpdGenTargetDir.Text,
+                    var targetDir = textBoxRpdGenTargetDir.Text;
+                    if (string.IsNullOrEmpty(targetDir)) {
+                        targetDir = Path.Combine(Environment.CurrentDirectory, $"РПД_{DateTime.Now:yyyy-MM-dd}");
+                    }
+                    var newRpdFiles = App.GenerateRpdFiles(curriculumGroup, rpdTemplate, targetDir,
                                                            textBoxRpdGenFileNameTemplate.Text,
                                                            (int idx, CurriculumDiscipline discipline) => {
                                                                this.Invoke(new MethodInvoker(() => {
@@ -1048,7 +1059,11 @@ namespace FosMan {
         private void buttonRpdFix_Click(object sender, EventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
-                App.FixRpdFiles(rpdList, out var htmlReport);
+                var targetDir = textBoxRpdGenTargetDir.Text;
+                if (string.IsNullOrEmpty(targetDir)) {
+                    targetDir = Path.Combine(Environment.CurrentDirectory, $"Исправленные_РПД_{DateTime.Now:yyyy-MM-dd}");
+                }
+                App.FixRpdFiles(rpdList, targetDir, out var htmlReport);
 
                 AddReport("Исправление РПД", htmlReport);
             }
@@ -1060,6 +1075,57 @@ namespace FosMan {
         private void textBoxRpdGenFileNameTemplate_TextChanged(object sender, EventArgs e) {
             App.Config.RpdGenFileNameTemplate = textBoxRpdGenFileNameTemplate.Text;
             App.SaveConfig();
+        }
+
+        private void textBoxRpdFixTargetDir_TextChanged(object sender, EventArgs e) {
+            App.Config.RpdFixTargetDir = textBoxRpdFixTargetDir.Text;
+            App.SaveConfig();
+        }
+
+        private void textBoxRpdGenTargetDir_TextChanged(object sender, EventArgs e) {
+            App.Config.RpdGenTargetDir = textBoxRpdGenTargetDir.Text;
+            App.SaveConfig();
+        }
+
+        private void buttonRpdFixSelectTargetDir_Click(object sender, EventArgs e) {
+            var initDir = Directory.Exists(buttonRpdFixSelectTargetDir.Text) ? buttonRpdFixSelectTargetDir.Text : Environment.CurrentDirectory;
+            folderBrowserDialogSelectDir.InitialDirectory = initDir;
+
+            if (folderBrowserDialogSelectDir.ShowDialog() == DialogResult.OK) {
+                buttonRpdFixSelectTargetDir.Text = folderBrowserDialogSelectDir.SelectedPath;
+            }
+        }
+
+        private void linkLabelRpdFixSelectFilesToFix_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            fastObjectListViewRpdList.DeselectAll();
+
+            var selectRpdList = new List<Rpd>();
+            foreach (var obj in fastObjectListViewRpdList.Objects) {
+                var rpd = obj as Rpd;
+                if (rpd != null) {
+                    var eduWorks = App.GetEducationWorks(rpd, out var curricula);
+                    if (eduWorks.Count == rpd.FormsOfStudy.Count) {
+                        var disc = curricula.FirstOrDefault().Value.FindDiscipline(rpd.DisciplineName);
+                        if (disc != null) {
+                            var matrixItems = App.CompetenceMatrix.GetItems(disc.CompetenceList);
+                            var indicators = App.CompetenceMatrix.GetAllAchievementCodes(matrixItems);
+                            if (disc.CompetenceList.Intersect(indicators).Count() == disc.CompetenceList.Count) {
+                                selectRpdList.Add(rpd);
+                            }
+                        }
+                        //
+                    }
+                }
+            }
+            fastObjectListViewRpdList.SelectObjects(selectRpdList);
+        }
+
+        private void buttonRpdListClear_Click(object sender, EventArgs e) {
+            if (MessageBox.Show("Вы уверены, что хотите очистить список загруженных РПД?",
+                                "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                App.RpdList.Clear();
+                fastObjectListViewRpdList.ClearObjects();
+            }
         }
     }
 }

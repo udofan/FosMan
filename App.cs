@@ -29,7 +29,7 @@ namespace FosMan {
     /// Загруженные данные
     /// </summary>
     static internal class App {
-        const string FIXED_RPD_DIRECTORY = "FixedRpd";
+        //const string FIXED_RPD_DIRECTORY = "FixedRpd";
         //const string CONFIG_FILENAME = "appconfig.json";
 
         //таблица учебных работ по формам обучения
@@ -217,11 +217,11 @@ namespace FosMan {
                     rpd.Errors.ForEach(e => rep.AddError(e));
                 }
                 //ищем Учебные планы
-                var curriculums = FindCurriculums(rpd.DirectionCode, rpd.Profile, rpd.Department);
-                if (curriculums != null && curriculums.Any()) {
+                var curricula = FindCurricula(rpd);
+                if (curricula != null && curricula.Any()) {
                     //проверка на отсутствие УПов
                     var missedFormsOfStudy = rpd.FormsOfStudy.ToHashSet();
-                    missedFormsOfStudy.RemoveWhere(x => curriculums.ContainsKey(x));
+                    missedFormsOfStudy.RemoveWhere(x => curricula.ContainsKey(x));
                     foreach (var item in missedFormsOfStudy) {
                         rep.Append("<p />");
                         rep.AddDiv($"Форма обучения: <b>{item.GetDescription()}</b>");
@@ -232,7 +232,7 @@ namespace FosMan {
                     }
 
                     //поиск дисциплины в УПах
-                    foreach (var curriculum in curriculums) {
+                    foreach (var curriculum in curricula) {
                         rep.Append("<p />");
                         rep.AddDiv($"Форма обучения: <b>{curriculum.Value.FormOfStudy.GetDescription()}</b>");
                         rep.AddDiv($"Файл УП: <b>{curriculum.Value.SourceFileName}</b>");
@@ -395,11 +395,11 @@ namespace FosMan {
         /// <param name="profile"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static Dictionary<EFormOfStudy, Curriculum> FindCurriculums(string directionCode, string profile, string department) {
-            if (!string.IsNullOrEmpty(directionCode) && !string.IsNullOrEmpty(profile) && !string.IsNullOrEmpty(department)) {
-                var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, directionCode, true) == 0 &&
-                                                              string.Compare(c.Profile, profile, true) == 0 &&
-                                                              string.Compare(c.Department, department, true) == 0);
+        public static Dictionary<EFormOfStudy, Curriculum> FindCurricula(Rpd rpd) {
+            if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(rpd.Profile) && !string.IsNullOrEmpty(rpd.Department)) {
+                var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, rpd.DirectionCode, true) == 0 &&
+                                                              string.Compare(c.Profile, rpd.Profile, true) == 0 &&
+                                                              string.Compare(c.Department, rpd.Department, true) == 0);
                 var dic = items.ToDictionary(x => x.FormOfStudy, x => x);
                 return dic;
             }
@@ -793,6 +793,7 @@ namespace FosMan {
             }
 
             //ряды матрицы
+            var appliedIndicatorCount = 0;
             var items = CompetenceMatrix.GetItems(discipline.CompetenceList); //отбор строк матрицы по списку индикаторов
             foreach (var item in items) {
                 var competenceStartRow = table.RowCount;
@@ -801,6 +802,7 @@ namespace FosMan {
                     if (!discipline.CompetenceList.Contains(achi.Code)) { //доп. фильтрация только по нужным индикаторам
                         continue;
                     }
+                    appliedIndicatorCount++;
 
                     var achiStartRow = table.RowCount;
                     foreach (var res in achi.Results) {
@@ -836,6 +838,7 @@ namespace FosMan {
                     table.MergeCellsInColumn(0, competenceStartRow, table.RowCount - 1);
                 }
             }
+            result = appliedIndicatorCount == discipline.CompetenceList.Count;
 
             return result;
         }
@@ -873,7 +876,7 @@ namespace FosMan {
         /// Режим фикса РПД
         /// </summary>
         /// <param name="rpdList"></param>
-        internal static void FixRpdFiles(List<Rpd> rpdList, out string htmlReport) {
+        internal static void FixRpdFiles(List<Rpd> rpdList, string targetDir, out string htmlReport) {
             var html = new StringBuilder("<html><body><h2>Отчёт по исправлению РПД</h2>");
 
             try {
@@ -885,7 +888,7 @@ namespace FosMan {
                     html.Append("<li>Исправление таблицы учебных работ</li>");
                 }
                 var findAndReplaceItems = Config.RpdFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
-                if (findAndReplaceItems != null) {
+                if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
                     var tdStyle = "style='border: 1px solid;'";
                     html.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
                     foreach (var item in findAndReplaceItems) {
@@ -908,7 +911,7 @@ namespace FosMan {
                             html.Append($"<div style='color: red'>Не удалось найти дисциплину [{rpd.DisciplineName}] в загруженных учебных планах</div>");
                         }
                         var fixEduWorks = true;
-                        var eduWorks = GetEducationWorks(rpd);
+                        var eduWorks = GetEducationWorks(rpd, out _);
                         //if (!(eduWorks?.Any() ?? false)) {
                         //    fixEduWorks = false;
                         //    html.Append($"<div style='color: red'>Не удалось найти учебные работы для дисциплины [{rpd.DisciplineName}] в загруженных учебных планах</div>");
@@ -921,8 +924,6 @@ namespace FosMan {
                                 }
                             }
                         }
-
-                        var targetDir = Path.Combine(Environment.CurrentDirectory, FIXED_RPD_DIRECTORY);
 
                         using (var docx = DocX.Load(rpd.SourceFileName)) {
                             foreach (var table in docx.Tables) {
@@ -986,7 +987,7 @@ namespace FosMan {
             finally {
                 html.Append("</body></html>");
             }
-
+            
             htmlReport = html.ToString();
         }
 
@@ -995,13 +996,15 @@ namespace FosMan {
         /// </summary>
         /// <param name="rpd"></param>
         /// <returns></returns>
-        private static Dictionary<EFormOfStudy, EducationalWork> GetEducationWorks(Rpd rpd) {
-            var curricula = FindCurriculums(rpd.DirectionCode, rpd.Profile, rpd.Department);
+        public static Dictionary<EFormOfStudy, EducationalWork> GetEducationWorks(Rpd rpd, out Dictionary<EFormOfStudy, Curriculum> curricula) {
+            curricula = FindCurricula(rpd);
             var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
-            foreach (var curr in curricula.Values) {
-                var disc = curr.FindDiscipline(rpd.DisciplineName);
-                if (disc != null) {
-                    eduWorks[curr.FormOfStudy] = disc.EducationalWork;
+            if (curricula != null) {
+                foreach (var curr in curricula.Values) {
+                    var disc = curr.FindDiscipline(rpd.DisciplineName);
+                    if (disc != null) {
+                        eduWorks[curr.FormOfStudy] = disc.EducationalWork;
+                    }
                 }
             }
             return eduWorks;
@@ -1013,9 +1016,9 @@ namespace FosMan {
         /// <param name="rpd"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static CurriculumDiscipline FindDiscipline(Rpd rpd) {
+        public static CurriculumDiscipline FindDiscipline(Rpd rpd) {
             CurriculumDiscipline discipline = null;
-            var curricula = FindCurriculums(rpd.DirectionCode, rpd.Profile, rpd.Department);
+            var curricula = FindCurricula(rpd);
             if (curricula != null) {
                 discipline = curricula.Values.FirstOrDefault()?.FindDiscipline(rpd.DisciplineName);
                 //var curriculum = curricula.Values.Select(c => c.FormOfStudy == rpd.FormsOfStudy)

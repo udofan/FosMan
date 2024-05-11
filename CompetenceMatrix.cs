@@ -208,9 +208,10 @@ namespace FosMan {
         /// Список кодов всех достижений матрицы
         /// </summary>
         /// <returns></returns>
-        public HashSet<string> GetAllAchievementCodes() {
+        public HashSet<string> GetAllAchievementCodes(List<CompetenceMatrixItem> items = null) {
             var achiCodeList = new List<string>();
-            Items.ForEach(x => achiCodeList.AddRange(x.Achievements.Select(a => a.Code)));
+            items ??= Items;
+            items.ForEach(x => achiCodeList.AddRange(x.Achievements.Select(a => a.Code)));
             return [.. achiCodeList];
         }
 

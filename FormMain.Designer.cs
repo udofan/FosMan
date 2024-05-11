@@ -50,6 +50,10 @@
             buttonRpdShowFixMode = new Button();
             splitContainer1 = new SplitContainer();
             groupBox4 = new GroupBox();
+            buttonRpdFixSelectTargetDir = new Button();
+            textBoxRpdFixTargetDir = new TextBox();
+            label13 = new Label();
+            linkLabelRpdFixSelectFilesToFix = new LinkLabel();
             buttonAddFindAndReplaceItem = new Button();
             buttonRemoveFindAndReplaceItems = new Button();
             buttonRpdFix = new Button();
@@ -100,9 +104,9 @@
             openFileDialogSelectRpd = new OpenFileDialog();
             openFileDialog4 = new OpenFileDialog();
             openFileDialogRpdTemplate = new OpenFileDialog();
-            folderBrowserDialogRpdTargetDir = new FolderBrowserDialog();
+            folderBrowserDialogSelectDir = new FolderBrowserDialog();
             toolTip1 = new ToolTip(components);
-            linkLabel1 = new LinkLabel();
+            buttonRpdListClear = new Button();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
@@ -262,10 +266,10 @@
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 24);
+            tabPageСurriculum.Location = new Point(4, 23);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1000, 701);
+            tabPageСurriculum.Size = new Size(1000, 702);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -299,9 +303,9 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 406);
+            groupBoxDisciplines.Location = new Point(8, 411);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
-            groupBoxDisciplines.Size = new Size(984, 305);
+            groupBoxDisciplines.Size = new Size(984, 287);
             groupBoxDisciplines.TabIndex = 3;
             groupBoxDisciplines.TabStop = false;
             groupBoxDisciplines.Text = "Дисциплины программы";
@@ -315,7 +319,7 @@
             fastObjectListViewDisciplines.Location = new Point(3, 18);
             fastObjectListViewDisciplines.Name = "fastObjectListViewDisciplines";
             fastObjectListViewDisciplines.ShowGroups = false;
-            fastObjectListViewDisciplines.Size = new Size(978, 284);
+            fastObjectListViewDisciplines.Size = new Size(978, 266);
             fastObjectListViewDisciplines.TabIndex = 4;
             fastObjectListViewDisciplines.UseFilterIndicator = true;
             fastObjectListViewDisciplines.UseFiltering = true;
@@ -345,7 +349,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(984, 343);
+            fastObjectListViewCurricula.Size = new Size(984, 348);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -371,6 +375,7 @@
             // 
             // tabPageRpd
             // 
+            tabPageRpd.Controls.Add(buttonRpdListClear);
             tabPageRpd.Controls.Add(checkBoxStoreRpdList);
             tabPageRpd.Controls.Add(buttonRpdShowFixMode);
             tabPageRpd.Controls.Add(splitContainer1);
@@ -388,7 +393,7 @@
             // checkBoxStoreRpdList
             // 
             checkBoxStoreRpdList.AutoSize = true;
-            checkBoxStoreRpdList.Location = new Point(523, 21);
+            checkBoxStoreRpdList.Location = new Point(474, 21);
             checkBoxStoreRpdList.Name = "checkBoxStoreRpdList";
             checkBoxStoreRpdList.Size = new Size(135, 18);
             checkBoxStoreRpdList.TabIndex = 9;
@@ -411,6 +416,8 @@
             // splitContainer1
             // 
             splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            splitContainer1.FixedPanel = FixedPanel.Panel1;
+            splitContainer1.IsSplitterFixed = true;
             splitContainer1.Location = new Point(8, 56);
             splitContainer1.Name = "splitContainer1";
             splitContainer1.Orientation = Orientation.Horizontal;
@@ -423,13 +430,17 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(984, 638);
+            splitContainer1.Size = new Size(984, 651);
             splitContainer1.SplitterDistance = 200;
             splitContainer1.TabIndex = 7;
             // 
             // groupBox4
             // 
-            groupBox4.Controls.Add(linkLabel1);
+            groupBox4.BackColor = Color.WhiteSmoke;
+            groupBox4.Controls.Add(buttonRpdFixSelectTargetDir);
+            groupBox4.Controls.Add(textBoxRpdFixTargetDir);
+            groupBox4.Controls.Add(label13);
+            groupBox4.Controls.Add(linkLabelRpdFixSelectFilesToFix);
             groupBox4.Controls.Add(buttonAddFindAndReplaceItem);
             groupBox4.Controls.Add(buttonRemoveFindAndReplaceItems);
             groupBox4.Controls.Add(buttonRpdFix);
@@ -443,7 +454,49 @@
             groupBox4.Size = new Size(984, 200);
             groupBox4.TabIndex = 0;
             groupBox4.TabStop = false;
-            groupBox4.Text = "Исправление РПД";
+            groupBox4.Text = "Режим исправлений РПД";
+            // 
+            // buttonRpdFixSelectTargetDir
+            // 
+            buttonRpdFixSelectTargetDir.Font = new Font("Tahoma", 9F);
+            buttonRpdFixSelectTargetDir.Location = new Point(936, 26);
+            buttonRpdFixSelectTargetDir.Name = "buttonRpdFixSelectTargetDir";
+            buttonRpdFixSelectTargetDir.Size = new Size(32, 23);
+            buttonRpdFixSelectTargetDir.TabIndex = 16;
+            buttonRpdFixSelectTargetDir.Text = "...";
+            buttonRpdFixSelectTargetDir.UseVisualStyleBackColor = true;
+            buttonRpdFixSelectTargetDir.Click += buttonRpdFixSelectTargetDir_Click;
+            // 
+            // textBoxRpdFixTargetDir
+            // 
+            textBoxRpdFixTargetDir.Font = new Font("Tahoma", 9F);
+            textBoxRpdFixTargetDir.Location = new Point(500, 26);
+            textBoxRpdFixTargetDir.Name = "textBoxRpdFixTargetDir";
+            textBoxRpdFixTargetDir.Size = new Size(430, 22);
+            textBoxRpdFixTargetDir.TabIndex = 15;
+            textBoxRpdFixTargetDir.TextChanged += textBoxRpdFixTargetDir_TextChanged;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Font = new Font("Tahoma", 9F);
+            label13.Location = new Point(363, 29);
+            label13.Name = "label13";
+            label13.Size = new Size(131, 14);
+            label13.TabIndex = 14;
+            label13.Text = "Целевая директория:";
+            // 
+            // linkLabelRpdFixSelectFilesToFix
+            // 
+            linkLabelRpdFixSelectFilesToFix.ActiveLinkColor = Color.Blue;
+            linkLabelRpdFixSelectFilesToFix.Location = new Point(793, 108);
+            linkLabelRpdFixSelectFilesToFix.Name = "linkLabelRpdFixSelectFilesToFix";
+            linkLabelRpdFixSelectFilesToFix.Size = new Size(176, 31);
+            linkLabelRpdFixSelectFilesToFix.TabIndex = 6;
+            linkLabelRpdFixSelectFilesToFix.TabStop = true;
+            linkLabelRpdFixSelectFilesToFix.Text = "Выделить РПД, готовые к полноценному исправлению";
+            toolTip1.SetToolTip(linkLabelRpdFixSelectFilesToFix, "Имеются в виду РПД, для которых загружены\r\nвсе учебные планы и матрица компетенций");
+            linkLabelRpdFixSelectFilesToFix.LinkClicked += linkLabelRpdFixSelectFilesToFix_LinkClicked;
             // 
             // buttonAddFindAndReplaceItem
             // 
@@ -542,7 +595,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(984, 434);
+            fastObjectListViewRpdList.Size = new Size(984, 447);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -557,9 +610,9 @@
             // buttonRpdCheck
             // 
             buttonRpdCheck.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonRpdCheck.Location = new Point(677, 18);
+            buttonRpdCheck.Location = new Point(628, 18);
             buttonRpdCheck.Name = "buttonRpdCheck";
-            buttonRpdCheck.Size = new Size(132, 23);
+            buttonRpdCheck.Size = new Size(94, 23);
             buttonRpdCheck.TabIndex = 6;
             buttonRpdCheck.Text = "Проверить";
             toolTip1.SetToolTip(buttonRpdCheck, "Проверить загруженные РПД и сформировать отчёт");
@@ -657,10 +710,10 @@
             tabPageRpdGeneration.Controls.Add(groupBox1);
             tabPageRpdGeneration.Controls.Add(label3);
             tabPageRpdGeneration.Controls.Add(comboBoxRpdGenCurriculumGroups);
-            tabPageRpdGeneration.Location = new Point(4, 23);
+            tabPageRpdGeneration.Location = new Point(4, 24);
             tabPageRpdGeneration.Name = "tabPageRpdGeneration";
             tabPageRpdGeneration.Padding = new Padding(3);
-            tabPageRpdGeneration.Size = new Size(1000, 702);
+            tabPageRpdGeneration.Size = new Size(1000, 701);
             tabPageRpdGeneration.TabIndex = 5;
             tabPageRpdGeneration.Text = "Генерация РПД";
             tabPageRpdGeneration.UseVisualStyleBackColor = true;
@@ -811,7 +864,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 634);
+            labelRpdGenStatus.Location = new Point(652, 639);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -829,7 +882,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(8, 585);
+            groupBox2.Location = new Point(8, 590);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 114);
             groupBox2.TabIndex = 14;
@@ -884,6 +937,7 @@
             textBoxRpdGenTargetDir.Name = "textBoxRpdGenTargetDir";
             textBoxRpdGenTargetDir.Size = new Size(430, 22);
             textBoxRpdGenTargetDir.TabIndex = 12;
+            textBoxRpdGenTargetDir.TextChanged += textBoxRpdGenTargetDir_TextChanged;
             // 
             // label6
             // 
@@ -909,7 +963,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 592);
+            buttonGenerate.Location = new Point(652, 597);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -924,7 +978,7 @@
             groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBox1.Location = new Point(8, 237);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(984, 342);
+            groupBox1.Size = new Size(984, 347);
             groupBox1.TabIndex = 4;
             groupBox1.TabStop = false;
             groupBox1.Text = "3. Выбор дисциплин";
@@ -941,7 +995,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 321);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 326);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -998,16 +1052,16 @@
             // 
             toolTip1.AutomaticDelay = 300;
             // 
-            // linkLabel1
+            // buttonRpdListClear
             // 
-            linkLabel1.ActiveLinkColor = Color.Blue;
-            linkLabel1.Location = new Point(793, 108);
-            linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new Size(176, 31);
-            linkLabel1.TabIndex = 6;
-            linkLabel1.TabStop = true;
-            linkLabel1.Text = "Выделить РПД, готовые к полноценному исправлению";
-            toolTip1.SetToolTip(linkLabel1, "Имеются в виду РПД, для которых загружены\r\nвсе учебные планы и матрица компетенций");
+            buttonRpdListClear.Location = new Point(741, 18);
+            buttonRpdListClear.Name = "buttonRpdListClear";
+            buttonRpdListClear.Size = new Size(75, 23);
+            buttonRpdListClear.TabIndex = 10;
+            buttonRpdListClear.Text = "Очистить";
+            toolTip1.SetToolTip(buttonRpdListClear, "Очистить список загруженных РПД");
+            buttonRpdListClear.UseVisualStyleBackColor = true;
+            buttonRpdListClear.Click += buttonRpdListClear_Click;
             // 
             // FormMain
             // 
@@ -1103,7 +1157,7 @@
         private TextBox textBoxRpdGenTargetDir;
         private Label label6;
         private GroupBox groupBox2;
-        private FolderBrowserDialog folderBrowserDialogRpdTargetDir;
+        private FolderBrowserDialog folderBrowserDialogSelectDir;
         private TextBox textBoxRpdGenDirectionCode;
         private Label label7;
         private TextBox textBoxRpdGenDepartment;
@@ -1136,6 +1190,10 @@
         private CheckBox checkBoxCompetenceMatrixAutoload;
         private CheckBox checkBoxStoreRpdList;
         private TabControl tabControlReports;
-        private LinkLabel linkLabel1;
+        private LinkLabel linkLabelRpdFixSelectFilesToFix;
+        private Button buttonRpdFixSelectTargetDir;
+        private TextBox textBoxRpdFixTargetDir;
+        private Label label13;
+        private Button buttonRpdListClear;
     }
 }

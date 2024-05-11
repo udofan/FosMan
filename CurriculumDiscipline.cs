@@ -324,9 +324,14 @@ namespace FosMan {
             }
 
             var achiCodeList = matrix.GetAllAchievementCodes();
-            foreach (var achiCode in CompetenceList) { 
-                if (!achiCodeList.Contains(achiCode)) {
-                    ExtraErrors.Add($"В загруженной матрице компетенций не найден индикатор достижений [{achiCode}].");
+            if (CompetenceList == null || CompetenceList.Count == 0) {
+                ExtraErrors.Add($"Список компетенций не определён.");
+            }
+            else {
+                foreach (var achiCode in CompetenceList) {
+                    if (!achiCodeList.Contains(achiCode)) {
+                        ExtraErrors.Add($"В загруженной матрице компетенций не найден индикатор достижений [{achiCode}].");
+                    }
                 }
             }
 

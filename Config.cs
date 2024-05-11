@@ -44,6 +44,16 @@ namespace FosMan {
         [JsonInclude]
         public bool RpdFixTableOfEduWorks { get; set; } = true;
         /// <summary>
+        /// Элементы списка "найти и заменить" для режима исправлений РПД
+        /// </summary>
+        [JsonInclude]
+        public List<RpdFindAndReplaceItem> RpdFindAndReplaceItems { get; set; } = [];
+        /// <summary>
+        /// Целевая директория для генерируемых РПД
+        /// </summary>
+        [JsonInclude]
+        public string RpdFixTargetDir { get; set; }
+        /// <summary>
         /// Последняя выбранная локация файлов УП
         /// </summary>
         [JsonInclude]
@@ -59,19 +69,21 @@ namespace FosMan {
         [JsonInclude]
         public List<string> CurriculumList { get; set; } = [];
         /// <summary>
-        /// Элементы списка "найти и заменить" для режима исправлений РПД
+        /// Шаблона для имени файла генерируемого РПД
         /// </summary>
         [JsonInclude]
-        public List<RpdFindAndReplaceItem> RpdFindAndReplaceItems { get; set; } = [];
+
+        public string RpdGenFileNameTemplate { get; set; } = "РПД_{Index}_{Name}_2024.docx";
+        /// <summary>
+        /// Целевая директория для генерируемых РПД
+        /// </summary>
+        [JsonInclude]
+
+        public string RpdGenTargetDir { get; set; }
         /// <summary>
         /// Элементы для парсинга заголовков excel-файлов УП
         /// </summary>
         [JsonInclude]
         public List<CurriculumDisciplineHeader> CurriculumDisciplineParseItems { get; set; }
-        /// <summary>
-        /// Шаблона для имени файла генерируемого РПД
-        /// </summary>
-        [JsonInclude]
-        public string RpdGenFileNameTemplate { get; set; } = "РПД_{Index}_{Name}_2024.docx";
     }
 }
