@@ -18,8 +18,8 @@ namespace FosMan {
         //Маркер конца титульной странцы "Москва 20xx"
         static Regex m_regexTitlePageEndMarker = new(@"Москва\s+(\d{4})", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //профиль/направленность подготовки
-        static Regex m_regexProfileInline = new(@"(Профиль|Направленность\s+подготовки)[:]*\s+[«""“]+(.+)[»""”]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexProfileMarker = new(@"(Профиль|Направленность\s+подготовки)[:]*\s*[«""“]*(.*)[»""”]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexProfileInline = new(@"(Профиль|Направленност[ь,и]\s+\S*\s*подготовки)[:]*\s+[«""“]*([^»""”]+)[»""”]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexProfileMarker = new(@"(Профиль|Направленност[ь,и]\s+\S*\s*подготовки)[:]*\s*[«""“]*([^»""”]*)[»""”]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //наименование в кавычках
         static Regex m_regexNameQuoted = new(@"[«""“]+(.+)[»""”]+$", RegexOptions.Compiled);
         //наименование в опциональных кавычках
@@ -27,14 +27,14 @@ namespace FosMan {
         //направление подготовки
         static Regex m_regexDirection = new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled);
         //форма обучения
-        static Regex m_regexFormsOfStudy = new(@"Форма\s+обучения[:]*\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexFormsOfStudy = new(@"Форм\S+\s+обучения[:]*\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
         static Regex m_regexRpdMarker = new(@"рабочая\s+программа\s+дисциплины", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         /// <summary>
         /// Факультет
         /// </summary>
-        public string Faculty { get; set; }
+        //public string Faculty { get; set; }
         /// <summary>
         /// Год
         /// </summary>
@@ -232,6 +232,15 @@ namespace FosMan {
                             }
                         }
                     }
+                    if (rpd.CompetenceMatrix == null || !rpd.CompetenceMatrix.IsLoaded) {
+                        rpd.Errors.Add("Не найдена матрица компетенций.");
+                    }
+                    if (string.IsNullOrEmpty(rpd.Department)) rpd.Errors.Add("Не удалось определить название кафедры");
+                    if (string.IsNullOrEmpty(rpd.Profile)) rpd.Errors.Add("Не удалось определить профиль");
+                    if (string.IsNullOrEmpty(rpd.Year)) rpd.Errors.Add("Не удалось год программы");
+                    if (string.IsNullOrEmpty(rpd.DirectionCode)) rpd.Errors.Add("Не удалось шифр направления подготовки");
+                    if (string.IsNullOrEmpty(rpd.DirectionName)) rpd.Errors.Add("Не удалось наименование направления подготовки");
+                    if (string.IsNullOrEmpty(rpd.DisciplineName)) rpd.Errors.Add("Не удалось название дисциплины");
                 }
             }
             catch (Exception ex) {

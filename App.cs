@@ -191,14 +191,14 @@ namespace FosMan {
         /// <summary>
         /// Проверить загруженные РПД
         /// </summary>
-        public static void CheckRdp(out string htmlReport) {
+        public static void CheckRdp(List<Rpd> rpdList, out string htmlReport) {
             htmlReport = string.Empty;
 
             StringBuilder html = new("<html><body><h2>Отчёт по проверке РПД</h2>");
             StringBuilder toc = new("<div><ul>");
             StringBuilder rep = new("<div>");
             var idx = 0;
-            foreach (var rpd in m_rpdDic.Values) {
+            foreach (var rpd in rpdList) {
                 var anchor = $"rpd{idx}";
                 idx++;
                 rpd.ExtraErrors = [];
@@ -614,7 +614,7 @@ namespace FosMan {
                     }
                 }
                 else {
-                    var replaceText = typeAccessor[obj, propName]?.ToString();
+                    var replaceText = typeAccessor[obj, propName]?.ToString() ?? "-";
                     if (!string.IsNullOrEmpty(replaceText)) {
                         var replaceTextOptions = new FunctionReplaceTextOptions() {
                             FindPattern = @"^.*$",
@@ -925,6 +925,7 @@ namespace FosMan {
                             }
                         }
 
+                        var eduTableIsFixed = false; //флаг, что в процессе работы была исправлена таблица учебных работ
                         using (var docx = DocX.Load(rpd.SourceFileName)) {
                             foreach (var table in docx.Tables) {
                                 var backup = table.Xml;
@@ -937,16 +938,20 @@ namespace FosMan {
                                         table.Xml = backup;
                                     }
                                 }
-                                if (fixEduWorks) {
-                                    if (TestTableForEducationalWorks(table, eduWorks, false /*установка значений в таблицу*/)) {
-                                        html.Append("<div style='color: green'>Таблица учебных работ заполнена по учебным планам.</div>");
-                                    }
-                                    else {
-                                        html.Append("<div style='color: red'>Не удалось сформировать таблицу учебных работ.</div>");
-                                        table.Xml = backup;
-                                    }
+                                if (fixEduWorks && !eduTableIsFixed) {
+                                    eduTableIsFixed |= TestTableForEducationalWorks(table, eduWorks, false /*установка значений в таблицу*/);
                                 }
                             }
+                            if (fixEduWorks) {
+                                if (eduTableIsFixed) {
+                                    html.Append("<div style='color: green'>Таблица учебных работ заполнена по учебным планам.</div>");
+                                }
+                                else {
+                                    html.Append("<div style='color: red'>Не удалось сформировать таблицу учебных работ.</div>");
+                                    //table.Xml = backup;
+                                }
+                            }
+
                             //обработка "найти и заменить"
                             var replaceCount = 0;
                             if (findAndReplaceItems?.Any() ?? false) {

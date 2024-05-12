@@ -110,7 +110,7 @@ namespace FosMan {
                     }
                 }
                 else {
-                    matrix.Errors.Add("В таблице должно быть не менее 3 колонок.");
+                    //matrix.Errors.Add("В таблице компетенций должно быть не менее 3 колонок.");
                     break;
                 }
             }

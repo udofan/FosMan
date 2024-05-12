@@ -700,17 +700,19 @@ namespace FosMan {
         }
 
         private async void buttonRpdCheck_Click(object sender, EventArgs e) {
-            App.CheckRdp(out var report);
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var targetDir = textBoxRpdGenTargetDir.Text;
+                if (string.IsNullOrEmpty(targetDir)) {
+                    targetDir = Path.Combine(Environment.CurrentDirectory, $"Исправленные_РПД_{DateTime.Now:yyyy-MM-dd}");
+                }
+                App.CheckRdp(rpdList, out var report);
 
-            //if (!string.IsNullOrEmpty(report)) {
-            //    await webView2RpdReport.EnsureCoreWebView2Async();
-            //    webView2RpdReport.NavigateToString(report);
-
-            //    m_rpdHtmlReport = report;
-
-            //    tabControl1.SelectedTab = tabPageRpdCheck;
-            //}
-            AddReport("Проверка РПД", report);
+                AddReport("Проверка РПД", report);
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Исправление РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
         }
 
         /// <summary>
@@ -923,6 +925,8 @@ namespace FosMan {
             var maxDist = 200;
             var delta = 10;
 
+            fastObjectListViewRpdList.BeginUpdate();
+
             if (show) {
                 while (splitContainer1.SplitterDistance < 200) {
                     var newDist = Math.Min(splitContainer1.SplitterDistance + delta, maxDist);
@@ -939,6 +943,7 @@ namespace FosMan {
                     Application.DoEvents();
                 }
             }
+            fastObjectListViewRpdList.EndUpdate();
         }
 
         private void buttonRpdShowFixMode_Click(object sender, EventArgs e) {

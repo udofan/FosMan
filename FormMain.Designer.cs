@@ -46,6 +46,7 @@
             fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
             buttonSelectExcelFiles = new Button();
             tabPageRpd = new TabPage();
+            buttonRpdListClear = new Button();
             checkBoxStoreRpdList = new CheckBox();
             buttonRpdShowFixMode = new Button();
             splitContainer1 = new SplitContainer();
@@ -106,7 +107,6 @@
             openFileDialogRpdTemplate = new OpenFileDialog();
             folderBrowserDialogSelectDir = new FolderBrowserDialog();
             toolTip1 = new ToolTip(components);
-            buttonRpdListClear = new Button();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
@@ -266,10 +266,10 @@
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Location = new Point(4, 24);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1000, 702);
+            tabPageСurriculum.Size = new Size(1000, 701);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -390,6 +390,17 @@
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
             // 
+            // buttonRpdListClear
+            // 
+            buttonRpdListClear.Location = new Point(741, 18);
+            buttonRpdListClear.Name = "buttonRpdListClear";
+            buttonRpdListClear.Size = new Size(75, 23);
+            buttonRpdListClear.TabIndex = 10;
+            buttonRpdListClear.Text = "Очистить";
+            toolTip1.SetToolTip(buttonRpdListClear, "Очистить список загруженных РПД");
+            buttonRpdListClear.UseVisualStyleBackColor = true;
+            buttonRpdListClear.Click += buttonRpdListClear_Click;
+            // 
             // checkBoxStoreRpdList
             // 
             checkBoxStoreRpdList.AutoSize = true;
@@ -430,7 +441,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(984, 651);
+            splitContainer1.Size = new Size(984, 661);
             splitContainer1.SplitterDistance = 200;
             splitContainer1.TabIndex = 7;
             // 
@@ -595,7 +606,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(984, 447);
+            fastObjectListViewRpdList.Size = new Size(984, 457);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1051,17 +1062,6 @@
             // toolTip1
             // 
             toolTip1.AutomaticDelay = 300;
-            // 
-            // buttonRpdListClear
-            // 
-            buttonRpdListClear.Location = new Point(741, 18);
-            buttonRpdListClear.Name = "buttonRpdListClear";
-            buttonRpdListClear.Size = new Size(75, 23);
-            buttonRpdListClear.TabIndex = 10;
-            buttonRpdListClear.Text = "Очистить";
-            toolTip1.SetToolTip(buttonRpdListClear, "Очистить список загруженных РПД");
-            buttonRpdListClear.UseVisualStyleBackColor = true;
-            buttonRpdListClear.Click += buttonRpdListClear_Click;
             // 
             // FormMain
             // 
