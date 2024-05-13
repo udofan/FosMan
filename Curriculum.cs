@@ -252,7 +252,7 @@ namespace FosMan {
         /// <param name="disciplineName"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        internal CurriculumDiscipline FindDiscipline(string disciplineName) {
+        internal CurriculumDiscipline FindDiscipline(string? disciplineName) {
             return Disciplines.Values.FirstOrDefault(d => string.Compare(d.Name, disciplineName, true) == 0);
         }
 

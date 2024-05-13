@@ -1064,7 +1064,7 @@ namespace FosMan {
         private void buttonRpdFix_Click(object sender, EventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
-                var targetDir = textBoxRpdGenTargetDir.Text;
+                var targetDir = textBoxRpdFixTargetDir.Text;
                 if (string.IsNullOrEmpty(targetDir)) {
                     targetDir = Path.Combine(Environment.CurrentDirectory, $"Исправленные_РПД_{DateTime.Now:yyyy-MM-dd}");
                 }
@@ -1109,7 +1109,7 @@ namespace FosMan {
                 var rpd = obj as Rpd;
                 if (rpd != null) {
                     var eduWorks = App.GetEducationWorks(rpd, out var curricula);
-                    if (eduWorks.Count == rpd.FormsOfStudy.Count) {
+                    if (eduWorks.Any() && (eduWorks.Count == rpd.FormsOfStudy.Count)) {
                         var disc = curricula.FirstOrDefault().Value.FindDiscipline(rpd.DisciplineName);
                         if (disc != null) {
                             var matrixItems = App.CompetenceMatrix.GetItems(disc.CompetenceList);

@@ -255,27 +255,27 @@ namespace FosMan {
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время контактной работы", (eduWork) => {
-                                    var result = discipline.EducationalWork.ContactWorkHours == eduWork.ContactWorkHours;
+                                    var result =(discipline.EducationalWork.ContactWorkHours ?? 0) == (eduWork.ContactWorkHours ?? 0);
                                     var msg = result ? "" : $"Время контактной работы [{discipline.EducationalWork.ContactWorkHours}] не соответствует УП (д.б. {eduWork.ContactWorkHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время контроля", (eduWork) => {
-                                    var result = discipline.EducationalWork.ControlHours == eduWork.ControlHours;
+                                    var result = (discipline.EducationalWork.ControlHours ?? 0) == (eduWork.ControlHours ?? 0);
                                     var msg = result ? "" : $"Время контроля [{discipline.EducationalWork.ControlHours}] не соответствует УП (д.б. {eduWork.ControlHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время самостоятельной работы", (eduWork) => {
-                                    var result = discipline.EducationalWork.SelfStudyHours == eduWork.SelfStudyHours;
+                                    var result = (discipline.EducationalWork.SelfStudyHours ?? 0) == (eduWork.SelfStudyHours ?? 0);
                                     var msg = result ? "" : $"Время самостоятельных работ [{discipline.EducationalWork.SelfStudyHours}] не соответствует УП (д.б. {eduWork.SelfStudyHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время практических работ", (eduWork) => {
-                                    var result = discipline.EducationalWork.PracticalHours == eduWork.PracticalHours;
+                                    var result = (discipline.EducationalWork.PracticalHours ?? 0) == (eduWork.PracticalHours ?? 0);
                                     var msg = result ? "" : $"Время практических работ [{discipline.EducationalWork.PracticalHours}] не соответствует УП (д.б. {eduWork.PracticalHours}).";
                                     return (result, msg);
                                 });
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время лекций", (eduWork) => {
-                                    var result = discipline.EducationalWork.LectureHours == eduWork.LectureHours;
+                                    var result = (discipline.EducationalWork.LectureHours ?? 0) == (eduWork.LectureHours ?? 0);
                                     var msg = result ? "" : $"Время лекций [{discipline.EducationalWork.LectureHours}] не соответствует УП (д.б. {eduWork.LectureHours}).";
                                     return (result, msg);
                                 });
@@ -318,6 +318,7 @@ namespace FosMan {
                                 }
                                 return (result, msg);
                             });
+                            /*
                             checkCompetences &= ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка загруженной матрицы компетенций в программу", (eduWork) => {
                                 var result = m_competenceMatrix?.IsLoaded ?? false;
                                 var msg = result ? "" : $"Матрица компетенций не загружена в программу.";
@@ -332,6 +333,7 @@ namespace FosMan {
                                 }
                                 return (result, msg);
                             });
+                            */
 
                             if (checkCompetences) {
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций", (eduWork) => {
