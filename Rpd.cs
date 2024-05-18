@@ -28,6 +28,9 @@ namespace FosMan {
         static Regex m_regexDirection = new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled);
         //форма обучения
         static Regex m_regexFormsOfStudy = new(@"Форм\S+\s+обучения[:]*\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        //составитель
+        static Regex m_regexCompilerInline = new(@"Составитель[:]*\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexCompilerMarker = new(@"Составитель:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
         static Regex m_regexRpdMarker = new(@"рабочая\s+программа\s+дисциплины", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -83,6 +86,10 @@ namespace FosMan {
         /// Список доп. ошибок, выявленных при проверке
         /// </summary>
         public List<string> ExtraErrors { get; set; }
+        /// <summary>
+        /// Составитель
+        /// </summary>
+        public string Compiler { get; set; }
 
         /// <summary>
         /// Загрузка РПД из файла
@@ -104,6 +111,7 @@ namespace FosMan {
                     var disciplineName = "";
                     var profileTestReady = false;
                     var profileField = "";              //если профиль разнесен по неск. строкам, здесь он будет накапливаться
+                    var compilerTestReady = false;
 
                     foreach (var par in docx.Paragraphs) {
                         var text = par.Text.Trim();
@@ -141,7 +149,7 @@ namespace FosMan {
                             if (profileTestReady) {
                                 if (profileField.Length > 0) profileField += " ";
                                 profileField += text;
-                                
+
                                 var matchProfile = m_regexName.Match(profileField);
                                 if (matchProfile.Success) {
                                     rpd.Profile = matchProfile.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
@@ -154,13 +162,33 @@ namespace FosMan {
                                     rpd.Profile = matchProfile.Groups[2].Value.Trim(' ', '«', '»', '"', '“', '”');
                                 }
                                 else {
-                                    var matchProfileMarket = m_regexProfileMarker.Match(text);
-                                    if (matchProfileMarket.Success) {
+                                    var matchProfileMarker = m_regexProfileMarker.Match(text);
+                                    if (matchProfileMarker.Success) {
                                         if (profileField.Length > 0) profileField += " ";
-                                        profileField += matchProfileMarket.Groups[2].Value;
+                                        profileField += matchProfileMarker.Groups[2].Value;
                                         profileTestReady = true;
                                     }
-                                    profileTestReady = matchProfileMarket.Success;
+                                    //profileTestReady = matchProfileMarker.Success;
+                                }
+                            }
+                        }
+                        //составитель
+                        if (string.IsNullOrEmpty(rpd.Compiler)) {
+                            if (compilerTestReady) {
+                                var matchCompiler = m_regexName.Match(text);
+                                if (matchCompiler.Success) {
+                                    rpd.Compiler = matchCompiler.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
+                                    compilerTestReady = false;
+                                }
+                            }
+                            else {
+                                var matchCompiler = m_regexCompilerInline.Match(text);
+                                if (matchCompiler.Success) {
+                                    rpd.Compiler = matchCompiler.Groups[2].Value.Trim(' ', '«', '»', '"', '“', '”');
+                                }
+                                else {
+                                    var matchCompilerMarker = m_regexCompilerMarker.Match(text);
+                                    compilerTestReady = matchCompilerMarker.Success;
                                 }
                             }
                         }

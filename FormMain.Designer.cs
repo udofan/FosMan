@@ -384,10 +384,10 @@
             tabPageRpd.Controls.Add(buttonRpdCheck);
             tabPageRpd.Controls.Add(labelLoadRpd);
             tabPageRpd.Controls.Add(buttonSelectRpdFiles);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1000, 702);
+            tabPageRpd.Size = new Size(1000, 701);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -443,7 +443,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(984, 651);
+            splitContainer1.Size = new Size(984, 644);
             splitContainer1.SplitterDistance = 200;
             splitContainer1.TabIndex = 7;
             // 
@@ -631,7 +631,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(984, 447);
+            fastObjectListViewRpdList.Size = new Size(984, 440);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -746,10 +746,10 @@
             tabPageRpdGeneration.Controls.Add(groupBox1);
             tabPageRpdGeneration.Controls.Add(label3);
             tabPageRpdGeneration.Controls.Add(comboBoxRpdGenCurriculumGroups);
-            tabPageRpdGeneration.Location = new Point(4, 24);
+            tabPageRpdGeneration.Location = new Point(4, 23);
             tabPageRpdGeneration.Name = "tabPageRpdGeneration";
             tabPageRpdGeneration.Padding = new Padding(3);
-            tabPageRpdGeneration.Size = new Size(1000, 701);
+            tabPageRpdGeneration.Size = new Size(1000, 702);
             tabPageRpdGeneration.TabIndex = 5;
             tabPageRpdGeneration.Text = "Генерация РПД";
             tabPageRpdGeneration.UseVisualStyleBackColor = true;
@@ -900,7 +900,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 640);
+            labelRpdGenStatus.Location = new Point(652, 643);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -918,7 +918,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(8, 591);
+            groupBox2.Location = new Point(8, 594);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 114);
             groupBox2.TabIndex = 14;
@@ -944,6 +944,7 @@
             comboBoxRpdGenTemplates.Name = "comboBoxRpdGenTemplates";
             comboBoxRpdGenTemplates.Size = new Size(430, 22);
             comboBoxRpdGenTemplates.TabIndex = 14;
+            comboBoxRpdGenTemplates.SelectedIndexChanged += comboBoxRpdGenTemplates_SelectedIndexChanged;
             // 
             // buttonSelectRpdTargetDir
             // 
@@ -999,7 +1000,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 598);
+            buttonGenerate.Location = new Point(652, 601);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -1014,7 +1015,7 @@
             groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBox1.Location = new Point(8, 237);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(984, 348);
+            groupBox1.Size = new Size(984, 351);
             groupBox1.TabIndex = 4;
             groupBox1.TabStop = false;
             groupBox1.Text = "3. Выбор дисциплин";
@@ -1031,7 +1032,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 327);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 330);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;

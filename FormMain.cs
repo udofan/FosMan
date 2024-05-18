@@ -333,6 +333,12 @@ namespace FosMan {
                 }
             };
             list.Columns.Add(olvColumnFormsOfStudy);
+            //составитель
+            var olvColumnCompiler = new OLVColumn("Составитель", "Compiler") {
+                Width = 200,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnCompiler);
             //матрица компетенций
             var olvColumnCompetenceMatrix = new OLVColumn("Компетенции", "CompetenceMatrix") {
                 Width = 60,
@@ -411,6 +417,16 @@ namespace FosMan {
             TuneDisciplineList(fastObjectListViewDisciplineListForGeneration, false);
             TuneRpdFindAndReplaceList();
 
+            //список шаблонов
+            var templateDir = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES);
+            if (Directory.Exists(templateDir)) {
+                var files = Directory.GetFiles(templateDir, "*.docx");
+                var newTemplates = files.Select(f => Path.GetFileName(f)).Except(comboBoxRpdGenTemplates.Items.Cast<string>());
+                if (newTemplates.Any()) {
+                    comboBoxRpdGenTemplates.Items.AddRange(newTemplates.ToArray());
+                }
+            }
+
             //восстановим элементы из конфига
             fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFindAndReplaceItems);
             textBoxMatrixFileName.Text = App.Config.CompetenceMatrixFileName ?? "";
@@ -423,6 +439,14 @@ namespace FosMan {
             textBoxRpdFixTargetDir.Text = App.Config.RpdFixTargetDir;
             textBoxRpdGenFileNameTemplate.Text = App.Config.RpdGenFileNameTemplate;
             textBoxRpdGenTargetDir.Text = App.Config.RpdGenTargetDir;
+            if (!string.IsNullOrEmpty(App.Config.RpdGenTemplate)) {
+                if (comboBoxRpdGenTemplates.Items.Contains(App.Config.RpdGenTemplate)) {
+                    comboBoxRpdGenTemplates.SelectedItem = App.Config.RpdGenTemplate;
+                }
+            }
+            if (comboBoxRpdGenTemplates.SelectedIndex < 0 && comboBoxRpdGenTemplates.Items.Count > 0) {
+                comboBoxRpdGenTemplates.SelectedIndex = 0;
+            }
 
             //отладка
             //textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
@@ -777,18 +801,7 @@ namespace FosMan {
                 if (newGroups.Any()) {
                     comboBoxRpdGenCurriculumGroups.Items.AddRange(newGroups.ToArray());
                 }
-                //список шаблонов
-                var templateDir = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES);
-                if (Directory.Exists(templateDir)) {
-                    var files = Directory.GetFiles(templateDir, "*.docx");
-                    var newTemplates = files.Select(f => Path.GetFileName(f)).Except(comboBoxRpdGenTemplates.Items.Cast<string>());
-                    if (newTemplates.Any()) {
-                        comboBoxRpdGenTemplates.Items.AddRange(newTemplates.ToArray());
-                    }
-                    if (comboBoxRpdGenTemplates.SelectedIndex < 0 && comboBoxRpdGenTemplates.Items.Count > 0) {
-                        comboBoxRpdGenTemplates.SelectedIndex = 0;
-                    }
-                }
+
                 if (string.IsNullOrEmpty(textBoxRpdGenTargetDir.Text)) {
                     textBoxRpdGenTargetDir.Text = Path.Combine(Environment.CurrentDirectory, $"РПД_{DateTime.Now:yyyy-MM-dd}");
                     textBoxRpdGenTargetDir.SelectionStart = textBoxRpdGenTargetDir.Text.Length - 1;
@@ -1140,6 +1153,11 @@ namespace FosMan {
 
         private void textBoxRpdFixFileTemplate_TextChanged(object sender, EventArgs e) {
             App.Config.RpdFixTemplateFileName = textBoxRpdFixFileTemplate.Text;
+            App.SaveConfig();
+        }
+
+        private void comboBoxRpdGenTemplates_SelectedIndexChanged(object sender, EventArgs e) {
+            App.Config.RpdGenTemplate = comboBoxRpdGenTemplates.SelectedItem?.ToString();
             App.SaveConfig();
         }
     }

@@ -57,6 +57,7 @@ namespace FosMan {
         static Dictionary<string, Curriculum> m_curriculumDic = [];
         static Dictionary<string, Rpd> m_rpdDic = [];
         static Dictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
+        //static Dictionary<string, Department> m_departments = [];
         static Config m_config = new();
         static JsonSerializerOptions m_jsonOptions = new() {
             WriteIndented = true,
@@ -83,6 +84,11 @@ namespace FosMan {
         /// Группы УП
         /// </summary>
         public static Dictionary<string, CurriculumGroup> CurriculumGroups { get => m_curriculumGroupDic; }
+
+        /// <summary>
+        /// Список кафедр
+        /// </summary>
+        //public static Dictionary<string, Department> Departments { get => m_departments; }
 
         public static bool HasCurriculumFile(string fileName) => m_curriculumDic.ContainsKey(fileName);
 
@@ -476,6 +482,7 @@ namespace FosMan {
                         }
 
                         using (var docx = DocX.Load(targetFile)) {
+                            //docx.InsertTableOfContents()
                             //этап 1. подстановка полей {...}
                             foreach (var par in docx.Paragraphs.ToList()) {
                                 var replaceOptions = new FunctionReplaceTextOptions() {
@@ -492,9 +499,9 @@ namespace FosMan {
                                             var discProp = disc.GetProperty(propName);
                                             if (discProp != null) {
                                                 replaceValue = discProp.ToString();
-                                                if (string.IsNullOrEmpty(replaceValue)) {
-                                                    replaceValue = m;
-                                                }
+                                                //if (string.IsNullOrEmpty(replaceValue)) {
+                                                    //replaceValue = m;
+                                                //}
                                             }
                                             else {
                                                 if (TryProcessSpecialField(propName, par, curriculumGroup, disc, out var specialValue)) {
@@ -882,6 +889,9 @@ namespace FosMan {
 
             if (!(m_config.CurriculumDisciplineParseItems?.Any() ?? false)) {
                 m_config.CurriculumDisciplineParseItems = CurriculumDisciplineReader.DefaultHeaders;
+            }
+            if (!(m_config.Departments?.Any() ?? false)) {
+                m_config.Departments = Department.DefaultDepartments;
             }
         }
 

@@ -73,10 +73,14 @@ namespace FosMan {
         [JsonInclude]
         public List<string> CurriculumList { get; set; } = [];
         /// <summary>
+        /// Шаблон для генерации РПД
+        /// </summary>
+        [JsonInclude]
+        public string RpdGenTemplate { get; set; } = null;
+        /// <summary>
         /// Шаблона для имени файла генерируемого РПД
         /// </summary>
         [JsonInclude]
-
         public string RpdGenFileNameTemplate { get; set; } = "РПД_{Index}_{Name}_2024.docx";
         /// <summary>
         /// Целевая директория для генерируемых РПД
@@ -84,6 +88,11 @@ namespace FosMan {
         [JsonInclude]
 
         public string RpdGenTargetDir { get; set; }
+        /// <summary>
+        /// Список описаний кафедр
+        /// </summary>
+        [JsonInclude]
+        public Dictionary<string, Department> Departments { get; set; }
         /// <summary>
         /// Элементы для парсинга заголовков excel-файлов УП
         /// </summary>

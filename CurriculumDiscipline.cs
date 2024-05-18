@@ -45,16 +45,15 @@ namespace FosMan {
     /// <summary>
     /// Описание дисциплины
     /// </summary>
-    internal class CurriculumDiscipline {
+    internal class CurriculumDiscipline : BaseObj {
         public const int SEMESTER_COUNT = 10;
 
-        static TypeAccessor m_typeAccessor = TypeAccessor.Create(typeof(CurriculumDiscipline));
-        static Dictionary<Type, TypeAccessor> m_extraTypeAccessors = new();
         static Regex m_regexTestTypeRequired = new(@"^[^\.]+\.О\.", RegexOptions.Compiled);
         static Regex m_regexTestTypeByChoice = new(@"^[^\.]+\.В\.", RegexOptions.Compiled);
         static Regex m_regexTestTypeOptional = new(@"^ФТД", RegexOptions.Compiled);
         HashSet<string> m_competenceList = null;
         EducationalWork m_eduWork = null;
+        Department m_department = null;
 
         string m_competences = null;
         EDisciplineType? m_type = null;
@@ -121,13 +120,24 @@ namespace FosMan {
         }
 
         /// <summary>
-        /// Закрепленная кафедра
+        /// Название закрепленной кафедры
         /// </summary>
-        public string Department { get; set; }
+        public string DepartmentName { get; set; }
         /// <summary>
         /// Код закрепленной кафедры
         /// </summary>
         public string DepartmentCode { get; set; }
+        /// <summary>
+        /// Описание кафедры
+        /// </summary>
+        public Department Department { 
+            get {
+                if (m_department == null && !string.IsNullOrEmpty(DepartmentCode)) {
+                    App.Config.Departments.TryGetValue(DepartmentCode, out m_department);
+                }
+                return m_department;
+            }
+        }
         /// <summary>
         /// Нормализованные компетенции (коды)
         /// </summary>
@@ -221,46 +231,6 @@ namespace FosMan {
         }
 
         /// <summary>
-        /// Установить значение указанному свойству
-        /// </summary>
-        /// <param name="targetProperty">целевое свойство</param>
-        /// <param name="targetType">тип целевого свойства</param>
-        /// <param name="cellValue">значение (будет приведено к типу targetType)</param>
-        /// <param name="index">индекс списка, если целевое свойство List(object)</param>
-        /// <param name="subProperty">свойство object'а из списка</param>
-        internal void SetProperty(string targetProperty, Type targetType, string cellValue, int index = -1, string subProperty = null) {
-            object value = null;
-
-            cellValue = cellValue?.Trim();
-
-            if (targetType == typeof(int)) {
-                if (int.TryParse(cellValue, out var intValue)) {
-                    value = intValue;
-                }
-            }
-            else if (targetType == typeof(string)) {
-                value = cellValue;
-            }
-
-            if (index >= 0 && !string.IsNullOrEmpty(subProperty)) {
-                var arrayObj = m_typeAccessor[this, targetProperty] as object[];
-                if (arrayObj != null) {
-                    var extraType = arrayObj.FirstOrDefault()?.GetType();
-                    if (extraType != null) {
-                        if (!m_extraTypeAccessors.TryGetValue(extraType, out var extratypeAccessor)) {
-                            extratypeAccessor = TypeAccessor.Create(extraType);
-                            m_extraTypeAccessors[extraType] = extratypeAccessor;
-                        }
-                        extratypeAccessor[arrayObj[index], subProperty] = value;
-                    }
-                }
-            }
-            else {
-                m_typeAccessor[this, targetProperty] = value;
-            }
-        }
-
-        /// <summary>
         /// Проверка дисциплины
         /// </summary>
         /// <param name="curriculum"></param>
@@ -274,7 +244,7 @@ namespace FosMan {
                 curriculum.Errors.Add(err);
                 Errors.Add(err);
             }
-            //проверка итоговых часов
+            //проверка итоговых час ов
             var total = (TotalContactWorkHours ?? 0) + (TotalControlHours ?? 0) + (TotalSelfStudyHours ?? 0);
             if (TotalByPlanHours != total) {
                 var err = $"Дисциплина [{Name}] (строка {rowIdx}): обнаружено неверное значение в поле [По плану]";
@@ -336,22 +306,6 @@ namespace FosMan {
             }
 
             return ExtraErrors.Count == 0;
-        }
-
-        /// <summary>
-        /// Получить значение свойства по имени
-        /// </summary>
-        /// <param name="propName"></param>
-        /// <returns></returns>
-        public object GetProperty(string propName) {
-            object value = null;
-            try {
-                value = m_typeAccessor[this, propName];
-            }
-            catch (Exception ex) {
-            }
-
-            return value;
         }
     }
 }

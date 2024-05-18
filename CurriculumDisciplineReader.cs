@@ -538,7 +538,7 @@ namespace FosMan {
             new CurriculumDisciplineHeader() {
                 Text = "НАИМЕНОВАНИЕ",
                 TestFunction = EPropertyTestFunction.Contains,
-                TargetProperty = "Department",
+                TargetProperty = "DepartmentName",
                 TargetType = typeof(string),
                 MatchNumber = 1
             },
