@@ -398,10 +398,10 @@ namespace FosMan {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public static Dictionary<EFormOfStudy, Curriculum> FindCurricula(Rpd rpd) {
-            if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(rpd.Profile) && !string.IsNullOrEmpty(rpd.Department)) {
+            if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(rpd.Profile)) {  //} && !string.IsNullOrEmpty(rpd.Department)) {
                 var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, rpd.DirectionCode, true) == 0 &&
-                                                              string.Compare(c.Profile, rpd.Profile, true) == 0 &&
-                                                              string.Compare(c.Department, rpd.Department, true) == 0);
+                                                              string.Compare(c.Profile, rpd.Profile, true) == 0); // &&
+                                                              //string.Compare(c.Department, rpd.Department, true) == 0);
                 var dic = items.ToDictionary(x => x.FormOfStudy, x => x);
                 return dic;
             }
@@ -770,7 +770,18 @@ namespace FosMan {
                 table.RemoveRow(rowIdx);
             }
 
+            if (table.ColumnCount > 3) {
+                var t = 0;
+                //for (var colIdx = table.ColumnCount - 1; colIdx >= 3; colIdx--) {
+                //    table.RemoveColumn(colIdx);
+                //}
+            }
+
             if (recreateHeaders) {
+                //table.InsertRow();
+                //table.InsertColumn(0, false);
+                //table.InsertColumn();
+                //table.InsertColumn();
                 //заголовок
                 var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
                 header0.InsertText("Код и наименование", false, formatting: new Formatting() { Bold = true });
@@ -880,8 +891,15 @@ namespace FosMan {
         /// <param name="rpdList"></param>
         internal static void FixRpdFiles(List<Rpd> rpdList, string targetDir, out string htmlReport) {
             var html = new StringBuilder("<html><body><h2>Отчёт по исправлению РПД</h2>");
+            DocX templateDocx = null;
 
             try {
+                if (Config.RpdFixByTemplate) {
+                    if (File.Exists(Config.RpdFixTemplateFileName)) {
+                        templateDocx = DocX.Load(Config.RpdFixTemplateFileName);
+                    }
+                }
+
                 html.Append("<div><b>Режим работы:</b></div><ul>");
                 if (Config.RpdFixTableOfCompetences) {
                     html.Append("<li>Исправление таблицы компетенций</li>");
@@ -992,6 +1010,7 @@ namespace FosMan {
                 html.Append($"<div>{ex.StackTrace}</div>");
             }
             finally {
+                templateDocx?.Dispose();
                 html.Append("</body></html>");
             }
             

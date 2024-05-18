@@ -51,6 +51,8 @@
             buttonRpdShowFixMode = new Button();
             splitContainer1 = new SplitContainer();
             groupBox4 = new GroupBox();
+            checkBoxRpdFixByTemplate = new CheckBox();
+            textBoxRpdFixFileTemplate = new TextBox();
             buttonRpdFixSelectTargetDir = new Button();
             textBoxRpdFixTargetDir = new TextBox();
             label13 = new Label();
@@ -303,7 +305,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 411);
+            groupBoxDisciplines.Location = new Point(8, 412);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(984, 287);
             groupBoxDisciplines.TabIndex = 3;
@@ -349,7 +351,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(984, 348);
+            fastObjectListViewCurricula.Size = new Size(984, 349);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -441,13 +443,15 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(984, 641);
+            splitContainer1.Size = new Size(984, 651);
             splitContainer1.SplitterDistance = 200;
             splitContainer1.TabIndex = 7;
             // 
             // groupBox4
             // 
             groupBox4.BackColor = Color.WhiteSmoke;
+            groupBox4.Controls.Add(checkBoxRpdFixByTemplate);
+            groupBox4.Controls.Add(textBoxRpdFixFileTemplate);
             groupBox4.Controls.Add(buttonRpdFixSelectTargetDir);
             groupBox4.Controls.Add(textBoxRpdFixTargetDir);
             groupBox4.Controls.Add(label13);
@@ -466,6 +470,27 @@
             groupBox4.TabIndex = 0;
             groupBox4.TabStop = false;
             groupBox4.Text = "Режим исправлений РПД";
+            // 
+            // checkBoxRpdFixByTemplate
+            // 
+            checkBoxRpdFixByTemplate.AutoSize = true;
+            checkBoxRpdFixByTemplate.Font = new Font("Tahoma", 9F);
+            checkBoxRpdFixByTemplate.Location = new Point(272, 52);
+            checkBoxRpdFixByTemplate.Name = "checkBoxRpdFixByTemplate";
+            checkBoxRpdFixByTemplate.Size = new Size(93, 18);
+            checkBoxRpdFixByTemplate.TabIndex = 18;
+            checkBoxRpdFixByTemplate.Text = "По шаблону";
+            checkBoxRpdFixByTemplate.UseVisualStyleBackColor = true;
+            checkBoxRpdFixByTemplate.CheckedChanged += checkBoxRpdFixByTemplate_CheckedChanged;
+            // 
+            // textBoxRpdFixFileTemplate
+            // 
+            textBoxRpdFixFileTemplate.Font = new Font("Tahoma", 9F);
+            textBoxRpdFixFileTemplate.Location = new Point(371, 50);
+            textBoxRpdFixFileTemplate.Name = "textBoxRpdFixFileTemplate";
+            textBoxRpdFixFileTemplate.Size = new Size(411, 22);
+            textBoxRpdFixFileTemplate.TabIndex = 17;
+            textBoxRpdFixFileTemplate.TextChanged += textBoxRpdFixFileTemplate_TextChanged;
             // 
             // buttonRpdFixSelectTargetDir
             // 
@@ -606,7 +631,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(984, 437);
+            fastObjectListViewRpdList.Size = new Size(984, 447);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -875,7 +900,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 639);
+            labelRpdGenStatus.Location = new Point(652, 640);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -893,7 +918,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(8, 590);
+            groupBox2.Location = new Point(8, 591);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 114);
             groupBox2.TabIndex = 14;
@@ -974,7 +999,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 597);
+            buttonGenerate.Location = new Point(652, 598);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -989,7 +1014,7 @@
             groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBox1.Location = new Point(8, 237);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(984, 347);
+            groupBox1.Size = new Size(984, 348);
             groupBox1.TabIndex = 4;
             groupBox1.TabStop = false;
             groupBox1.Text = "3. Выбор дисциплин";
@@ -1006,7 +1031,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 326);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 327);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -1195,5 +1220,7 @@
         private TextBox textBoxRpdFixTargetDir;
         private Label label13;
         private Button buttonRpdListClear;
+        private CheckBox checkBoxRpdFixByTemplate;
+        private TextBox textBoxRpdFixFileTemplate;
     }
 }

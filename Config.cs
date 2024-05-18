@@ -53,6 +53,10 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public string RpdFixTargetDir { get; set; }
+        [JsonInclude]
+        public bool RpdFixByTemplate { get; set; }
+        [JsonInclude]
+        public string RpdFixTemplateFileName { get; set; }
         /// <summary>
         /// Последняя выбранная локация файлов УП
         /// </summary>

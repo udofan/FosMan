@@ -1132,5 +1132,15 @@ namespace FosMan {
                 fastObjectListViewRpdList.ClearObjects();
             }
         }
+
+        private void checkBoxRpdFixByTemplate_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixByTemplate = checkBoxRpdFixByTemplate.Checked;
+            App.SaveConfig();
+        }
+
+        private void textBoxRpdFixFileTemplate_TextChanged(object sender, EventArgs e) {
+            App.Config.RpdFixTemplateFileName = textBoxRpdFixFileTemplate.Text;
+            App.SaveConfig();
+        }
     }
 }
