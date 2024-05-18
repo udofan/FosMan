@@ -12,7 +12,7 @@ using Xceed.Document.NET;
 using Xceed.Words.NET;
 
 namespace FosMan {
-    internal class Rpd {
+    internal class Rpd : BaseObj{
         //Кафедра
         static Regex m_regexDepartment = new(@"Кафедра\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //Маркер конца титульной странцы "Москва 20xx"
@@ -103,9 +103,9 @@ namespace FosMan {
             //Основные задачи дисциплины
             (new(@"задачи[^.]+дисциплины[:]*", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1)
         };
-        static Regex m_regexFullTimeTable = new(@"очная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        static Regex m_regexMixedTimeTable = new(@"очно-заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        static Regex m_regexPartTimeTable = new(@"заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static public Regex RegexFullTimeTable = new(@"^очная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static public Regex RegexMixedTimeTable = new(@"^очно-заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static public Regex RegexPartTimeTable = new(@"^заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         /// <summary>
         /// Факультет
         /// </summary>
@@ -392,7 +392,23 @@ namespace FosMan {
                             testTable = !TestTableForCompetenceMatrix(table, rpd);
                         }
                         if (testTable) {
-
+                            //проверка на таблицы учебных работ с темами
+                            var par = table.Paragraphs.FirstOrDefault();
+                            for (var i = 0; i < 3; i++) {
+                                par = par.PreviousParagraph;
+                                if (RegexFullTimeTable.IsMatch(par.Text)) {
+                                    rpd.EducationalWorks[EFormOfStudy.FullTime].Table = table;
+                                    break;
+                                }
+                                if (RegexMixedTimeTable.IsMatch(par.Text)) {
+                                    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table = table; 
+                                    break;
+                                }
+                                if (RegexPartTimeTable.IsMatch(par.Text)) {
+                                    rpd.EducationalWorks[EFormOfStudy.PartTime].Table = table;
+                                    break;
+                                }
+                            }
                         }
 
                     }

@@ -90,6 +90,8 @@
             textBoxRpdGenProfile = new TextBox();
             labelRpdGenStatus = new Label();
             groupBox2 = new GroupBox();
+            linkLabelSelectDesciplinesWithLoadedRpd = new LinkLabel();
+            checkBoxApplyLoadedRpd = new CheckBox();
             textBoxRpdGenFileNameTemplate = new TextBox();
             comboBoxRpdGenTemplates = new ComboBox();
             buttonSelectRpdTargetDir = new Button();
@@ -98,7 +100,7 @@
             label6 = new Label();
             label5 = new Label();
             buttonGenerate = new Button();
-            groupBox1 = new GroupBox();
+            groupBoxRpdGenDisciplineList = new GroupBox();
             fastObjectListViewDisciplineListForGeneration = new BrightIdeasSoftware.FastObjectListView();
             label3 = new Label();
             comboBoxRpdGenCurriculumGroups = new ComboBox();
@@ -131,7 +133,7 @@
             tabPageRpdGeneration.SuspendLayout();
             groupBox3.SuspendLayout();
             groupBox2.SuspendLayout();
-            groupBox1.SuspendLayout();
+            groupBoxRpdGenDisciplineList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).BeginInit();
             SuspendLayout();
             // 
@@ -384,10 +386,10 @@
             tabPageRpd.Controls.Add(buttonRpdCheck);
             tabPageRpd.Controls.Add(labelLoadRpd);
             tabPageRpd.Controls.Add(buttonSelectRpdFiles);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1000, 702);
+            tabPageRpd.Size = new Size(1000, 701);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -443,7 +445,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(984, 638);
+            splitContainer1.Size = new Size(984, 639);
             splitContainer1.SplitterDistance = 200;
             splitContainer1.TabIndex = 7;
             // 
@@ -631,7 +633,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(984, 434);
+            fastObjectListViewRpdList.Size = new Size(984, 435);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -743,13 +745,13 @@
             tabPageRpdGeneration.Controls.Add(labelRpdGenStatus);
             tabPageRpdGeneration.Controls.Add(groupBox2);
             tabPageRpdGeneration.Controls.Add(buttonGenerate);
-            tabPageRpdGeneration.Controls.Add(groupBox1);
+            tabPageRpdGeneration.Controls.Add(groupBoxRpdGenDisciplineList);
             tabPageRpdGeneration.Controls.Add(label3);
             tabPageRpdGeneration.Controls.Add(comboBoxRpdGenCurriculumGroups);
-            tabPageRpdGeneration.Location = new Point(4, 24);
+            tabPageRpdGeneration.Location = new Point(4, 23);
             tabPageRpdGeneration.Name = "tabPageRpdGeneration";
             tabPageRpdGeneration.Padding = new Padding(3);
-            tabPageRpdGeneration.Size = new Size(1000, 701);
+            tabPageRpdGeneration.Size = new Size(1000, 702);
             tabPageRpdGeneration.TabIndex = 5;
             tabPageRpdGeneration.Text = "Генерация РПД";
             tabPageRpdGeneration.UseVisualStyleBackColor = true;
@@ -900,7 +902,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 649);
+            labelRpdGenStatus.Location = new Point(652, 602);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -910,6 +912,8 @@
             // groupBox2
             // 
             groupBox2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            groupBox2.Controls.Add(linkLabelSelectDesciplinesWithLoadedRpd);
+            groupBox2.Controls.Add(checkBoxApplyLoadedRpd);
             groupBox2.Controls.Add(textBoxRpdGenFileNameTemplate);
             groupBox2.Controls.Add(comboBoxRpdGenTemplates);
             groupBox2.Controls.Add(buttonSelectRpdTargetDir);
@@ -918,12 +922,35 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(8, 600);
+            groupBox2.Location = new Point(8, 560);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(630, 114);
+            groupBox2.Size = new Size(630, 138);
             groupBox2.TabIndex = 14;
             groupBox2.TabStop = false;
             groupBox2.Text = "4. Настройка генерации";
+            // 
+            // linkLabelSelectDesciplinesWithLoadedRpd
+            // 
+            linkLabelSelectDesciplinesWithLoadedRpd.ActiveLinkColor = Color.Blue;
+            linkLabelSelectDesciplinesWithLoadedRpd.AutoSize = true;
+            linkLabelSelectDesciplinesWithLoadedRpd.Location = new Point(398, 109);
+            linkLabelSelectDesciplinesWithLoadedRpd.Name = "linkLabelSelectDesciplinesWithLoadedRpd";
+            linkLabelSelectDesciplinesWithLoadedRpd.Size = new Size(194, 14);
+            linkLabelSelectDesciplinesWithLoadedRpd.TabIndex = 16;
+            linkLabelSelectDesciplinesWithLoadedRpd.TabStop = true;
+            linkLabelSelectDesciplinesWithLoadedRpd.Text = "Выделить дисциплины с РПД";
+            linkLabelSelectDesciplinesWithLoadedRpd.LinkClicked += linkLabelSelectDesciplinesWithLoadedRpd_LinkClicked;
+            // 
+            // checkBoxApplyLoadedRpd
+            // 
+            checkBoxApplyLoadedRpd.AutoSize = true;
+            checkBoxApplyLoadedRpd.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            checkBoxApplyLoadedRpd.Location = new Point(14, 108);
+            checkBoxApplyLoadedRpd.Name = "checkBoxApplyLoadedRpd";
+            checkBoxApplyLoadedRpd.Size = new Size(306, 18);
+            checkBoxApplyLoadedRpd.TabIndex = 15;
+            checkBoxApplyLoadedRpd.Text = "Применять значения полей из загруженных РПД";
+            checkBoxApplyLoadedRpd.UseVisualStyleBackColor = true;
             // 
             // textBoxRpdGenFileNameTemplate
             // 
@@ -1000,7 +1027,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 607);
+            buttonGenerate.Location = new Point(652, 560);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -1008,17 +1035,17 @@
             buttonGenerate.UseVisualStyleBackColor = true;
             buttonGenerate.Click += buttonGenerate_Click;
             // 
-            // groupBox1
+            // groupBoxRpdGenDisciplineList
             // 
-            groupBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            groupBox1.Controls.Add(fastObjectListViewDisciplineListForGeneration);
-            groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox1.Location = new Point(8, 237);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(984, 357);
-            groupBox1.TabIndex = 4;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "3. Выбор дисциплин";
+            groupBoxRpdGenDisciplineList.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            groupBoxRpdGenDisciplineList.Controls.Add(fastObjectListViewDisciplineListForGeneration);
+            groupBoxRpdGenDisciplineList.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            groupBoxRpdGenDisciplineList.Location = new Point(8, 237);
+            groupBoxRpdGenDisciplineList.Name = "groupBoxRpdGenDisciplineList";
+            groupBoxRpdGenDisciplineList.Size = new Size(984, 317);
+            groupBoxRpdGenDisciplineList.TabIndex = 4;
+            groupBoxRpdGenDisciplineList.TabStop = false;
+            groupBoxRpdGenDisciplineList.Text = "3. Выбор дисциплин";
             // 
             // fastObjectListViewDisciplineListForGeneration
             // 
@@ -1032,7 +1059,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 336);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 296);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -1043,6 +1070,7 @@
             fastObjectListViewDisciplineListForGeneration.VirtualMode = true;
             fastObjectListViewDisciplineListForGeneration.CellToolTipShowing += fastObjectListViewDisciplineListForGeneration_CellToolTipShowing;
             fastObjectListViewDisciplineListForGeneration.FormatRow += fastObjectListViewDisciplineListForGeneration_FormatRow;
+            fastObjectListViewDisciplineListForGeneration.ItemChecked += fastObjectListViewDisciplineListForGeneration_ItemChecked;
             // 
             // label3
             // 
@@ -1131,7 +1159,7 @@
             groupBox3.PerformLayout();
             groupBox2.ResumeLayout(false);
             groupBox2.PerformLayout();
-            groupBox1.ResumeLayout(false);
+            groupBoxRpdGenDisciplineList.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).EndInit();
             ResumeLayout(false);
         }
@@ -1170,7 +1198,7 @@
         private TabPage tabPageRpdGeneration;
         private Label label3;
         private ComboBox comboBoxRpdGenCurriculumGroups;
-        private GroupBox groupBox1;
+        private GroupBox groupBoxRpdGenDisciplineList;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewDisciplineListForGeneration;
         private Button buttonSelectRpdTemplate;
         private TextBox textBoxRpdTemplate;
@@ -1223,5 +1251,7 @@
         private Button buttonRpdListClear;
         private CheckBox checkBoxRpdFixByTemplate;
         private TextBox textBoxRpdFixFileTemplate;
+        private CheckBox checkBoxApplyLoadedRpd;
+        private LinkLabel linkLabelSelectDesciplinesWithLoadedRpd;
     }
 }

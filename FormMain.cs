@@ -3,6 +3,7 @@ using Microsoft.Web.WebView2.WinForms;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using Xceed.Document.NET;
 
 namespace FosMan {
     public partial class FormMain : Form {
@@ -188,6 +189,11 @@ namespace FosMan {
                 IsEditable = false
             };
             list.Columns.Add(olvColumnTotalControlHours);
+            var olvColumnDepartmentName = new OLVColumn("Кафедра", "DepartmentName") {
+                Width = 100,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnDepartmentName);
             var colWidth = 55;
             if (addSemesterColumns) {
                 for (var i = 0; i < CurriculumDiscipline.SEMESTER_COUNT; i++) {
@@ -421,6 +427,8 @@ namespace FosMan {
         }
 
         private void FormMain_Load(object sender, EventArgs e) {
+            Xceed.Words.NET.Licenser.LicenseKey = "WDN30-W7F00-6RL0S-ERHA";
+
             App.LoadConfig();
 
             TuneCurriculumList();
@@ -862,7 +870,7 @@ namespace FosMan {
                     e.Item.BackColor = Color.Pink;
                 }
                 if (fastObjectListViewDisciplineListForGeneration.IsChecked(e.Model)) {
-                    e.Item.Font = new Font(fastObjectListViewDisciplineListForGeneration.Font, FontStyle.Bold);
+                    e.Item.Font = new System.Drawing.Font(fastObjectListViewDisciplineListForGeneration.Font, FontStyle.Bold);
                 }
             }
         }
@@ -913,6 +921,7 @@ namespace FosMan {
                                                                    Application.DoEvents();
                                                                }));
                                                            },
+                                                           checkBoxApplyLoadedRpd.Checked,
                                                            out var errors);
 
                     Application.UseWaitCursor = false;
@@ -1173,6 +1182,27 @@ namespace FosMan {
         private void comboBoxRpdGenTemplates_SelectedIndexChanged(object sender, EventArgs e) {
             App.Config.RpdGenTemplate = comboBoxRpdGenTemplates.SelectedItem?.ToString();
             App.SaveConfig();
+        }
+
+        private void linkLabelSelectDesciplinesWithLoadedRpd_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            fastObjectListViewDisciplineListForGeneration.DeselectAll();
+
+            var selectObjects = new List<CurriculumDiscipline>();
+            foreach (var item in fastObjectListViewDisciplineListForGeneration.Objects) {
+                var disc = item as CurriculumDiscipline;
+                if (disc != null && App.FindRpd(disc) != null) {
+                    selectObjects.Add(disc);
+                }
+            }
+            fastObjectListViewDisciplineListForGeneration.CheckObjects(selectObjects);
+            if (selectObjects.Any()) {
+                fastObjectListViewDisciplineListForGeneration.EnsureModelVisible(selectObjects[0]);
+                checkBoxApplyLoadedRpd.Checked = true;
+            }
+        }
+
+        private void fastObjectListViewDisciplineListForGeneration_ItemChecked(object sender, ItemCheckedEventArgs e) {
+            groupBoxRpdGenDisciplineList.Text = $"3. Выбор дисциплин [{fastObjectListViewDisciplineListForGeneration.CheckedObjects?.Count ?? 0}]";
         }
     }
 }

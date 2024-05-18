@@ -445,7 +445,9 @@ namespace FosMan {
         /// <param name="targetDir"></param>
         /// <returns>список успешно созданных файлов</returns>
         public static List<string> GenerateRpdFiles(CurriculumGroup curriculumGroup, string rpdTemplate, string targetDir, string fileNameTemplate,
-                                                    Action<int, CurriculumDiscipline> progressAction, out List<string> errors) {
+                                                    Action<int, CurriculumDiscipline> progressAction, 
+                                                    bool applyLoadedRpd, 
+                                                    out List<string> errors) {
             var files = new List<string>();
             errors = [];
 
@@ -462,6 +464,10 @@ namespace FosMan {
                 //цикл по дисциплинам
                 foreach (var disc in curriculumGroup.CheckedDisciplines) {
                     try {
+                        Rpd rpd = null;
+                        if (applyLoadedRpd) {
+                            rpd = FindRpd(disc);
+                        }
                         i++;
                         progressAction?.Invoke(i, disc);
                         string fileName;
@@ -492,21 +498,30 @@ namespace FosMan {
                                     RegexMatchHandler = m => {
                                         var replaceValue = m;
                                         var propName = m.Trim('{', '}');
-                                        var groupProp = curriculumGroup.GetProperty(propName);
-                                        if (groupProp != null) {
-                                            replaceValue = groupProp.ToString();
+                                        object rpdProp = null;
+                                        if (applyLoadedRpd && rpd != null) {
+                                            rpdProp = rpd.GetProperty(propName);
+                                        }
+                                        if (rpdProp != null) {
+                                            replaceValue = rpdProp.ToString();
                                         }
                                         else {
-                                            var discProp = disc.GetProperty(propName);
-                                            if (discProp != null) {
-                                                replaceValue = discProp.ToString();
-                                                //if (string.IsNullOrEmpty(replaceValue)) {
-                                                    //replaceValue = m;
-                                                //}
+                                            var groupProp = curriculumGroup.GetProperty(propName);
+                                            if (groupProp != null) {
+                                                replaceValue = groupProp.ToString();
                                             }
                                             else {
-                                                if (TryProcessSpecialField(propName, docx, par, curriculumGroup, disc, out var specialValue)) {
-                                                    replaceValue = specialValue;
+                                                var discProp = disc.GetProperty(propName);
+                                                if (discProp != null) {
+                                                    replaceValue = discProp.ToString();
+                                                    //if (string.IsNullOrEmpty(replaceValue)) {
+                                                    //replaceValue = m;
+                                                    //}
+                                                }
+                                                else {
+                                                    if (TryProcessSpecialField(propName, docx, par, curriculumGroup, disc, out var specialValue)) {
+                                                        replaceValue = specialValue;
+                                                    }
                                                 }
                                             }
                                         }
@@ -519,7 +534,7 @@ namespace FosMan {
                             var competenceTableIsOk = false;
 
                             //этап 2. заполнение/исправление таблиц
-                            foreach (var table in docx.Tables) {
+                            foreach (var table in docx.Tables.ToList()) {
                                 if (!eduWorksIsOk) {
                                     //заполнение таблицы учебных работ
                                     eduWorksIsOk = TestTableForEducationalWorks(table, eduWorks, false /*установка значений в таблицу*/);
@@ -528,6 +543,50 @@ namespace FosMan {
                                     if (CompetenceMatrix.TestTable(table)) {
                                         RecreateTableOfCompetences(table, disc, false);
                                         competenceTableIsOk = true;
+                                    }
+                                }
+                                if (applyLoadedRpd && rpd != null) {
+                                    //проверка на таблицы учебных работ с темами
+                                    var par = table.Paragraphs.FirstOrDefault();
+                                    for (var j = 0; j < 3; j++) {
+                                        par = par.PreviousParagraph;
+                                        if (Rpd.RegexFullTimeTable.IsMatch(par.Text)) {
+                                            //table.Paragraphs.ForEach(p => p.IndentationFirstLine = 50f);
+                                            ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
+                                            var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
+                                            //par.IndentationFirstLine = 0.1f;
+                                            par.InsertTableAfterSelf(newTable);
+                                            //newTable.Paragraphs.ForEach(p => p.IndentationFirstLine = 0);
+                                            //ResetTableIndentation(newTable);
+                                            //table.Xml = rpd.EducationalWorks[EFormOfStudy.FullTime].Table.Xml;
+                                            //table.PackagePart = rpd.EducationalWorks[EFormOfStudy.FullTime].Table.PackagePart;
+                                            table.Remove();
+                                            break;
+                                        }
+                                        if (Rpd.RegexMixedTimeTable.IsMatch(par.Text)) {
+                                            ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
+                                            var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
+                                            //par.IndentationFirstLine = 0.1f;
+                                            par.InsertTableAfterSelf(newTable);
+                                            //newTable.Paragraphs.ForEach(p => p.IndentationFirstLine = 0.1f);
+                                            //ResetTableIndentation(newTable);
+                                            //table.Xml = rpd.EducationalWorks[EFormOfStudy.MixedTime].Table.Xml;
+                                            //table.PackagePart = rpd.EducationalWorks[EFormOfStudy.MixedTime].Table.PackagePart;
+                                            table.Remove();
+                                            break;
+                                        }
+                                        if (Rpd.RegexPartTimeTable.IsMatch(par.Text)) {
+                                            ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
+                                            var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
+                                            //par.IndentationFirstLine = 0.1f;
+                                            par.InsertTableAfterSelf(newTable);
+                                            //newTable.Paragraphs.ForEach(p => p.IndentationFirstLine = 0);
+                                            //ResetTableIndentation(newTable);
+                                            //table.Xml = rpd.EducationalWorks[EFormOfStudy.PartTime].Table.Xml;
+                                            //table.PackagePart = rpd.EducationalWorks[EFormOfStudy.PartTime].Table.PackagePart;
+                                            table.Remove();
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -546,7 +605,17 @@ namespace FosMan {
 
             return files;
         }
-        
+
+        /// <summary>
+        /// Поиск РПД
+        /// </summary>
+        /// <param name="disc"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static Rpd? FindRpd(CurriculumDiscipline disc) {
+            return m_rpdDic.Values.FirstOrDefault(r => r.DisciplineName.Equals(disc.Name, StringComparison.CurrentCultureIgnoreCase));
+        }
+
         /// <summary>
         /// Попытка обработать специальное поле
         /// </summary>
@@ -1120,6 +1189,26 @@ namespace FosMan {
             }
 
             return docxSections;
-        }   
+        }
+
+        /// <summary>
+        /// Сброс отступов в таблице
+        /// </summary>
+        /// <param name="table"></param>
+        internal static void ResetTableIndentation(Table table) {
+            table.Paragraphs.ForEach(p => {
+                p.IndentationFirstLine = 0; // .1f;
+                p.IndentationBefore = 0.1f;
+                p.IndentationHanging = 0;
+                p.IndentationAfter = 0;
+                });
+            //foreach (var row in table.Rows) {
+            //    foreach (var cell in row.Cells) {
+            //        foreach (var par in cell.Paragraphs) {
+            //            //par.
+            //        }
+            //    }
+            //}
+        }
     }
 }
