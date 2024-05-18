@@ -46,29 +46,29 @@ namespace FosMan {
                     },
                     ["2"] = new Department {
                         Code = "2",
-                        Name = "",
-                        NameGenitive = "",
+                        Name = "Теория и история государства и права",
+                        NameGenitive = "теории и истории государства и права",
                         Compiler = "",
                         Signer = ""
                     },
                     ["3"] = new Department {
                         Code = "3",
-                        Name = "",
-                        NameGenitive = "",
+                        Name = "Государственно-правовые дисциплины, административное и муниципальное право",
+                        NameGenitive = "государственно-правовых дисциплин, административного и муниципального права",
                         Compiler = "",
                         Signer = ""
                     },
                     ["4"] = new Department {
                         Code = "4",
-                        Name = "",
-                        NameGenitive = "",
+                        Name = "Гражданско-правовые дисциплины и международное частное право",
+                        NameGenitive = "гражданско-правовых дисциплин и международного частного права",
                         Compiler = "",
                         Signer = ""
                     },
                     ["5"] = new Department {
                         Code = "5",
-                        Name = "",
-                        NameGenitive = "",
+                        Name = "Уголовно-правовые дисциплины",
+                        NameGenitive = "уголовно-правовых дисциплин",
                         Compiler = "",
                         Signer = ""
                     },
@@ -76,8 +76,8 @@ namespace FosMan {
                         Code = "6",
                         Name = "Государственное администрирование",
                         NameGenitive = "государственного администрирования",
-                        Compiler = "",
-                        Signer = ""
+                        Compiler = "к.э.н., профессор Скрынченко Б.Л.",
+                        Signer = "Б.Л. Скрынченко"
                     },
                     ["7"] = new Department { 
                         Code = "7",
@@ -88,15 +88,15 @@ namespace FosMan {
                     },
                     ["8"] = new Department {
                         Code = "8",
-                        Name = "",
-                        NameGenitive = "",
+                        Name = "Психология и педагогика",
+                        NameGenitive = "психологии и педагогики",
                         Compiler = "",
                         Signer = ""
                     },
                     ["9"] = new Department {
                         Code = "9",
-                        Name = "",
-                        NameGenitive = "",
+                        Name = "Педагогическое образование, специальная психология и дефектология",
+                        NameGenitive = "педагогического образования, специальной психологии и дефектологии",
                         Compiler = "",
                         Signer = ""
                     },

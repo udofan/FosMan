@@ -167,7 +167,7 @@ namespace FosMan {
                 }
             };
             list.Columns.Add(olvColumnErrors);
-            //
+
             var olvColumnTotalByPlanHours = new OLVColumn("Итого: По плану", "TotalByPlanHours") {
                 Width = 50,
                 IsEditable = false
@@ -366,6 +366,18 @@ namespace FosMan {
                 }
             };
             list.Columns.Add(olvColumnEducationWork);
+            //предшествующие дисциплины
+            var olvColumnPrevDisciplines = new OLVColumn("Предшествующие дисциплины", "PrevDisciplines") {
+                Width = 200,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnPrevDisciplines);
+            //последующие дисциплины
+            var olvColumnNextDisciplines = new OLVColumn("Последующие дисциплины", "NextDisciplines") {
+                Width = 200,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnNextDisciplines);
             //ошибки
             var olvColumnErrors = new OLVColumn("Ошибки", "Errors") {
                 Width = 50,
@@ -439,6 +451,8 @@ namespace FosMan {
             textBoxRpdFixTargetDir.Text = App.Config.RpdFixTargetDir;
             textBoxRpdGenFileNameTemplate.Text = App.Config.RpdGenFileNameTemplate;
             textBoxRpdGenTargetDir.Text = App.Config.RpdGenTargetDir;
+            textBoxRpdFixFileTemplate.Text = App.Config.RpdFixTemplateFileName;
+            checkBoxRpdFixByTemplate.Checked = App.Config.RpdFixByTemplate;
             if (!string.IsNullOrEmpty(App.Config.RpdGenTemplate)) {
                 if (comboBoxRpdGenTemplates.Items.Contains(App.Config.RpdGenTemplate)) {
                     comboBoxRpdGenTemplates.SelectedItem = App.Config.RpdGenTemplate;

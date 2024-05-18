@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xceed.Document.NET;
 
 namespace FosMan {
     /// <summary>
@@ -51,6 +52,10 @@ namespace FosMan {
         /// Значение ControlForm для экрана
         /// </summary>
         public string ControlFormForScreen { get => ControlForm.GetDescription(); }
+        /// <summary>
+        /// Таблица учебного времени с темами
+        /// </summary>
+        public Table Table { get; set; }
 
         /// <summary>
         /// Получить значение свойства по имени

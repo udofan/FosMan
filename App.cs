@@ -49,9 +49,10 @@ namespace FosMan {
         static Regex m_regexControlExam = new(@"экзам", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexControlTest = new(@"зач", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static Regex m_regexControlTestGrade = new(@"зач.+с.+оц", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        //
         //static Regex m_regexTestTableCaptionFullTimeEduWorks;
         //static Regex m_regexTestTableEduWorks = new(@"Наименован.*раздел.*тем", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        //для выявления раздела
+        static Regex m_regexRpdChapter = new(@"^(\d+).\s+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         static CompetenceMatrix m_competenceMatrix = null;
         static Dictionary<string, Curriculum> m_curriculumDic = [];
@@ -504,7 +505,7 @@ namespace FosMan {
                                                 //}
                                             }
                                             else {
-                                                if (TryProcessSpecialField(propName, par, curriculumGroup, disc, out var specialValue)) {
+                                                if (TryProcessSpecialField(propName, docx, par, curriculumGroup, disc, out var specialValue)) {
                                                     replaceValue = specialValue;
                                                 }
                                             }
@@ -553,7 +554,7 @@ namespace FosMan {
         /// <param name="par"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static bool TryProcessSpecialField(string propName, Paragraph par, CurriculumGroup curriculumGroup, CurriculumDiscipline discipline, out string replaceValue) {
+        private static bool TryProcessSpecialField(string propName, DocX docX, Paragraph par, CurriculumGroup curriculumGroup, CurriculumDiscipline discipline, out string replaceValue) {
             var result = false;
 
             replaceValue = null;
@@ -571,6 +572,20 @@ namespace FosMan {
                             result = true;
                         }
                     }
+                }
+            }
+            else {
+                if (propName.Equals("TOC", StringComparison.CurrentCultureIgnoreCase)) {
+//                    var tocSwitches = new Dictionary<TableOfContentsSwitches, string>();
+////{
+////          { TableOfContentsSwitches.O, "1-3"},
+////          { TableOfContentsSwitches.U, ""},
+////          { TableOfContentsSwitches.Z, ""},
+////          { TableOfContentsSwitches.H, ""},
+////        };
+//                    TableOfContents toc = docX.InsertTableOfContents(par, "", tocSwitches);
+//                    par.FontSize(14);
+//                    replaceValue = "";
                 }
             }
             //switch (propName) {
@@ -902,11 +917,15 @@ namespace FosMan {
         internal static void FixRpdFiles(List<Rpd> rpdList, string targetDir, out string htmlReport) {
             var html = new StringBuilder("<html><body><h2>Отчёт по исправлению РПД</h2>");
             DocX templateDocx = null;
+            DocxChapters templateChapters = null;
 
             try {
+                var fixByTemplate = false;
                 if (Config.RpdFixByTemplate) {
                     if (File.Exists(Config.RpdFixTemplateFileName)) {
                         templateDocx = DocX.Load(Config.RpdFixTemplateFileName);
+                        templateChapters = ScanDocxForChapters(templateDocx);
+                        fixByTemplate = true;
                     }
                 }
 
@@ -1001,6 +1020,12 @@ namespace FosMan {
                                 }
                                 html.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
                             }
+
+                            //фикс разделов по шаблону
+                            if (fixByTemplate) {
+                                var docxSections = ScanDocxForChapters(docx);
+                            }
+
                             var fileName = Path.GetFileName(rpd.SourceFileName);
                             var newFileName = Path.Combine(targetDir, fileName);
                             if (!Directory.Exists(targetDir)) {
@@ -1062,5 +1087,39 @@ namespace FosMan {
 
             return discipline;
         }
+
+
+        /// <summary>
+        /// Сканирование документа на разделы
+        /// </summary>
+        /// <param name="docX"></param>
+        internal static DocxChapters ScanDocxForChapters(DocX docX) {
+            var docxSections = new DocxChapters() {
+                Chapters = []
+            };
+
+            DocxChapter section = null;
+            foreach (var par in docX.Paragraphs) {
+                bool skipPar = false;
+                var magicText = par.MagicText?.FirstOrDefault();
+                if (magicText != null && magicText.formatting?.Bold == true) {
+                    var m = m_regexRpdChapter.Match(magicText.text);
+                    if (m.Success) {
+                        section = new() {
+                            Number = m.Groups[1].Value,
+                            Text = m.Groups[2].Value,
+                            Paragraphs = []
+                        };
+                        docxSections.Chapters.Add(section);
+                        skipPar = true;
+                    }
+                }
+                if (!skipPar && section != null) {
+                    section.Paragraphs.Add(par);
+                }
+            }
+
+            return docxSections;
+        }   
     }
 }

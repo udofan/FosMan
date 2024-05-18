@@ -23,6 +23,9 @@
     <None Update="Templates\РПД_шаблон_2024.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Templates\РПД_шаблон_new_2024.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

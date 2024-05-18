@@ -33,7 +33,79 @@ namespace FosMan {
         static Regex m_regexCompilerMarker = new(@"Составитель:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
         static Regex m_regexRpdMarker = new(@"рабочая\s+программа\s+дисциплины", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
+        static List<(Regex, int)> m_regexPrevDisciplines = new() {
+            //предварительное изучение следующих дисциплин
+            (new(@"предварит[^.]*(изуч)?[^.]*(след)?[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 3),
+            //следующих предшествующих дисциплин
+            //формируемые предшествующими дисциплинами
+            (new(@"предшест[^.]+дисциплин(ами|ы)?[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 2),
+            //требуются знания таких дисциплин как 
+            (new(@"треб[^.]+так[^.]+дисциплин\s+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //на которых базируется данная дисциплина
+            (new(@"базир[^.]+данн[^.]+дисциплина[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //В круге главных источников, входящих в учебную дисциплину «Банковское де-ло» являются
+            (new(@"глав[^.]+источник[^.]+входящ[^.]+дисципл[^.]+являются[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //базируется на знаниях и умениях, полученных обучающимися ранее в ходе освоения общеобразовательного программного материала по спряжённому курсу средней школы, а также ряда 
+            (new(@"базир[^.]+на\s+знаниях[^.]+ранее[^.]+ряда\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //когда студенты ознакомлены с информатикой в части следующих направ-лений:
+            (new(@"ознакомлен[^.]+части[^.]+следующ[^.]+направлений\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //логически связана с комплексом дисциплин:
+            (new(@"логически\s+связана[^.]+комплекс[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //предшествуют следующие учебные курсы:
+            (new(@"предшест[^.]+следующие[^.]+курсы[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 2),
+            //Обязательным условием, обеспечивающим успешное освоение данной дис-циплины, являются хорошие знания обучающимися таких дисциплин, как 
+            (new(@"хорош\s+знания[^.]+таких\s+дисциплин[^.]+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //дисциплина тесно связана с рядом общенаучных, экономических и специ-альных дисциплин, таких как 
+            (new(@"дисциплин[^.]+связана[^.]+рядом[^.]+таких\s+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //когда студенты уже ознакомлены с дисциплиной 
+            (new(@"уже[^.]+ознакомлены[^.]+диспиплин[^.]\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //формируемые предшествующими дисциплинами
+            (new(@"формируем[^.]+предшествующ[^.]+дисциплинами[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //изучается параллельно с такими дисциплинами, как 
+            (new(@"изучается[^.]+параллельно[^.]+такими\s+дисциплинами\s+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //..ранее изученных дисциплин:
+            (new(@"ранее[^.]+изучен[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+        };
+        static List<(Regex, int)> m_regexNextDisciplines = new() {
+            //последующих учебных дисциплин
+            //изучении последующих профессиональных дисциплин
+            (new(@"послед[^.]+(учеб)?[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 2),
+            //изучения следующих дисциплин
+            (new(@"след[^.]+(учеб)?[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 2),
+            //служат основой для более глубокого восприятия таких дисциплин как
+            (new(@"глуб[^.]+восприят[^.]+так[^.]+дисциплин как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //В соединении с дисциплинами
+            (new(@"в\s+соединен[^.]+\s+дисциплинами\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //необходимы для освоения таких предметов как 
+            (new(@"для\s+освоен[^.]+\s+предмет[^.]+\s+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //является базовым для последующего освоения программного материала ряда дисциплин
+            (new(@"базов[^.]+для\s+последующ[^.]+\s+освоен[^.]+материала\s+ряда\s+дисциплин\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //является базовым для последующего освоения программного материала
+            (new(@"базов[^.]+для\s+последующ[^.]+\s+освоен[^.]+материала\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //более успешному изучению связанных с ней дисциплин:
+            (new(@"успешн[^.]+изуч[^.]+связанн[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            ////Наименования последующих направлений:
+            (new(@"наименов[^.]+послед[^.]+направлений[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //более успешному изучению таких связанных с ней дисциплин, как
+            (new(@"изуч[^.]+таких[^.]+связанн[^.]+дисциплин[^.]+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //является предшествующей для изучения дисциплин
+            (new(@"являет[^.]+предшествующ[^.]+изучен[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //является фундаментальной базой для дальнейшего изучения 
+            (new(@"являет[^.]+базой[^.]+дальнейшего[^.]+изучения\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+        };
+        static List<(Regex, int)> m_regexTarget = new() {
+            //Целью изучения дисциплины «Правоведение» является
+            (new(@"цель[^.]+дисциплины[^.]+является\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //Цель дисциплины -
+            (new(@"цель\s+дисциплины[- ]+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1)
+        };
+        static List<(Regex, int)> m_regexTasks = new() {
+            //Основные задачи дисциплины
+            (new(@"задачи[^.]+дисциплины[:]*", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1)
+        };
+        static Regex m_regexFullTimeTable = new(@"очная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexMixedTimeTable = new(@"очно-заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexPartTimeTable = new(@"заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         /// <summary>
         /// Факультет
         /// </summary>
@@ -90,6 +162,14 @@ namespace FosMan {
         /// Составитель
         /// </summary>
         public string Compiler { get; set; }
+        /// <summary>
+        /// Предшествующие дисциплины
+        /// </summary>
+        public string PrevDisciplines { get; set; }
+        /// <summary>
+        /// Последующие дисциплины
+        /// </summary>
+        public string NextDisciplines { get; set; }
 
         /// <summary>
         /// Загрузка РПД из файла
@@ -112,6 +192,9 @@ namespace FosMan {
                     var profileTestReady = false;
                     var profileField = "";              //если профиль разнесен по неск. строкам, здесь он будет накапливаться
                     var compilerTestReady = false;
+                    var fullTimeTestTableReady = false;
+                    var mixedTimeTestTableReady = false;
+                    var partTimeTestTableReady = false;
 
                     foreach (var par in docx.Paragraphs) {
                         var text = par.Text.Trim();
@@ -143,6 +226,20 @@ namespace FosMan {
                         if (string.IsNullOrEmpty(rpd.Department)) {
                             var matchDepartment = m_regexDepartment.Match(text);
                             if (matchDepartment.Success) rpd.Department = matchDepartment.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
+                        }
+                        //предшествующие дисциплины
+                        if (string.IsNullOrEmpty(rpd.PrevDisciplines)) {
+                            (Match match, int idx) matchedItem = m_regexPrevDisciplines.Select(x => (x.Item1.Match(text), x.Item2)).FirstOrDefault(x => x.Item1.Success);
+                            if (matchedItem.match != null) {
+                                rpd.PrevDisciplines = matchedItem.match.Groups[matchedItem.idx].Value.Trim(' ');
+                            }
+                        }
+                        //последующие дисциплины
+                        if (string.IsNullOrEmpty(rpd.NextDisciplines)) {
+                            (Match match, int idx) matchedItem = m_regexNextDisciplines.Select(x => (x.Item1.Match(text), x.Item2)).FirstOrDefault(x => x.Item1.Success);
+                            if (matchedItem.match != null) {
+                                rpd.NextDisciplines = matchedItem.match.Groups[matchedItem.idx].Value.Trim(' ');
+                            }
                         }
                         //профиль
                         if (string.IsNullOrEmpty(rpd.Profile)) {
@@ -192,6 +289,48 @@ namespace FosMan {
                                 }
                             }
                         }
+                        //таблица очная форма обучения
+                        //if (rpd.EducationalWorks.TryGetValue(EFormOfStudy.FullTime, out var eduWork)) {
+                        //    if (eduWork.Table == null) {
+                        //        if (fullTimeTestTableReady) {
+                        //            if ((par.FollowingTables?.Count ?? 0) == 1) {
+                        //                eduWork.Table = par.FollowingTables[0];
+                        //                fullTimeTestTableReady = false;
+                        //            }
+                        //        }
+                        //        if (m_regexFullTimeTable.IsMatch(text)) {
+                        //            fullTimeTestTableReady = true;
+                        //        }
+                        //    }
+                        //}
+                        ////таблица очно-заочная форма обучения
+                        //if (rpd.EducationalWorks.TryGetValue(EFormOfStudy.MixedTime, out eduWork)) {
+                        //    if (eduWork.Table == null) {
+                        //        if (mixedTimeTestTableReady) {
+                        //            if ((par.FollowingTables?.Count ?? 0) == 1) {
+                        //                eduWork.Table = par.FollowingTables[0];
+                        //                mixedTimeTestTableReady = false;
+                        //            }
+                        //        }
+                        //        if (m_regexMixedTimeTable.IsMatch(text)) {
+                        //            mixedTimeTestTableReady = true;
+                        //        }
+                        //    }
+                        //}
+                        ////таблица заочная форма обучения
+                        //if (rpd.EducationalWorks.TryGetValue(EFormOfStudy.PartTime, out eduWork)) {
+                        //    if (eduWork.Table == null) {
+                        //        if (partTimeTestTableReady) {
+                        //            if ((par.FollowingTables?.Count ?? 0) == 1) {
+                        //                eduWork.Table = par.FollowingTables[0];
+                        //                partTimeTestTableReady = false;
+                        //            }
+                        //        }
+                        //        if (m_regexPartTimeTable.IsMatch(text)) {
+                        //            partTimeTestTableReady = true;
+                        //        }
+                        //    }
+                        //}
                         //направление подготовки
                         if (string.IsNullOrEmpty(rpd.DirectionCode)) {
                             var matchDirection = m_regexDirection.Match(text);
@@ -245,12 +384,17 @@ namespace FosMan {
 
                     //проверка таблиц
                     foreach (var table in docx.Tables) {
+                        var testTable = true;
                         if (!rpd.EducationalWorks.Any()) {
-                            App.TestTableForEducationalWorks(table, rpd.EducationalWorks, true);
+                            testTable = !App.TestTableForEducationalWorks(table, rpd.EducationalWorks, true);
                         }
-                        if (rpd.CompetenceMatrix == null) {
-                            TestTableForCompetenceMatrix(table, rpd);
+                        if (testTable && rpd.CompetenceMatrix == null) {
+                            testTable = !TestTableForCompetenceMatrix(table, rpd);
                         }
+                        if (testTable) {
+
+                        }
+
                     }
                     //итоговая проверка
                     if (rpd.FormsOfStudy.Count != rpd.EducationalWorks.Count) {
@@ -283,15 +427,18 @@ namespace FosMan {
         /// </summary>
         /// <param name="table"></param>
         /// <param name="rpd"></param>
-        private static void TestTableForCompetenceMatrix(Table table, Rpd rpd) {
+        private static bool TestTableForCompetenceMatrix(Table table, Rpd rpd) {
             var matrix = new CompetenceMatrix() {
                 Items = [],
                 Errors = [],
             };
-            if (CompetenceMatrix.TryParseTable(table, matrix)) {
+            var result = CompetenceMatrix.TryParseTable(table, matrix);
+            if (result) {
                 rpd.CompetenceMatrix = matrix;
                 rpd.Errors.AddRange(matrix.Errors);
             }
+
+            return result;
         }
     }
 }
