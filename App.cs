@@ -158,8 +158,8 @@ namespace FosMan {
             report.Append($"<div style='color: red'>{error}</div>");
         }
 
-        static void AddDiv(this StringBuilder report, string content) {
-            report.Append($"<div>{content}</div>");
+        static void AddDiv(this StringBuilder report, string Summary) {
+            report.Append($"<div>{Summary}</div>");
         }
 
         static void AddTocElement(this StringBuilder toc, string element, string anchor, int errorCount) {
@@ -345,7 +345,7 @@ namespace FosMan {
                             if (checkCompetences) {
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций", (eduWork) => {
                                     var achiCodeList = rpd.CompetenceMatrix.GetAllAchievementCodes();
-                                    var content = "";
+                                    var Summary = "";
                                     var matrixError = false;
                                     foreach (var code in discipline.CompetenceList) {
                                         var elem = "";
@@ -357,15 +357,15 @@ namespace FosMan {
                                             matrixError = true;
                                         }
 
-                                        if (content.Length > 0) content += "; ";
-                                        content += elem;
+                                        if (Summary.Length > 0) Summary += "; ";
+                                        Summary += elem;
                                     }
                                     foreach (var missedCode in achiCodeList.Except(discipline.CompetenceList)) {
                                         matrixError = true;
-                                        if (content.Length > 0) content += "; ";
-                                        content += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
+                                        if (Summary.Length > 0) Summary += "; ";
+                                        Summary += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
                                     }
-                                    var msg = matrixError ? $"Выявлено несоответствие компетенций: {content}" : "";
+                                    var msg = matrixError ? $"Выявлено несоответствие компетенций: {Summary}" : "";
                                     return (!matrixError, msg);
                                 });
                             }
@@ -489,7 +489,7 @@ namespace FosMan {
                         }
 
                         using (var docx = DocX.Load(targetFile)) {
-                            //docx.InsertTableOfContents()
+                            //docx.InsertTableOfSummarys()
                             //этап 1. подстановка полей {...}
                             foreach (var par in docx.Paragraphs.ToList()) {
                                 var replaceOptions = new FunctionReplaceTextOptions() {
@@ -519,7 +519,7 @@ namespace FosMan {
                                                     //}
                                                 }
                                                 else {
-                                                    if (TryProcessSpecialField(propName, docx, par, curriculumGroup, disc, out var specialValue)) {
+                                                    if (TryProcessSpecialField(propName, docx, par, curriculumGroup, disc, rpd, out var specialValue)) {
                                                         replaceValue = specialValue;
                                                     }
                                                 }
@@ -532,6 +532,9 @@ namespace FosMan {
                             }
                             var eduWorksIsOk = false;
                             var competenceTableIsOk = false;
+                            var fullTimeTableIsOk = false;
+                            var mixedTimeTableIsOk = false;
+                            var partTimeTableIsOk = false;
 
                             //этап 2. заполнение/исправление таблиц
                             foreach (var table in docx.Tables.ToList()) {
@@ -550,46 +553,34 @@ namespace FosMan {
                                     var par = table.Paragraphs.FirstOrDefault();
                                     for (var j = 0; j < 3; j++) {
                                         par = par.PreviousParagraph;
-                                        if (Rpd.RegexFullTimeTable.IsMatch(par.Text)) {
-                                            //table.Paragraphs.ForEach(p => p.IndentationFirstLine = 50f);
+                                        if (!fullTimeTableIsOk && Rpd.RegexFullTimeTable.IsMatch(par.Text)) {
                                             ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
                                             var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
-                                            //par.IndentationFirstLine = 0.1f;
                                             par.InsertTableAfterSelf(newTable);
-                                            //newTable.Paragraphs.ForEach(p => p.IndentationFirstLine = 0);
-                                            //ResetTableIndentation(newTable);
-                                            //table.Xml = rpd.EducationalWorks[EFormOfStudy.FullTime].Table.Xml;
-                                            //table.PackagePart = rpd.EducationalWorks[EFormOfStudy.FullTime].Table.PackagePart;
                                             table.Remove();
+                                            fullTimeTableIsOk = true;
                                             break;
                                         }
-                                        if (Rpd.RegexMixedTimeTable.IsMatch(par.Text)) {
+                                        if (!mixedTimeTableIsOk && Rpd.RegexMixedTimeTable.IsMatch(par.Text)) {
                                             ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
                                             var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
-                                            //par.IndentationFirstLine = 0.1f;
                                             par.InsertTableAfterSelf(newTable);
-                                            //newTable.Paragraphs.ForEach(p => p.IndentationFirstLine = 0.1f);
-                                            //ResetTableIndentation(newTable);
-                                            //table.Xml = rpd.EducationalWorks[EFormOfStudy.MixedTime].Table.Xml;
-                                            //table.PackagePart = rpd.EducationalWorks[EFormOfStudy.MixedTime].Table.PackagePart;
                                             table.Remove();
+                                            mixedTimeTableIsOk = true;
                                             break;
                                         }
-                                        if (Rpd.RegexPartTimeTable.IsMatch(par.Text)) {
+                                        if (!partTimeTableIsOk && Rpd.RegexPartTimeTable.IsMatch(par.Text)) {
                                             ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
                                             var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
-                                            //par.IndentationFirstLine = 0.1f;
                                             par.InsertTableAfterSelf(newTable);
-                                            //newTable.Paragraphs.ForEach(p => p.IndentationFirstLine = 0);
-                                            //ResetTableIndentation(newTable);
-                                            //table.Xml = rpd.EducationalWorks[EFormOfStudy.PartTime].Table.Xml;
-                                            //table.PackagePart = rpd.EducationalWorks[EFormOfStudy.PartTime].Table.PackagePart;
                                             table.Remove();
+                                            partTimeTableIsOk = true;
                                             break;
                                         }
                                     }
                                 }
                             }
+                            docx.UpdateFields();
                             docx.Save();// ($"filled_{targetFile}");
                         }
                         files.Add(targetFile);
@@ -623,7 +614,10 @@ namespace FosMan {
         /// <param name="par"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static bool TryProcessSpecialField(string propName, DocX docX, Paragraph par, CurriculumGroup curriculumGroup, CurriculumDiscipline discipline, out string replaceValue) {
+        private static bool TryProcessSpecialField(string propName, DocX docX, Paragraph par, 
+                                                   CurriculumGroup curriculumGroup, CurriculumDiscipline discipline, 
+                                                   Rpd rpd,
+                                                   out string replaceValue) {
             var result = false;
 
             replaceValue = null;
@@ -644,15 +638,39 @@ namespace FosMan {
                 }
             }
             else {
+                if (rpd != null && propName.Equals("Summary", StringComparison.CurrentCultureIgnoreCase) &&
+                    (rpd.SummaryParagraphs?.Any() ?? false)) {
+                    replaceValue = "";
+                    //Paragraph lastPar = par.InsertParagraphAfterSelf //docX.InsertParagraph()
+                    var currPar = par;
+                    foreach (var sumPar in rpd.SummaryParagraphs) {
+                        //sumPar.IndentationAfter = 0.1f;
+                        //sumPar.IndentationBefore = 0.1f;
+                        //sumPar.IndentationHanging = 0.1f;
+                        //sumPar.LineSpacing = 12;        //множитель = 1
+                        //sumPar.LineSpacingAfter = 0.1f;
+                        //sumPar.LineSpacingBefore = 0.1f;
+                        //currPar.lin
+                        //sumPar.SetLineSpacing(LineSpacingType.Line, 12);
+                        //sumPar.SetLineSpacing(LineSpacingType.Before, 0.1f);
+                        //sumPar.SetLineSpacing(LineSpacingType.After, 0.1f);
+                        //sumPar.spa
+                        sumPar.SetLineSpacing(LineSpacingTypeAuto.None);
+                        currPar = currPar.InsertParagraphAfterSelf(sumPar);
+                        //currPar.SetLineSpacing(LineSpacingTypeAuto.None);
+                    }
+                    result = true;
+                }
+
                 if (propName.Equals("TOC", StringComparison.CurrentCultureIgnoreCase)) {
-//                    var tocSwitches = new Dictionary<TableOfContentsSwitches, string>();
+//                    var tocSwitches = new Dictionary<TableOfSummarysSwitches, string>();
 ////{
-////          { TableOfContentsSwitches.O, "1-3"},
-////          { TableOfContentsSwitches.U, ""},
-////          { TableOfContentsSwitches.Z, ""},
-////          { TableOfContentsSwitches.H, ""},
+////          { TableOfSummarysSwitches.O, "1-3"},
+////          { TableOfSummarysSwitches.U, ""},
+////          { TableOfSummarysSwitches.Z, ""},
+////          { TableOfSummarysSwitches.H, ""},
 ////        };
-//                    TableOfContents toc = docX.InsertTableOfContents(par, "", tocSwitches);
+//                    TableOfSummarys toc = docX.InsertTableOfSummarys(par, "", tocSwitches);
 //                    par.FontSize(14);
 //                    replaceValue = "";
                 }
@@ -1197,18 +1215,11 @@ namespace FosMan {
         /// <param name="table"></param>
         internal static void ResetTableIndentation(Table table) {
             table.Paragraphs.ForEach(p => {
-                p.IndentationFirstLine = 0; // .1f;
+                p.IndentationFirstLine = 0.1f; // .1f;
                 p.IndentationBefore = 0.1f;
-                p.IndentationHanging = 0;
-                p.IndentationAfter = 0;
-                });
-            //foreach (var row in table.Rows) {
-            //    foreach (var cell in row.Cells) {
-            //        foreach (var par in cell.Paragraphs) {
-            //            //par.
-            //        }
-            //    }
-            //}
+                p.IndentationHanging = 0.1f;
+                p.IndentationAfter = 0.1f;
+            });
         }
     }
 }

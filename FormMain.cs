@@ -1,5 +1,6 @@
 using BrightIdeasSoftware;
 using Microsoft.Web.WebView2.WinForms;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -1203,6 +1204,16 @@ namespace FosMan {
 
         private void fastObjectListViewDisciplineListForGeneration_ItemChecked(object sender, ItemCheckedEventArgs e) {
             groupBoxRpdGenDisciplineList.Text = $"3. Выбор дисциплин [{fastObjectListViewDisciplineListForGeneration.CheckedObjects?.Count ?? 0}]";
+        }
+
+        private void fastObjectListViewRpdList_ItemActivate(object sender, EventArgs e) {
+            if (fastObjectListViewRpdList.FocusedObject is Rpd rpd) {
+                var p = new Process();
+                p.StartInfo = new ProcessStartInfo(rpd.SourceFileName) {
+                    UseShellExecute = true
+                };
+                p.Start();
+            }
         }
     }
 }
