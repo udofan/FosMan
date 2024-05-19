@@ -23,7 +23,7 @@ namespace FosMan {
         [Description("Зачет с оценкой")]
         TestWithAGrade, //зачет с оценкой
         [Description("Контрольная работа")]
-        ControlWork,    //контрольная работа
+        CourseWork,     //курсовая работа
         [Description("НЕИЗВЕСТНО")]
         Unknown         //определить НЕ УДАЛОСЬ
     }
@@ -226,10 +226,18 @@ namespace FosMan {
                     SelfStudyHours = TotalSelfStudyHours,
                     TotalHours = TotalByPlanHours
                 };
-                if (ControlFormExamHours.HasValue && ControlFormExamHours.Value > 0) m_eduWork.ControlForm = EControlForm.Exam;
-                if (ControlFormTestHours.HasValue && ControlFormTestHours.Value > 0) m_eduWork.ControlForm = EControlForm.Test;
-                if (ControlFormTestWithAGradeHours.HasValue && ControlFormTestWithAGradeHours.Value > 0) m_eduWork.ControlForm = EControlForm.TestWithAGrade;
-                if (ControlFormControlWorkHours.HasValue && ControlFormControlWorkHours.Value > 0) m_eduWork.ControlForm = EControlForm.ControlWork;
+                if (ControlFormExamHours.HasValue && ControlFormExamHours.Value > 0) {
+                    m_eduWork.ControlForm = EControlForm.Exam;
+                }
+                else if (ControlFormTestHours.HasValue && ControlFormTestHours.Value > 0) {
+                    m_eduWork.ControlForm = EControlForm.Test;
+                }
+                else if (ControlFormTestWithAGradeHours.HasValue && ControlFormTestWithAGradeHours.Value > 0) {
+                    m_eduWork.ControlForm = EControlForm.TestWithAGrade;
+                }
+                else if (ControlFormControlWorkHours.HasValue && ControlFormControlWorkHours.Value > 0) {
+                    m_eduWork.ControlForm = EControlForm.CourseWork;
+                }
                 
                 return m_eduWork;
             }

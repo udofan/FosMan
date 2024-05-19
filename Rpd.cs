@@ -1,6 +1,7 @@
 ﻿using Microsoft.Web.WebView2.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
@@ -122,9 +123,9 @@ namespace FosMan {
             new(@"^Содержание\s+и\s+структура\s+дисциплины(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled)
         };
         static Regex m_regexNumberedHeader = new(@"^(\d+)\.(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        static public Regex RegexFullTimeTable = new(@"^очная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        static public Regex RegexMixedTimeTable = new(@"^очно-заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        static public Regex RegexPartTimeTable = new(@"^заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static public Regex RegexFullTimeTable = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static public Regex RegexMixedTimeTable = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static public Regex RegexPartTimeTable = new(@"^заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static List<Regex> m_regexQuestionListBeginMarker = new() {
             //Примерные вопросы к экзамену
             new(@"примерные\s+вопросы\s+к\s+(зачету|экзамену)[:.]*", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -133,6 +134,12 @@ namespace FosMan {
             //Теоретический блок вопросов
             new(@"Теоретический\s+блок\s+вопросов[:]*", RegexOptions.IgnoreCase | RegexOptions.Compiled)
 
+        };
+        static List<Regex> m_regexReferencesBase = new() {
+            new(@"основная.+литература", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+        };
+        static List<Regex> m_regexReferencesExtra = new() {
+            new(@"дополнительная.+литература", RegexOptions.IgnoreCase | RegexOptions.Compiled)
         };
         /// <summary>
         /// Факультет
@@ -206,6 +213,15 @@ namespace FosMan {
         /// Параграфы вопросов к экзамену/зачету
         /// </summary>
         public List<string> QuestionList { get; set; }
+        /// <summary>
+        /// Список базовых источников
+        /// </summary>
+        public List<string> ReferencesBase { get; set; }
+        /// <summary>
+        /// Список доп. источников
+        /// </summary>
+        public List<string> ReferencesExtra { get; set; }
+
 
         /// <summary>
         /// Загрузка РПД из файла
@@ -218,7 +234,9 @@ namespace FosMan {
                 EducationalWorks = [], 
                 FormsOfStudy = [], 
                 SummaryParagraphs = [], 
-                QuestionList = []
+                QuestionList = [], 
+                ReferencesBase = [],
+                ReferencesExtra = []
             };
 
             try {
@@ -238,6 +256,8 @@ namespace FosMan {
                     var collectText = false;
                     var collectSummary = false;
                     var collectQuestions = false;
+                    var collectBaseReferences = false;
+                    var collectExtraReferences = false;
 
                     foreach (var par in docx.Paragraphs) {
                         var text = par.Text.Trim(' ', '\r', '\n', '\t');
@@ -338,11 +358,11 @@ namespace FosMan {
                             if (collectSummary) {
                                 var m = m_regexNumberedHeader.Match(text);
                                 stopCollecting = m.Success && int.Parse(m.Groups[1].Value) >= 4 && //номер раздела как правило 5
-                                                 (m.Groups[2].Value.Contains("методич", StringComparison.CurrentCultureIgnoreCase) || //в нем есть слово "методич"
+                                                 (m.Groups[2].Value.Contains("учебно-методич", StringComparison.CurrentCultureIgnoreCase) || //в нем есть слово "методич"
                                                  par.MagicText.FirstOrDefault().formatting?.Bold == true); /* или он жирный */
                                 if (!stopCollecting) {
                                     if (//par.MagicText.FirstOrDefault().formatting?.Bold == true && 
-                                        text.Contains("методич", StringComparison.CurrentCultureIgnoreCase) &&
+                                        text.Contains("учебно-методич", StringComparison.CurrentCultureIgnoreCase) &&
                                         par.IsListItem) {
                                         stopCollecting = true;
                                     }
@@ -360,42 +380,57 @@ namespace FosMan {
                         //сбор текстовых значений
                         if (collectText) {
                             var stopCollecting = false;
-                            //if (!stopCollecting) {
-                            //    if (collectQuestions) rpd.QuestionList = textList;
-                            //    collectText = false;
-                            //}
-                            //else {
                             var clearedText = text;
                             var matchNumberedItem = m_regexNumberedHeader.Match(text);
-                            if (matchNumberedItem.Success) {
-                                clearedText = matchNumberedItem.Groups[2].Value.Trim(' ', '\r', '\n', '\t');
-                                var num = int.Parse(matchNumberedItem.Groups[1].Value);
-                                if (num < textList.Count) {
-                                    stopCollecting = true;
-                                }
-                            } 
-                            else { //не подошло по выражению - проверим как элемент нумерованного списка
-                                if (par.IsListItem && par.ListItemType == ListItemType.Numbered) {
-                                    if (int.TryParse(par.GetListItemNumber(), out var num)) {
-                                        if (num < textList.Count) {
-                                            stopCollecting = true;
-                                        }
+                            //if (collectQuestions) {
+                            //    stopCollecting = matchNumberedItem.Success && int.Parse(matchNumberedItem.Groups[1].Value) >= 6 && //номер раздела как правило 8
+                            //                    (matchNumberedItem.Groups[2].Value.Contains("Перечень", StringComparison.CurrentCultureIgnoreCase) || //в нем есть слово "Перечень"
+                            //                    par.MagicText.FirstOrDefault().formatting?.Bold == true); /* или он жирный */
+                            //}
+                            if (!stopCollecting && collectBaseReferences) { //основная литература - конец списка на заголовке доп. литературы?
+                                stopCollecting = m_regexReferencesExtra.Any(r => r.IsMatch(text));
+                            }
+                            if (!stopCollecting && collectExtraReferences) { //доп. лит-ра - конец списка?
+                                stopCollecting = matchNumberedItem.Success && int.Parse(matchNumberedItem.Groups[1].Value) >= 7 && //номер раздела как правило 8
+                                                 (matchNumberedItem.Groups[2].Value.Contains("Профессиональные", StringComparison.CurrentCultureIgnoreCase) || //в нем есть слово "Профессиональные"
+                                                 par.MagicText.FirstOrDefault().formatting?.Bold == true); /* или он жирный */
+                            }
+                            if (!stopCollecting) {
+                                if (matchNumberedItem.Success) {
+                                    clearedText = matchNumberedItem.Groups[2].Value.Trim(' ', '\r', '\n', '\t');
+                                    var num = int.Parse(matchNumberedItem.Groups[1].Value);
+                                    if (num < textList.Count) {
+                                        stopCollecting = true;
                                     }
                                 }
-                                else {
-                                    stopCollecting = true;
+                                else { //не подошло по выражению - проверим как элемент нумерованного списка
+                                    if (par.IsListItem && par.ListItemType == ListItemType.Numbered) {
+                                        if (int.TryParse(par.GetListItemNumber(), out var num)) {
+                                            if (num < textList.Count) {
+                                                stopCollecting = true;
+                                            }
+                                        }
+                                    }
+                                    //else {
+                                    //    stopCollecting = true;
+                                    //}
                                 }
                             }
                             if (stopCollecting) {
-                                if (collectQuestions) rpd.QuestionList = textList;
+                                if (collectQuestions) rpd.QuestionList = textList.ToList();
+                                if (collectBaseReferences) rpd.ReferencesBase = textList.ToList();
+                                if (collectExtraReferences) rpd.ReferencesExtra = textList.ToList();
                                 collectText = false;
+                                collectQuestions = false;
+                                collectBaseReferences = false;
+                                collectExtraReferences = false;
                             }
                             else {
                                 textList.Add(clearedText); 
                             }
                             //}
                         }
-                        //таблица очная форма обучения
+                        //маркер начала содержания разделов и тем
                         if (rpd.SummaryParagraphs.Count == 0) {
                             if (m_regexSummaryBeginMarkers.Any(r => r.IsMatch(text))) {
                                 parList.Clear();
@@ -403,11 +438,32 @@ namespace FosMan {
                                 collectSummary = true;
                             }
                         }
+                        //маркер вопросов к зкз/зачету
                         if (rpd.QuestionList.Count == 0) {
                             if (m_regexQuestionListBeginMarker.Any(r => r.IsMatch(text))) {
                                 textList.Clear();
                                 collectText = true;
                                 collectQuestions = true;
+                            }
+                        }
+                        //маркер основной литературы
+                        if (rpd.ReferencesBase.Count == 0) {
+                            if (m_regexReferencesBase.Any(r => r.IsMatch(text))) {
+                                if (collectQuestions) {
+                                    rpd.QuestionList = textList.ToList();
+                                    collectQuestions = false;
+                                }
+                                textList.Clear();
+                                collectText = true;
+                                collectBaseReferences = true;
+                            }
+                        }
+                        //маркер доп. литературы
+                        if (rpd.ReferencesExtra.Count == 0) {
+                            if (m_regexReferencesExtra.Any(r => r.IsMatch(text))) {
+                                textList.Clear();
+                                collectText = true;
+                                collectExtraReferences = true;
                             }
                         }
                         //направление подготовки
@@ -510,6 +566,24 @@ namespace FosMan {
                     }
                     if (rpd.SummaryParagraphs.Count == 0) {
                         rpd.Errors.Add("Не удалось обнаружить содержание разделов и тем");
+                    }
+                    if (rpd.QuestionList.Count == 0) {
+                        rpd.Errors.Add("Не удалось обнаружить список вопросов к зачету/экзамену");
+                    }
+                    if (rpd.EducationalWorks.Count != 3) {
+                        rpd.Errors.Add($"Не удалось обнаружить учебные работы по всем формам обучения " +
+                                       $"(только для: {string.Join(", ", rpd.EducationalWorks?.Select(x => x.Key.GetDescription()))})");
+                    }
+                    if (rpd.ReferencesBase.Count == 0) {
+                        rpd.Errors.Add("Не удалось обнаружить список основной литературы");
+                    }
+                    if (rpd.ReferencesExtra.Count == 0) {
+                        rpd.Errors.Add("Не удалось обнаружить список дополнительной литературы");
+                    }
+                    foreach (var eduWork in rpd.EducationalWorks) {
+                        if (eduWork.Value.Table == null) {
+                            rpd.Errors.Add($"Не удалось обнаружить таблицу учебных работ для формы обучения [{eduWork.Key.GetDescription()}]");
+                        }
                     }
                     if (string.IsNullOrEmpty(rpd.Department)) rpd.Errors.Add("Не удалось определить название кафедры");
                     if (string.IsNullOrEmpty(rpd.Profile)) rpd.Errors.Add("Не удалось определить профиль");

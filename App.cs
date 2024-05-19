@@ -554,26 +554,32 @@ namespace FosMan {
                                     for (var j = 0; j < 3; j++) {
                                         par = par.PreviousParagraph;
                                         if (!fullTimeTableIsOk && Rpd.RegexFullTimeTable.IsMatch(par.Text)) {
-                                            ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
-                                            var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
-                                            par.InsertTableAfterSelf(newTable);
-                                            table.Remove();
+                                            if (rpd.EducationalWorks[EFormOfStudy.FullTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
+                                                par.InsertTableAfterSelf(newTable);
+                                                table.Remove();
+                                            }
                                             fullTimeTableIsOk = true;
                                             break;
                                         }
                                         if (!mixedTimeTableIsOk && Rpd.RegexMixedTimeTable.IsMatch(par.Text)) {
-                                            ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
-                                            var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
-                                            par.InsertTableAfterSelf(newTable);
-                                            table.Remove();
+                                            if (rpd.EducationalWorks[EFormOfStudy.MixedTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
+                                                par.InsertTableAfterSelf(newTable);
+                                                table.Remove();
+                                            }
                                             mixedTimeTableIsOk = true;
                                             break;
                                         }
                                         if (!partTimeTableIsOk && Rpd.RegexPartTimeTable.IsMatch(par.Text)) {
-                                            ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
-                                            var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
-                                            par.InsertTableAfterSelf(newTable);
-                                            table.Remove();
+                                            if (rpd.EducationalWorks[EFormOfStudy.PartTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
+                                                par.InsertTableAfterSelf(newTable);
+                                                table.Remove();
+                                            }
                                             partTimeTableIsOk = true;
                                             break;
                                         }
@@ -604,7 +610,12 @@ namespace FosMan {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public static Rpd? FindRpd(CurriculumDiscipline disc) {
-            return m_rpdDic.Values.FirstOrDefault(r => r.DisciplineName.Equals(disc.Name, StringComparison.CurrentCultureIgnoreCase));
+            var name = disc.Name.Replace('ё', 'е').ToLower();
+            
+            var rpd = m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').Equals(name));
+            rpd ??= m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').StartsWith(name));
+
+            return rpd; //m_rpdDic.Values.FirstOrDefault(r => r.DisciplineName.Equals(disc.Name, StringComparison.CurrentCultureIgnoreCase));
         }
 
         /// <summary>
@@ -642,11 +653,13 @@ namespace FosMan {
                     if (propName.Equals("Summary", StringComparison.CurrentCultureIgnoreCase) &&
                         (rpd.SummaryParagraphs?.Any() ?? false)) {
                         replaceValue = "";
-                        //Paragraph lastPar = par.InsertParagraphAfterSelf //docX.InsertParagraph()
+                        //получение id стилей
+                        var styleIdNormal = DocX.GetParagraphStyleIdFromStyleName(docX, "Normal"); //для сброса на стиль "Обычный" (Normal)
                         var currPar = par;
                         foreach (var sumPar in rpd.SummaryParagraphs) {
                             sumPar.SetLineSpacing(LineSpacingTypeAuto.None);
                             currPar = currPar.InsertParagraphAfterSelf(sumPar);
+                            currPar.StyleId = styleIdNormal;
                             currPar.ShadingPattern(new ShadingPattern() { Fill = Color.Yellow }, ShadingType.Paragraph);
                         }
                         result = true;
@@ -654,7 +667,7 @@ namespace FosMan {
                     if (propName.Equals("Questions", StringComparison.CurrentCultureIgnoreCase) && 
                         (rpd.QuestionList?.Any() ?? false)) {
                         replaceValue = "";
-                        var numberedList = docX.AddList(new ListOptions());
+                        //var numberedList = docX.AddList(new ListOptions());
                         //numberedList.
                         var currPar = par;
                         var num = 0;
@@ -664,12 +677,35 @@ namespace FosMan {
                             currPar = currPar.InsertParagraphAfterSelf("");
                             currPar.IndentationFirstLine = 35;
                             currPar.Append($"{num}. {questionText}").FontSize(14).ShadingPattern(shadingPattern, ShadingType.Paragraph);
-                            //currPar = currPar.InsertParagraphAfterSelf(par);
-                            //var listItem = docX.InsertParagraph(questionText);
-                            //numberedList.AddItem(currPar); //.AddListItem(questionText, 0);
                         }
-                        //par.FontSize(14).InsertListAfterSelf(numberedList);
-                        //docX.InsertList(docX.Paragraphs.Select(p => p.))
+                        result = true;
+                    }
+                    if (propName.Equals("BaseReferences", StringComparison.CurrentCultureIgnoreCase) &&
+                        (rpd.ReferencesBase?.Any() ?? false)) {
+                        replaceValue = "";
+                        var currPar = par;
+                        var num = 0;
+                        var shadingPattern = new ShadingPattern() { Fill = Color.Yellow };
+                        foreach (var item in rpd.ReferencesBase) {
+                            num++;
+                            currPar = currPar.InsertParagraphAfterSelf("");
+                            currPar.IndentationFirstLine = 35;
+                            currPar.Append($"{num}. {item}").FontSize(14).ShadingPattern(shadingPattern, ShadingType.Paragraph);
+                        }
+                        result = true;
+                    }
+                    if (propName.Equals("ExtraReferences", StringComparison.CurrentCultureIgnoreCase) &&
+                        (rpd.ReferencesBase?.Any() ?? false)) {
+                        replaceValue = "";
+                        var currPar = par;
+                        var num = 0;
+                        var shadingPattern = new ShadingPattern() { Fill = Color.Yellow };
+                        foreach (var item in rpd.ReferencesExtra) {
+                            num++;
+                            currPar = currPar.InsertParagraphAfterSelf("");
+                            currPar.IndentationFirstLine = 35;
+                            currPar.Append($"{num}. {item}").FontSize(14).ShadingPattern(shadingPattern, ShadingType.Paragraph);
+                        }
                         result = true;
                     }
                 }
@@ -1232,6 +1268,19 @@ namespace FosMan {
                 p.IndentationHanging = 0.1f;
                 p.IndentationAfter = 0.1f;
             });
+        }
+
+        /// <summary>
+        /// Проверка на совпадение имён дисциплин
+        /// </summary>
+        /// <param name="name1"></param>
+        /// <param name="name2"></param>
+        /// <returns></returns>
+        internal static bool IsDisciplineNamesEquals(string name1, string name2) {
+            name1 = name1.Trim().Replace('ё', 'е').ToLower();
+            name2 = name2.Trim().Replace('ё', 'е').ToLower();
+
+            return name1.Equals(name2) || name1.StartsWith(name2) || name2.StartsWith(name1);
         }
     }
 }

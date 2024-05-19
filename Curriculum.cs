@@ -255,9 +255,8 @@ namespace FosMan {
         internal CurriculumDiscipline FindDiscipline(string? disciplineName) {
             disciplineName = disciplineName.ToLower().Replace('ё', 'е');
             var discipline = Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').Equals(disciplineName));
-            if (discipline == null) {
-                discipline = Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').StartsWith(disciplineName));
-            }
+            discipline ??= Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').StartsWith(disciplineName));
+            
             return discipline; // Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').Equals(disciplineName));
         }
 

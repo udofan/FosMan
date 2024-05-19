@@ -1187,18 +1187,32 @@ namespace FosMan {
 
         private void linkLabelSelectDesciplinesWithLoadedRpd_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
             fastObjectListViewDisciplineListForGeneration.DeselectAll();
+            var rpdList = App.RpdList.Values.ToHashSet();
 
             var selectObjects = new List<CurriculumDiscipline>();
             foreach (var item in fastObjectListViewDisciplineListForGeneration.Objects) {
                 var disc = item as CurriculumDiscipline;
-                if (disc != null && App.FindRpd(disc) != null) {
-                    selectObjects.Add(disc);
+                if (disc != null) {
+                    var rpd = App.FindRpd(disc);
+                    if (rpd != null) {
+                        selectObjects.Add(disc);
+                        rpdList.Remove(rpd);
+                    }
                 }
             }
             fastObjectListViewDisciplineListForGeneration.CheckObjects(selectObjects);
             if (selectObjects.Any()) {
                 fastObjectListViewDisciplineListForGeneration.EnsureModelVisible(selectObjects[0]);
                 checkBoxApplyLoadedRpd.Checked = true;
+            }
+            if (rpdList.Count > 0) {
+                fastObjectListViewRpdList.SelectObjects(rpdList.ToList());
+            }
+            if (rpdList.Any()) {
+                MessageBox.Show($"Для следующих РПД не нашлось подходящих дисциплин:\n\n" +
+                                $"{string.Join("\n", rpdList.Select(r => r.DisciplineName))}\n\n" +
+                                $"Они были выделены в списке.", "Внимание!",
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
