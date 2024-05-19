@@ -120,6 +120,11 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Тип контроля в регистре: зачет, экзамен
+        /// </summary>
+        public string ControlType { get => EducationalWork?.ControlFormForScreen.ToLower() ?? ""; }
+
+        /// <summary>
         /// Название закрепленной кафедры
         /// </summary>
         public string DepartmentName { get; set; }

@@ -638,28 +638,40 @@ namespace FosMan {
                 }
             }
             else {
-                if (rpd != null && propName.Equals("Summary", StringComparison.CurrentCultureIgnoreCase) &&
-                    (rpd.SummaryParagraphs?.Any() ?? false)) {
-                    replaceValue = "";
-                    //Paragraph lastPar = par.InsertParagraphAfterSelf //docX.InsertParagraph()
-                    var currPar = par;
-                    foreach (var sumPar in rpd.SummaryParagraphs) {
-                        //sumPar.IndentationAfter = 0.1f;
-                        //sumPar.IndentationBefore = 0.1f;
-                        //sumPar.IndentationHanging = 0.1f;
-                        //sumPar.LineSpacing = 12;        //множитель = 1
-                        //sumPar.LineSpacingAfter = 0.1f;
-                        //sumPar.LineSpacingBefore = 0.1f;
-                        //currPar.lin
-                        //sumPar.SetLineSpacing(LineSpacingType.Line, 12);
-                        //sumPar.SetLineSpacing(LineSpacingType.Before, 0.1f);
-                        //sumPar.SetLineSpacing(LineSpacingType.After, 0.1f);
-                        //sumPar.spa
-                        sumPar.SetLineSpacing(LineSpacingTypeAuto.None);
-                        currPar = currPar.InsertParagraphAfterSelf(sumPar);
-                        //currPar.SetLineSpacing(LineSpacingTypeAuto.None);
+                if (rpd != null) {
+                    if (propName.Equals("Summary", StringComparison.CurrentCultureIgnoreCase) &&
+                        (rpd.SummaryParagraphs?.Any() ?? false)) {
+                        replaceValue = "";
+                        //Paragraph lastPar = par.InsertParagraphAfterSelf //docX.InsertParagraph()
+                        var currPar = par;
+                        foreach (var sumPar in rpd.SummaryParagraphs) {
+                            sumPar.SetLineSpacing(LineSpacingTypeAuto.None);
+                            currPar = currPar.InsertParagraphAfterSelf(sumPar);
+                            currPar.ShadingPattern(new ShadingPattern() { Fill = Color.Yellow }, ShadingType.Paragraph);
+                        }
+                        result = true;
                     }
-                    result = true;
+                    if (propName.Equals("Questions", StringComparison.CurrentCultureIgnoreCase) && 
+                        (rpd.QuestionList?.Any() ?? false)) {
+                        replaceValue = "";
+                        var numberedList = docX.AddList(new ListOptions());
+                        //numberedList.
+                        var currPar = par;
+                        var num = 0;
+                        var shadingPattern = new ShadingPattern() { Fill = Color.Yellow };
+                        foreach (var questionText in rpd.QuestionList) {
+                            num++;
+                            currPar = currPar.InsertParagraphAfterSelf("");
+                            currPar.IndentationFirstLine = 35;
+                            currPar.Append($"{num}. {questionText}").FontSize(14).ShadingPattern(shadingPattern, ShadingType.Paragraph);
+                            //currPar = currPar.InsertParagraphAfterSelf(par);
+                            //var listItem = docX.InsertParagraph(questionText);
+                            //numberedList.AddItem(currPar); //.AddListItem(questionText, 0);
+                        }
+                        //par.FontSize(14).InsertListAfterSelf(numberedList);
+                        //docX.InsertList(docX.Paragraphs.Select(p => p.))
+                        result = true;
+                    }
                 }
 
                 if (propName.Equals("TOC", StringComparison.CurrentCultureIgnoreCase)) {

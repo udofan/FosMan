@@ -121,13 +121,17 @@ namespace FosMan {
             //Содержание и структура дисциплины «Элективного курса по физической 
             new(@"^Содержание\s+и\s+структура\s+дисциплины(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled)
         };
-        static Regex m_regexSummaryEndMarker = new(@"^(\d+).\s+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexNumberedHeader = new(@"^(\d+)\.(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static public Regex RegexFullTimeTable = new(@"^очная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static public Regex RegexMixedTimeTable = new(@"^очно-заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static public Regex RegexPartTimeTable = new(@"^заочная\s+форма\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static List<Regex> m_regexQuestionListBeginMarker = new() {
             //Примерные вопросы к экзамену
-            new(@"примерные\s+вопросы\s+к\s+(зачету|экзамену)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            new(@"примерные\s+вопросы\s+к\s+(зачету|экзамену)[:.]*", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            //Вопросы для подготовки к зачету:
+            new(@"Вопросы\s+для\s+подготовки\s+к\s+(зачету|экзамену)[:.]*", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            //Теоретический блок вопросов
+            new(@"Теоретический\s+блок\s+вопросов[:]*", RegexOptions.IgnoreCase | RegexOptions.Compiled)
 
         };
         /// <summary>
@@ -198,6 +202,10 @@ namespace FosMan {
         /// Параграфы содержания разделов и тем
         /// </summary>
         public List<Paragraph> SummaryParagraphs { get; set; }
+        /// <summary>
+        /// Параграфы вопросов к экзамену/зачету
+        /// </summary>
+        public List<string> QuestionList { get; set; }
 
         /// <summary>
         /// Загрузка РПД из файла
@@ -209,7 +217,8 @@ namespace FosMan {
                 SourceFileName = fileName, 
                 EducationalWorks = [], 
                 FormsOfStudy = [], 
-                SummaryParagraphs = []
+                SummaryParagraphs = [], 
+                QuestionList = []
             };
 
             try {
@@ -221,10 +230,14 @@ namespace FosMan {
                     var profileTestReady = false;
                     var profileField = "";              //если профиль разнесен по неск. строкам, здесь он будет накапливаться
                     var compilerTestReady = false;
-                    var fullTimeTestTableReady = false;
-                    var mixedTimeTestTableReady = false;
+                    //var fullTimeTestTableReady = false;
+                    //var mixedTimeTestTableReady = false;
                     List<Paragraph> parList = [];
+                    List<string> textList = [];
                     var collectPars = false;
+                    var collectText = false;
+                    var collectSummary = false;
+                    var collectQuestions = false;
 
                     foreach (var par in docx.Paragraphs) {
                         var text = par.Text.Trim(' ', '\r', '\n', '\t');
@@ -319,31 +332,82 @@ namespace FosMan {
                                 }
                             }
                         }
+                        //сбор параграфов
                         if (collectPars) {
-                            var m = m_regexSummaryEndMarker.Match(text);
-                            var endOfSummary = m.Success && int.Parse(m.Groups[1].Value) >= 4 && //номер раздела как правило 5
-                                             (m.Groups[2].Value.Contains("методич", StringComparison.CurrentCultureIgnoreCase) || //в нем есть слово "методич"
-                                             par.MagicText.FirstOrDefault().formatting?.Bold == true); /* или он жирный */
-                            if (!endOfSummary) {
-                                if (//par.MagicText.FirstOrDefault().formatting?.Bold == true && 
-                                    text.Contains("методич", StringComparison.CurrentCultureIgnoreCase) &&
-                                    par.IsListItem) {
-                                    endOfSummary = true;
+                            var stopCollecting = false;
+                            if (collectSummary) {
+                                var m = m_regexNumberedHeader.Match(text);
+                                stopCollecting = m.Success && int.Parse(m.Groups[1].Value) >= 4 && //номер раздела как правило 5
+                                                 (m.Groups[2].Value.Contains("методич", StringComparison.CurrentCultureIgnoreCase) || //в нем есть слово "методич"
+                                                 par.MagicText.FirstOrDefault().formatting?.Bold == true); /* или он жирный */
+                                if (!stopCollecting) {
+                                    if (//par.MagicText.FirstOrDefault().formatting?.Bold == true && 
+                                        text.Contains("методич", StringComparison.CurrentCultureIgnoreCase) &&
+                                        par.IsListItem) {
+                                        stopCollecting = true;
+                                    }
                                 }
                             }
-                            if (endOfSummary) {
-                                rpd.SummaryParagraphs = parList;
+
+                            if (stopCollecting) {
+                                if (collectSummary) rpd.SummaryParagraphs = parList;
                                 collectPars = false;
                             }
                             else {
                                 parList.Add(par);
                             }
                         }
+                        //сбор текстовых значений
+                        if (collectText) {
+                            var stopCollecting = false;
+                            //if (!stopCollecting) {
+                            //    if (collectQuestions) rpd.QuestionList = textList;
+                            //    collectText = false;
+                            //}
+                            //else {
+                            var clearedText = text;
+                            var matchNumberedItem = m_regexNumberedHeader.Match(text);
+                            if (matchNumberedItem.Success) {
+                                clearedText = matchNumberedItem.Groups[2].Value.Trim(' ', '\r', '\n', '\t');
+                                var num = int.Parse(matchNumberedItem.Groups[1].Value);
+                                if (num < textList.Count) {
+                                    stopCollecting = true;
+                                }
+                            } 
+                            else { //не подошло по выражению - проверим как элемент нумерованного списка
+                                if (par.IsListItem && par.ListItemType == ListItemType.Numbered) {
+                                    if (int.TryParse(par.GetListItemNumber(), out var num)) {
+                                        if (num < textList.Count) {
+                                            stopCollecting = true;
+                                        }
+                                    }
+                                }
+                                else {
+                                    stopCollecting = true;
+                                }
+                            }
+                            if (stopCollecting) {
+                                if (collectQuestions) rpd.QuestionList = textList;
+                                collectText = false;
+                            }
+                            else {
+                                textList.Add(clearedText); 
+                            }
+                            //}
+                        }
                         //таблица очная форма обучения
                         if (rpd.SummaryParagraphs.Count == 0) {
                             if (m_regexSummaryBeginMarkers.Any(r => r.IsMatch(text))) {
                                 parList.Clear();
                                 collectPars = true;
+                                collectSummary = true;
+                            }
+                        }
+                        if (rpd.QuestionList.Count == 0) {
+                            if (m_regexQuestionListBeginMarker.Any(r => r.IsMatch(text))) {
+                                textList.Clear();
+                                collectText = true;
+                                collectQuestions = true;
                             }
                         }
                         //направление подготовки
