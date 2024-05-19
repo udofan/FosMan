@@ -256,7 +256,8 @@ namespace FosMan {
             disciplineName = disciplineName.ToLower().Replace('ё', 'е');
             var discipline = Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').Equals(disciplineName));
             discipline ??= Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').StartsWith(disciplineName));
-            
+            discipline ??= Disciplines.Values.FirstOrDefault(d => disciplineName.StartsWith(d.Name.ToLower().Replace('ё', 'е')));
+
             return discipline; // Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').Equals(disciplineName));
         }
 

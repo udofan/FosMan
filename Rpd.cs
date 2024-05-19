@@ -66,6 +66,8 @@ namespace FosMan {
             (new(@"изучается[^.]+параллельно[^.]+такими\s+дисциплинами\s+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
             //..ранее изученных дисциплин:
             (new(@"ранее[^.]+изучен[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //полученных студентами при изучении дисциплин 
+            (new(@"полученных[^.]+при[^.]+изучении[^.]+дисциплин\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
         };
         static List<(Regex, int)> m_regexNextDisciplines = new() {
             //последующих учебных дисциплин
@@ -113,7 +115,9 @@ namespace FosMan {
             new(@"^Содержание\s+разделов\s+и\s+тем[:.]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
             //Содержание разделов и тем дисциплины.
             new(@"^Содержание\s+разделов\s+и\s+тем\s+дисциплины[:.]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-            new(@"^Содержание\s+дисциплины,\s+структурированное\s+по\s+темам[:.]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            //new(@"^Содержание\s+дисциплины,\s+структурированное\s+по\s+темам[:.]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            //Содержание дисциплины, структурированное по разделам
+            new(@"^Содержание\s+дисциплины,\s+структурированное\s+по\s+(темам|разделам)[:.]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
             new(@"^Тематическое\s+содержание\s+разделов\s+дисциплины[:.]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
             new(@"^Тематическое\s+содержание\s+дисциплины[:.]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
             new(@"^Содержание\s+разделов\s+дисциплины[:.]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -121,6 +125,7 @@ namespace FosMan {
             new(@"^Краткое\s+содержание\s+разделов\s+дисциплины(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled),
             //Содержание и структура дисциплины «Элективного курса по физической 
             new(@"^Содержание\s+и\s+структура\s+дисциплины(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+            
         };
         static Regex m_regexNumberedHeader = new(@"^(\d+)\.(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static public Regex RegexFullTimeTable = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -132,8 +137,9 @@ namespace FosMan {
             //Вопросы для подготовки к зачету:
             new(@"Вопросы\s+для\s+подготовки\s+к\s+(зачету|экзамену)[:.]*", RegexOptions.IgnoreCase | RegexOptions.Compiled),
             //Теоретический блок вопросов
-            new(@"Теоретический\s+блок\s+вопросов[:]*", RegexOptions.IgnoreCase | RegexOptions.Compiled)
-
+            new(@"Теоретический\s+блок\s+вопросов[:]*", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            //Вопросы к зачету
+            new(@"вопросы\s+к\s+(зачету|экзамену)[:]*", RegexOptions.IgnoreCase | RegexOptions.Compiled)
         };
         static List<Regex> m_regexReferencesBase = new() {
             new(@"основная.+литература", RegexOptions.IgnoreCase | RegexOptions.Compiled)

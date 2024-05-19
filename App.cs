@@ -614,6 +614,7 @@ namespace FosMan {
             
             var rpd = m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').Equals(name));
             rpd ??= m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').StartsWith(name));
+            rpd ??= m_rpdDic.Values.FirstOrDefault(d => name.StartsWith(d.DisciplineName.ToLower().Replace('ё', 'е')));
 
             return rpd; //m_rpdDic.Values.FirstOrDefault(r => r.DisciplineName.Equals(disc.Name, StringComparison.CurrentCultureIgnoreCase));
         }
@@ -660,6 +661,7 @@ namespace FosMan {
                             sumPar.SetLineSpacing(LineSpacingTypeAuto.None);
                             currPar = currPar.InsertParagraphAfterSelf(sumPar);
                             currPar.StyleId = styleIdNormal;
+                            currPar.FontSize(14);
                             currPar.ShadingPattern(new ShadingPattern() { Fill = Color.Yellow }, ShadingType.Paragraph);
                         }
                         result = true;
