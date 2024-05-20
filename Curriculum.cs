@@ -25,6 +25,18 @@ namespace FosMan {
     }
 
     /// <summary>
+    /// Квалификация
+    /// </summary>
+    public enum EDegree {
+        [Description("магистр")]
+        Master,
+        [Description("бакалавр")]
+        Bachelor,
+        [Description("НЕИЗВЕСТНО")]
+        Unknown
+    }
+
+    /// <summary>
     /// Учебный план [kəˈrɪkjʊləm]
     /// </summary>
     internal class Curriculum {
@@ -56,6 +68,10 @@ namespace FosMan {
         /// Форма обучения
         /// </summary>
         public EFormOfStudy FormOfStudy { get; set; } = EFormOfStudy.Unknown;
+        /// <summary>
+        /// Квалификация
+        /// </summary>
+        public EDegree Degree { get; set; }
         /// <summary>
         /// Учебный год
         /// </summary>
@@ -185,9 +201,29 @@ namespace FosMan {
                         if (cellValue.Contains("ОБРАЗОВАТЕЛЬНЫЙ СТАНД", StringComparison.CurrentCultureIgnoreCase)) {
                             curriculum.FSES = getNextCellValue(row, colIdx);
                         }
+                        if (cellValue.Contains("Квалификация:", StringComparison.CurrentCultureIgnoreCase)) {
+                            curriculum.Degree = DetectDegree(cellValue);
+                        }
                     }
                 }
             }
+        }
+
+        private static EDegree DetectDegree(string value) {
+            var degree = EDegree.Unknown;
+
+            value = value.Trim().ToLower();
+
+            if (!string.IsNullOrEmpty(value)) {
+                if (value.Contains("бакалавр")) {
+                    degree = EDegree.Bachelor;
+                }
+                else if (value.Contains("магистр")) {
+                    degree = EDegree.Master;
+                }
+            }
+
+            return degree;
         }
 
         /// <summary>
@@ -264,6 +300,14 @@ namespace FosMan {
         public override string ToString() {
             var name = $"{DirectionCode} {DirectionName} - {Profile} - Форма обучения: {FormOfStudy.GetDescription()}";
             return name;
+        }
+
+        public bool AddDiscipline(CurriculumDiscipline discipline) {
+            var result = Disciplines.TryAdd(discipline.Key, discipline);
+            if (result) {
+                discipline.Curriculum = this;
+            }
+            return result;
         }
     }
 }

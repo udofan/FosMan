@@ -564,7 +564,7 @@ namespace FosMan {
                                             break;
                                         }
                                         if (!mixedTimeTableIsOk && Rpd.RegexMixedTimeTable.IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks[EFormOfStudy.MixedTime].Table != null) {
+                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.MixedTime) && rpd.EducationalWorks[EFormOfStudy.MixedTime].Table != null) {
                                                 ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
                                                 var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
                                                 par.InsertTableAfterSelf(newTable);

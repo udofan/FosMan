@@ -34,6 +34,8 @@ namespace FosMan {
     public enum EDisciplineType {
         [Description("Обязательная")]
         Required,       //обязательная
+        [Description("Вариативная")]
+        Variable,
         [Description("По выбору")]
         ByChoice,       //по выбору
         [Description("Факультативная")]
@@ -48,8 +50,9 @@ namespace FosMan {
     internal class CurriculumDiscipline : BaseObj {
         public const int SEMESTER_COUNT = 10;
 
-        static Regex m_regexTestTypeRequired = new(@"^[^\.]+\.О\.", RegexOptions.Compiled);
-        static Regex m_regexTestTypeByChoice = new(@"^[^\.]+\.В\.", RegexOptions.Compiled);
+        static Regex m_regexTestTypeRequired = new(@"^[^\.]+\.О\.\d+", RegexOptions.Compiled);      //обязательная
+        static Regex m_regexTestTypeVariable = new(@"^[^\.]+\.В\.\d+", RegexOptions.Compiled);      //обязательная часть, формируемая участниками
+        static Regex m_regexTestTypeByChoice = new(@"^[^\.]+\.В\.ДВ\.\d+", RegexOptions.Compiled);  //выбору части, формируемой...
         static Regex m_regexTestTypeOptional = new(@"^ФТД", RegexOptions.Compiled);
         HashSet<string> m_competenceList = null;
         EducationalWork m_eduWork = null;
@@ -76,6 +79,9 @@ namespace FosMan {
                     if (m_regexTestTypeOptional.IsMatch(Index)) {
                         m_type = EDisciplineType.Optional;
                     }
+                    else if (m_regexTestTypeVariable.IsMatch(Index)) {
+                        m_type = EDisciplineType.Variable;
+                    }
                     else if (m_regexTestTypeByChoice.IsMatch(Index)) {
                         m_type = EDisciplineType.ByChoice;
                     }
@@ -95,11 +101,19 @@ namespace FosMan {
         public string TypeDescription {
             get {
                 var text = "";
+                var degree = Curriculum?.Degree == EDegree.Master ? "магистратуры" : "бакалавриата";
+
                 if (Type == EDisciplineType.Required) {
-                    text = "обязательным дисциплинам";
+                    text = $"обязательным дисциплинам программы {degree}";
+                }
+                else if (Type == EDisciplineType.Variable) {
+                    text = $"обязательным дисциплинам части, формируемой участниками образовательных отношений программы {degree}";
                 }
                 else if (Type == EDisciplineType.ByChoice) {
-                    text = "дисциплинам по выбору части, формируемой участниками образовательных отношений";
+                    text = $"дисциплинам по выбору части, формируемой участниками образовательных отношений программы {degree}";
+                }
+                else if (Type == EDisciplineType.Optional) {
+                    text = $"программе {degree}, формируемой участниками образовательных отношений";
                 }
                 return text;
             }
@@ -201,6 +215,10 @@ namespace FosMan {
         /// Доп. ошибки (исп. при проверке по загруженной матрице компетенций)
         /// </summary>
         public List<string> ExtraErrors { get; set; }
+        /// <summary>
+        /// Родительский УП
+        /// </summary>
+        public Curriculum Curriculum { get; set; }
 
         public CurriculumDiscipline() {
             Errors = [];

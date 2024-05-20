@@ -628,7 +628,7 @@ namespace FosMan {
                     }
                 }
                 if (discipline?.Check(curriculum, rowIdx) ?? false) {
-                    if (!curriculum.Disciplines.TryAdd(discipline.Key, discipline)) {
+                    if (!curriculum.AddDiscipline(discipline)) {
                         curriculum.Errors.Add($"Обнаружено повторное упоминание дисциплины [{discipline.Name}] на строке {rowIdx}");
                     }
                 }
