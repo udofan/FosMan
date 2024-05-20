@@ -1045,6 +1045,9 @@ namespace FosMan {
             if (!(m_config.Departments?.Any() ?? false)) {
                 m_config.Departments = Department.DefaultDepartments;
             }
+            if (!(m_config.RpdFixDocPropertyList?.Any() ?? false)) {
+                m_config.RpdFixDocPropertyList = DocProperty.DefaultProperties;
+            }
         }
 
         /// <summary>
@@ -1112,7 +1115,17 @@ namespace FosMan {
                         }
 
                         var eduTableIsFixed = false; //флаг, что в процессе работы была исправлена таблица учебных работ
+
+                        var setDocProperties = Config.RpdFixDocPropertyList?.Where(i => i.IsChecked).ToList(); 
+
                         using (var docx = DocX.Load(rpd.SourceFileName)) {
+                            if (setDocProperties?.Any() ?? false) {
+                                foreach (var item in setDocProperties) {
+                                    ///docx.CoreProperties[item.Name] = item.Value;
+                                    docx.AddCoreProperty(item.Name, item.Value);
+                                }
+                            }
+
                             foreach (var table in docx.Tables) {
                                 var backup = table.Xml;
                                 if (fixCompetences && CompetenceMatrix.TestTable(table)) {

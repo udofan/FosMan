@@ -427,6 +427,21 @@ namespace FosMan {
             fastObjectListViewRpdFixFindAndReplaceItems.Columns.Add(olvColReplace);
         }
 
+        void TuneDocPropertiesList() {
+            var olvColName = new OLVColumn("Свойство", "Name") {
+                Width = 150,
+                CellEditUseWholeCell = true,
+                IsEditable = true
+            };
+            fastObjectListViewDocProperties.Columns.Add(olvColName);
+            var olvColValue = new OLVColumn("Значение", "Value") {
+                Width = 150,
+                CellEditUseWholeCell = true,
+                IsEditable = true
+            };
+            fastObjectListViewDocProperties.Columns.Add(olvColValue);
+        }
+
         private void FormMain_Load(object sender, EventArgs e) {
             Xceed.Words.NET.Licenser.LicenseKey = "WDN30-W7F00-6RL0S-ERHA";
 
@@ -437,6 +452,7 @@ namespace FosMan {
             TuneDisciplineList(fastObjectListViewDisciplines, true);
             TuneDisciplineList(fastObjectListViewDisciplineListForGeneration, false);
             TuneRpdFindAndReplaceList();
+            TuneDocPropertiesList();
 
             //список шаблонов
             var templateDir = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES);
@@ -450,6 +466,7 @@ namespace FosMan {
 
             //восстановим элементы из конфига
             fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFindAndReplaceItems);
+            fastObjectListViewDocProperties.AddObjects(App.Config.RpdFixDocPropertyList);
             textBoxMatrixFileName.Text = App.Config.CompetenceMatrixFileName ?? "";
             ShowHideRpdFixMode(false);
             checkBoxStoreCurriculumList.Checked = App.Config.StoreCurriculumList;
@@ -959,13 +976,13 @@ namespace FosMan {
         }
 
         void ShowHideRpdFixMode(bool show) {
-            var maxDist = 200;
+            var maxDist = 240;
             var delta = 10;
 
             fastObjectListViewRpdList.BeginUpdate();
 
             if (show) {
-                while (splitContainer1.SplitterDistance < 200) {
+                while (splitContainer1.SplitterDistance < maxDist) {
                     var newDist = Math.Min(splitContainer1.SplitterDistance + delta, maxDist);
                     splitContainer1.SplitterDistance = newDist;
                     //Thread.Sleep(10);

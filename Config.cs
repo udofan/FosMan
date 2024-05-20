@@ -63,6 +63,11 @@ namespace FosMan {
         [JsonInclude]
         public string CurriculumLastLocation { get; set; }
         /// <summary>
+        /// Список свойств документа
+        /// </summary>
+        [JsonInclude]
+        public List<DocProperty> RpdFixDocPropertyList { get; set; }
+        /// <summary>
         /// Флаг сохранения списка загруженных УП
         /// </summary>
         [JsonInclude]
