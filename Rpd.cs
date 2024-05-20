@@ -68,6 +68,16 @@ namespace FosMan {
             (new(@"ранее[^.]+изучен[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
             //полученных студентами при изучении дисциплин 
             (new(@"полученных[^.]+при[^.]+изучении[^.]+дисциплин\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //опирается на дисциплины, изучаемые студентом в магистратуре, такие как 
+            (new(@"опирается\s+на\s+дисциплины[^.]+такие\s+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //сформированные у обучающихся в результате освоения дисциплин
+            (new(@"сформированные\s+у\s+обучающихся\s+в\s+результате\s+освоения\s+дисциплин\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //полученных обучаемыми по дисциплинам
+            (new(@"полученных\s+обучаемыми\s+по\s+дисциплинам\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //сформированных в ходе изучения дисциплин: 
+            (new(@"сформированных\s+в\s+ходе\s+изучения\s+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //Дисциплина основывается на знании следующих дисциплин: 
+            (new(@"основывается\s+на\s+знании\s+следующих\s+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
         };
         static List<(Regex, int)> m_regexNextDisciplines = new() {
             //последующих учебных дисциплин
@@ -95,6 +105,10 @@ namespace FosMan {
             (new(@"являет[^.]+предшествующ[^.]+изучен[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
             //является фундаментальной базой для дальнейшего изучения 
             (new(@"являет[^.]+базой[^.]+дальнейшего[^.]+изучения\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //служат основой для более глубокого восприятия таких дисциплин как
+            (new(@"служат\s+основой\s+для\s+более\s+глубокого\s+восприятия\s+таких\s+дисциплин\s+как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            //знания могут быть использованы при изучении таких дисциплин, как: 
+            (new(@"знания\s+могут\s+быть\s+использованы\s+при\s+изучении\s+таких\s+дисциплин\s+как[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
         };
         static List<(Regex, int)> m_regexTarget = new() {
             //Целью изучения дисциплины «Правоведение» является
