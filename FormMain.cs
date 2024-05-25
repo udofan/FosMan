@@ -1,10 +1,13 @@
 using BrightIdeasSoftware;
 using Microsoft.Web.WebView2.WinForms;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml.Schema;
 using Xceed.Document.NET;
+using static FosMan.App;
 
 namespace FosMan {
     public partial class FormMain : Form {
@@ -30,6 +33,7 @@ namespace FosMan {
 
             if (openFileDialogSelectCompetenceMatrixFile.ShowDialog(this) == DialogResult.OK) {
                 textBoxMatrixFileName.Text = openFileDialogSelectCompetenceMatrixFile.FileName;
+                buttonLoadCompetenceMatrix.PerformClick();
                 //m_matrixFileName = openFileDialog1.FileName;
             }
         }
@@ -708,8 +712,79 @@ namespace FosMan {
             Application.UseWaitCursor = true;
             labelLoadRpd.Text = "";
 
-            var report = new List<string>();
-            var idx = 1;
+            var report = new ConcurrentDictionary<string, List<string>>();
+            var idx = 0;
+
+            //RpdAddEventHandler OnRpdAdd = (rpd) => {
+            //    this.BeginInvoke(new MethodInvoker(() => {
+            //        fastObjectListViewRpdList.AddObject(rpd);
+            //        labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})...";
+            //    }));
+            //};
+            //App.RpdAdd += OnRpdAdd;
+
+            foreach (var file in files) {
+                Task.Run(() => {
+                    Interlocked.Increment(ref idx);
+                    //this.Invoke(new MethodInvoker(() => {
+                        
+                    //}));
+                    if (File.Exists(file)) {
+                        var rpd = Rpd.LoadFromFile(file);
+                        App.AddRpd(rpd);
+
+                        this.Invoke(new MethodInvoker(() => {
+                            fastObjectListViewRpdList.BeginUpdate();
+                            var selectedObjects = fastObjectListViewRpdList.SelectedObjects;
+                            fastObjectListViewRpdList.AddObject(rpd);
+                            fastObjectListViewRpdList.EnsureModelVisible(rpd);
+                            selectedObjects.Add(rpd);
+                            fastObjectListViewRpdList.SelectedObjects = selectedObjects;
+                            fastObjectListViewRpdList.EndUpdate();
+
+                            labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})...";
+                            if (idx == files.Length) {
+                                labelLoadRpd.Text += " завершено.";
+                            }
+                            Application.DoEvents();
+                            //Thread.Sleep(5);
+                        }));
+                        //fastObjectListViewRpdList.AddObject(rpd);
+                        //idx++;
+                        //Application.DoEvents();
+
+                        if (rpd.Errors.Any()) {
+                            //if (report.Count > 0) report.Add(new string('-', 30));
+                            report.TryAdd(file, rpd.Errors);
+                        }
+                    }
+                });
+            }
+
+            /*
+            Parallel.ForEach(files, file => {
+                Interlocked.Increment(ref idx);
+                this.BeginInvoke(new MethodInvoker(() => labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})..."));
+                if (File.Exists(file)) {
+                    var rpd = Rpd.LoadFromFile(file);
+                    App.AddRpd(rpd);
+
+                    this.BeginInvoke(new MethodInvoker(() => fastObjectListViewRpdList.AddObject(rpd)));
+                    //fastObjectListViewRpdList.AddObject(rpd);
+                    //idx++;
+                    //Application.DoEvents();
+
+                    if (rpd.Errors.Any()) {
+                        //if (report.Count > 0) report.Add(new string('-', 30));
+                        report.TryAdd(file, rpd.Errors);
+                    }
+                }
+            }));
+            */
+            //labelLoadRpd.Text += " завершено.";
+            
+            //App.RpdAdd -= OnRpdAdd;
+            /*
             foreach (var file in files) {
                 labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})...";
                 if (File.Exists(file)) {
@@ -730,6 +805,7 @@ namespace FosMan {
             if (idx > 1) {
                 labelLoadRpd.Text += " завершено.";
             }
+            */
             if (report.Any()) {
                 var logDir = Path.Combine(Environment.CurrentDirectory, DIR_LOGS);
                 if (!Directory.Exists(logDir)) {
@@ -737,9 +813,14 @@ namespace FosMan {
                 }
                 var dt = DateTime.Now;
                 var reportFile = Path.Combine(logDir, $"рпд.{dt:yyyy-MM-dd_HH-mm-ss}.log");
-                File.WriteAllLines(reportFile, report, Encoding.UTF8);
-                MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                var lines = new List<string>();
+                foreach (var item in report) {
+                    if (lines.Count > 0) lines.Add(new string('-', 30));
+                    lines.AddRange(item.Value);
+                }
+                File.WriteAllLines(reportFile, lines, Encoding.UTF8);
+                //MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
+                  //              MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
             Application.UseWaitCursor = false;

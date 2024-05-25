@@ -2,6 +2,7 @@
 using Microsoft.Web.WebView2.Core;
 using System;
 using System.CodeDom;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
@@ -56,7 +57,7 @@ namespace FosMan {
 
         static CompetenceMatrix m_competenceMatrix = null;
         static Dictionary<string, Curriculum> m_curriculumDic = [];
-        static Dictionary<string, Rpd> m_rpdDic = [];
+        static ConcurrentDictionary<string, Rpd> m_rpdDic = [];
         static Dictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
         //static Dictionary<string, Department> m_departments = [];
         static Config m_config = new();
@@ -68,9 +69,12 @@ namespace FosMan {
             }
         };
 
+        public delegate void RpdAddEventHandler(Rpd rpd);
+        public static event RpdAddEventHandler RpdAdd = null;
+
         public static CompetenceMatrix CompetenceMatrix { get => m_competenceMatrix; }
 
-        public static Dictionary<string, Rpd> RpdList { get => m_rpdDic; }
+        public static ConcurrentDictionary<string, Rpd> RpdList { get => m_rpdDic; }
 
         /// <summary>
         /// Конфигурация
@@ -121,7 +125,11 @@ namespace FosMan {
         }
 
         static public bool AddRpd(Rpd rpd) {
-            return m_rpdDic.TryAdd(rpd.SourceFileName, rpd);
+            var result = m_rpdDic.TryAdd(rpd.SourceFileName, rpd);
+            if (result) {
+                RpdAdd?.Invoke(rpd);
+            }
+            return result;
         }
 
         /// <summary>
