@@ -113,6 +113,8 @@
             openFileDialogRpdTemplate = new OpenFileDialog();
             folderBrowserDialogSelectDir = new FolderBrowserDialog();
             toolTip1 = new ToolTip(components);
+            statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
@@ -139,6 +141,7 @@
             groupBox2.SuspendLayout();
             groupBoxRpdGenDisciplineList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).BeginInit();
+            statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // buttonSelectFosDir
@@ -170,17 +173,17 @@
             // 
             // tabControl1
             // 
+            tabControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tabControl1.Controls.Add(tabPageCompetenceMatrix);
             tabControl1.Controls.Add(tabPageСurriculum);
             tabControl1.Controls.Add(tabPageRpd);
             tabControl1.Controls.Add(tabPage2);
             tabControl1.Controls.Add(tabPageReports);
             tabControl1.Controls.Add(tabPageRpdGeneration);
-            tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1008, 729);
+            tabControl1.Size = new Size(1009, 705);
             tabControl1.TabIndex = 1;
             tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
             // 
@@ -195,7 +198,7 @@
             tabPageCompetenceMatrix.Location = new Point(4, 23);
             tabPageCompetenceMatrix.Name = "tabPageCompetenceMatrix";
             tabPageCompetenceMatrix.Padding = new Padding(3);
-            tabPageCompetenceMatrix.Size = new Size(1000, 702);
+            tabPageCompetenceMatrix.Size = new Size(1001, 678);
             tabPageCompetenceMatrix.TabIndex = 2;
             tabPageCompetenceMatrix.Text = "Матрица компетенций";
             tabPageCompetenceMatrix.UseVisualStyleBackColor = true;
@@ -222,7 +225,7 @@
             webView21.DefaultBackgroundColor = Color.White;
             webView21.Location = new Point(8, 59);
             webView21.Name = "webView21";
-            webView21.Size = new Size(984, 635);
+            webView21.Size = new Size(985, 611);
             webView21.TabIndex = 4;
             webView21.ZoomFactor = 1D;
             // 
@@ -274,10 +277,10 @@
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 24);
+            tabPageСurriculum.Location = new Point(4, 23);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1000, 701);
+            tabPageСurriculum.Size = new Size(1001, 678);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -311,9 +314,9 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 412);
+            groupBoxDisciplines.Location = new Point(8, 392);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
-            groupBoxDisciplines.Size = new Size(984, 287);
+            groupBoxDisciplines.Size = new Size(985, 287);
             groupBoxDisciplines.TabIndex = 3;
             groupBoxDisciplines.TabStop = false;
             groupBoxDisciplines.Text = "Дисциплины программы";
@@ -327,7 +330,7 @@
             fastObjectListViewDisciplines.Location = new Point(3, 18);
             fastObjectListViewDisciplines.Name = "fastObjectListViewDisciplines";
             fastObjectListViewDisciplines.ShowGroups = false;
-            fastObjectListViewDisciplines.Size = new Size(978, 266);
+            fastObjectListViewDisciplines.Size = new Size(979, 266);
             fastObjectListViewDisciplines.TabIndex = 4;
             fastObjectListViewDisciplines.UseFilterIndicator = true;
             fastObjectListViewDisciplines.UseFiltering = true;
@@ -357,7 +360,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(984, 349);
+            fastObjectListViewCurricula.Size = new Size(985, 329);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -393,7 +396,7 @@
             tabPageRpd.Location = new Point(4, 23);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1000, 702);
+            tabPageRpd.Size = new Size(1001, 678);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -449,7 +452,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(984, 659);
+            splitContainer1.Size = new Size(985, 617);
             splitContainer1.SplitterDistance = 240;
             splitContainer1.TabIndex = 7;
             // 
@@ -473,7 +476,7 @@
             groupBox4.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBox4.Location = new Point(0, 0);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(984, 240);
+            groupBox4.Size = new Size(985, 240);
             groupBox4.TabIndex = 0;
             groupBox4.TabStop = false;
             groupBox4.Text = "Режим исправлений РПД";
@@ -667,7 +670,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(984, 415);
+            fastObjectListViewRpdList.Size = new Size(985, 373);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -722,7 +725,7 @@
             tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1000, 701);
+            tabPage2.Size = new Size(1001, 677);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "ФОС";
             tabPage2.UseVisualStyleBackColor = true;
@@ -743,7 +746,7 @@
             tabPageReports.Location = new Point(4, 24);
             tabPageReports.Name = "tabPageReports";
             tabPageReports.Padding = new Padding(3);
-            tabPageReports.Size = new Size(1000, 701);
+            tabPageReports.Size = new Size(1001, 677);
             tabPageReports.TabIndex = 4;
             tabPageReports.Text = "Отчёты";
             tabPageReports.UseVisualStyleBackColor = true;
@@ -766,7 +769,7 @@
             tabControlReports.Location = new Point(3, 3);
             tabControlReports.Name = "tabControlReports";
             tabControlReports.SelectedIndex = 0;
-            tabControlReports.Size = new Size(994, 695);
+            tabControlReports.Size = new Size(995, 671);
             tabControlReports.TabIndex = 9;
             tabControlReports.DrawItem += tabControlReports_DrawItem;
             tabControlReports.MouseDown += tabControlReports_MouseDown;
@@ -786,7 +789,7 @@
             tabPageRpdGeneration.Location = new Point(4, 24);
             tabPageRpdGeneration.Name = "tabPageRpdGeneration";
             tabPageRpdGeneration.Padding = new Padding(3);
-            tabPageRpdGeneration.Size = new Size(1000, 701);
+            tabPageRpdGeneration.Size = new Size(1001, 677);
             tabPageRpdGeneration.TabIndex = 5;
             tabPageRpdGeneration.Text = "Генерация РПД";
             tabPageRpdGeneration.UseVisualStyleBackColor = true;
@@ -937,7 +940,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 606);
+            labelRpdGenStatus.Location = new Point(652, 607);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -957,7 +960,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(8, 564);
+            groupBox2.Location = new Point(8, 565);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 138);
             groupBox2.TabIndex = 14;
@@ -1062,7 +1065,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 564);
+            buttonGenerate.Location = new Point(652, 565);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -1077,7 +1080,7 @@
             groupBoxRpdGenDisciplineList.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxRpdGenDisciplineList.Location = new Point(8, 237);
             groupBoxRpdGenDisciplineList.Name = "groupBoxRpdGenDisciplineList";
-            groupBoxRpdGenDisciplineList.Size = new Size(984, 321);
+            groupBoxRpdGenDisciplineList.Size = new Size(984, 322);
             groupBoxRpdGenDisciplineList.TabIndex = 4;
             groupBoxRpdGenDisciplineList.TabStop = false;
             groupBoxRpdGenDisciplineList.Text = "3. Выбор дисциплин";
@@ -1094,7 +1097,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 300);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 301);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -1152,11 +1155,31 @@
             // 
             toolTip1.AutomaticDelay = 300;
             // 
+            // statusStrip1
+            // 
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
+            statusStrip1.Location = new Point(0, 707);
+            statusStrip1.Name = "statusStrip1";
+            statusStrip1.Size = new Size(1008, 22);
+            statusStrip1.TabIndex = 2;
+            statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripStatusLabel1.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(962, 17);
+            toolStripStatusLabel1.Spring = true;
+            toolStripStatusLabel1.Text = "Готов к работе";
+            toolStripStatusLabel1.TextAlign = ContentAlignment.MiddleLeft;
+            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1008, 729);
+            Controls.Add(statusStrip1);
             Controls.Add(tabControl1);
             Font = new Font("Tahoma", 9F);
             Name = "FormMain";
@@ -1198,7 +1221,10 @@
             groupBox2.PerformLayout();
             groupBoxRpdGenDisciplineList.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).EndInit();
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -1292,5 +1318,7 @@
         private LinkLabel linkLabelSelectDesciplinesWithLoadedRpd;
         private GroupBox groupBoxDocCoreProperties;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewDocProperties;
+        private StatusStrip statusStrip1;
+        private ToolStripStatusLabel toolStripStatusLabel1;
     }
 }
