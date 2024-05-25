@@ -453,6 +453,8 @@ namespace FosMan {
 
             App.LoadConfig();
 
+            YaGPT.Init();
+
             TuneCurriculumList();
             TuneRpdList(fastObjectListViewRpdList);
             TuneDisciplineList(fastObjectListViewDisciplines, true);

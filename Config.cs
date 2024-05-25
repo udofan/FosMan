@@ -8,6 +8,12 @@ using System.Threading.Tasks;
 
 namespace FosMan {
     internal class Config {
+        [JsonInclude]
+        public string YaOAuthToken { get; set; }
+        [JsonInclude]
+        public string YaGptIamToken { get; set; }
+        [JsonInclude]
+        public DateTimeOffset YaGptIamTokenExpiresAt { get; set; }
         /// <summary>
         /// Файл матрицы компетенций
         /// </summary>
