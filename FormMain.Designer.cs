@@ -106,6 +106,16 @@
             fastObjectListViewDisciplineListForGeneration = new BrightIdeasSoftware.FastObjectListView();
             label3 = new Label();
             comboBoxRpdGenCurriculumGroups = new ComboBox();
+            tabPageYaGPT = new TabPage();
+            label17 = new Label();
+            textBoxYaGptSystemText = new TextBox();
+            labelYaGptAnswerTime = new Label();
+            label16 = new Label();
+            buttonYaGptSendQuestion = new Button();
+            label15 = new Label();
+            label14 = new Label();
+            textBoxYaGptAnswer = new TextBox();
+            textBoxYaGptUserText = new TextBox();
             openFileDialogSelectCompetenceMatrixFile = new OpenFileDialog();
             openFileDialogSelectCurriculumFiles = new OpenFileDialog();
             openFileDialogSelectRpd = new OpenFileDialog();
@@ -115,6 +125,7 @@
             toolTip1 = new ToolTip(components);
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            button1 = new Button();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
@@ -141,6 +152,7 @@
             groupBox2.SuspendLayout();
             groupBoxRpdGenDisciplineList.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).BeginInit();
+            tabPageYaGPT.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -180,6 +192,7 @@
             tabControl1.Controls.Add(tabPage2);
             tabControl1.Controls.Add(tabPageReports);
             tabControl1.Controls.Add(tabPageRpdGeneration);
+            tabControl1.Controls.Add(tabPageYaGPT);
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
@@ -277,10 +290,10 @@
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Location = new Point(4, 24);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1001, 678);
+            tabPageСurriculum.Size = new Size(1001, 677);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -393,10 +406,10 @@
             tabPageRpd.Controls.Add(buttonRpdCheck);
             tabPageRpd.Controls.Add(labelLoadRpd);
             tabPageRpd.Controls.Add(buttonSelectRpdFiles);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1001, 678);
+            tabPageRpd.Size = new Size(1001, 677);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -1131,6 +1144,105 @@
             comboBoxRpdGenCurriculumGroups.TabIndex = 0;
             comboBoxRpdGenCurriculumGroups.SelectedIndexChanged += comboBoxSelectCurriculum_SelectedIndexChanged;
             // 
+            // tabPageYaGPT
+            // 
+            tabPageYaGPT.Controls.Add(button1);
+            tabPageYaGPT.Controls.Add(label17);
+            tabPageYaGPT.Controls.Add(textBoxYaGptSystemText);
+            tabPageYaGPT.Controls.Add(labelYaGptAnswerTime);
+            tabPageYaGPT.Controls.Add(label16);
+            tabPageYaGPT.Controls.Add(buttonYaGptSendQuestion);
+            tabPageYaGPT.Controls.Add(label15);
+            tabPageYaGPT.Controls.Add(label14);
+            tabPageYaGPT.Controls.Add(textBoxYaGptAnswer);
+            tabPageYaGPT.Controls.Add(textBoxYaGptUserText);
+            tabPageYaGPT.Location = new Point(4, 23);
+            tabPageYaGPT.Name = "tabPageYaGPT";
+            tabPageYaGPT.Padding = new Padding(3);
+            tabPageYaGPT.Size = new Size(1001, 678);
+            tabPageYaGPT.TabIndex = 6;
+            tabPageYaGPT.Text = "YandexGPT";
+            tabPageYaGPT.UseVisualStyleBackColor = true;
+            // 
+            // label17
+            // 
+            label17.AutoSize = true;
+            label17.Location = new Point(26, 16);
+            label17.Name = "label17";
+            label17.Size = new Size(51, 14);
+            label17.TabIndex = 8;
+            label17.Text = "System:";
+            // 
+            // textBoxYaGptSystemText
+            // 
+            textBoxYaGptSystemText.Location = new Point(26, 33);
+            textBoxYaGptSystemText.Multiline = true;
+            textBoxYaGptSystemText.Name = "textBoxYaGptSystemText";
+            textBoxYaGptSystemText.Size = new Size(325, 39);
+            textBoxYaGptSystemText.TabIndex = 7;
+            // 
+            // labelYaGptAnswerTime
+            // 
+            labelYaGptAnswerTime.AutoSize = true;
+            labelYaGptAnswerTime.Location = new Point(323, 189);
+            labelYaGptAnswerTime.Name = "labelYaGptAnswerTime";
+            labelYaGptAnswerTime.Size = new Size(11, 14);
+            labelYaGptAnswerTime.TabIndex = 6;
+            labelYaGptAnswerTime.Text = "-";
+            // 
+            // label16
+            // 
+            label16.AutoSize = true;
+            label16.Location = new Point(191, 189);
+            label16.Name = "label16";
+            label16.Size = new Size(126, 14);
+            label16.TabIndex = 5;
+            label16.Text = "Время ответа (сек.):";
+            // 
+            // buttonYaGptSendQuestion
+            // 
+            buttonYaGptSendQuestion.Location = new Point(362, 142);
+            buttonYaGptSendQuestion.Name = "buttonYaGptSendQuestion";
+            buttonYaGptSendQuestion.Size = new Size(88, 23);
+            buttonYaGptSendQuestion.TabIndex = 4;
+            buttonYaGptSendQuestion.Text = "Отправить";
+            buttonYaGptSendQuestion.UseVisualStyleBackColor = true;
+            buttonYaGptSendQuestion.Click += buttonYaGptSendQuestion_Click;
+            // 
+            // label15
+            // 
+            label15.AutoSize = true;
+            label15.Location = new Point(26, 75);
+            label15.Name = "label15";
+            label15.Size = new Size(35, 14);
+            label15.TabIndex = 3;
+            label15.Text = "User:";
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.Location = new Point(26, 189);
+            label14.Name = "label14";
+            label14.Size = new Size(45, 14);
+            label14.TabIndex = 2;
+            label14.Text = "Ответ:";
+            // 
+            // textBoxYaGptAnswer
+            // 
+            textBoxYaGptAnswer.Location = new Point(26, 206);
+            textBoxYaGptAnswer.Multiline = true;
+            textBoxYaGptAnswer.Name = "textBoxYaGptAnswer";
+            textBoxYaGptAnswer.Size = new Size(325, 342);
+            textBoxYaGptAnswer.TabIndex = 1;
+            // 
+            // textBoxYaGptUserText
+            // 
+            textBoxYaGptUserText.Location = new Point(26, 92);
+            textBoxYaGptUserText.Multiline = true;
+            textBoxYaGptUserText.Name = "textBoxYaGptUserText";
+            textBoxYaGptUserText.Size = new Size(325, 73);
+            textBoxYaGptUserText.TabIndex = 0;
+            // 
             // openFileDialogSelectCurriculumFiles
             // 
             openFileDialogSelectCurriculumFiles.Filter = "Excel-файлы|*.xlsx|Все файлы|*.*";
@@ -1169,10 +1281,20 @@
             toolStripStatusLabel1.DisplayStyle = ToolStripItemDisplayStyle.Text;
             toolStripStatusLabel1.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            toolStripStatusLabel1.Size = new Size(962, 17);
+            toolStripStatusLabel1.Size = new Size(993, 17);
             toolStripStatusLabel1.Spring = true;
             toolStripStatusLabel1.Text = "Готов к работе";
             toolStripStatusLabel1.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(362, 49);
+            button1.Name = "button1";
+            button1.Size = new Size(75, 23);
+            button1.TabIndex = 9;
+            button1.Text = "Сброс";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click_1;
             // 
             // FormMain
             // 
@@ -1221,6 +1343,8 @@
             groupBox2.PerformLayout();
             groupBoxRpdGenDisciplineList.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).EndInit();
+            tabPageYaGPT.ResumeLayout(false);
+            tabPageYaGPT.PerformLayout();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -1320,5 +1444,16 @@
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewDocProperties;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
+        private TabPage tabPageYaGPT;
+        private TextBox textBoxYaGptAnswer;
+        private TextBox textBoxYaGptUserText;
+        private Label label15;
+        private Label label14;
+        private Label labelYaGptAnswerTime;
+        private Label label16;
+        private Button buttonYaGptSendQuestion;
+        private Label label17;
+        private TextBox textBoxYaGptSystemText;
+        private Button button1;
     }
 }

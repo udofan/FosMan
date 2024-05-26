@@ -1035,6 +1035,25 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Сериализация объекта
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static string SerializeObj(object obj) {
+            return JsonSerializer.Serialize(obj, m_jsonOptions);
+        }
+        
+        /// <summary>
+        /// Десериализация JSON в объект
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public static T Deserialize<T>(string json) {
+            return JsonSerializer.Deserialize<T>(json, m_jsonOptions);
+        }
+
+        /// <summary>
         /// Загрузить конфиг
         /// </summary>
         static public void LoadConfig() {

@@ -453,7 +453,7 @@ namespace FosMan {
 
             App.LoadConfig();
 
-            YaGPT.Init();
+            YaGpt.Init();
 
             TuneCurriculumList();
             TuneRpdList(fastObjectListViewRpdList);
@@ -613,9 +613,9 @@ namespace FosMan {
                     idx++;
                     Application.DoEvents();
 
-                        //if (report.Count > 0) report.Add(new string('-', 30));
-                        //report.Add(file);
-                        //report.AddRange(curriculum.Errors);
+                    //if (report.Count > 0) report.Add(new string('-', 30));
+                    //report.Add(file);
+                    //report.AddRange(curriculum.Errors);
                     if (curriculum.Errors.Any()) {
                         errLog.TryAdd(file, curriculum.Errors);
                     }
@@ -1330,6 +1330,17 @@ namespace FosMan {
                 };
                 p.Start();
             }
+        }
+
+        private async void buttonYaGptSendQuestion_Click(object sender, EventArgs e) {
+            var answer = await YaGpt.TextGeneration(textBoxYaGptSystemText.Text, textBoxYaGptUserText.Text);
+
+            textBoxYaGptAnswer.Text = answer;
+        }
+
+        private void button1_Click_1(object sender, EventArgs e) {
+            textBoxYaGptSystemText.Text = "ты - профессор университета";
+            textBoxYaGptUserText.Text = "какая цель и задачи у дисциплины \"Конъюнктура мирового рынка\"? Не используй разметку Markdown!";
         }
     }
 }
