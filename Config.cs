@@ -64,6 +64,11 @@ namespace FosMan {
         [JsonInclude]
         public string RpdFixTemplateFileName { get; set; }
         /// <summary>
+        /// Заполнение таблиц учебных работ для форм обучения
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixFillEduWorkTables { get; set; }
+        /// <summary>
         /// Последняя выбранная локация файлов УП
         /// </summary>
         [JsonInclude]

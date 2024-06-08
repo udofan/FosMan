@@ -142,9 +142,6 @@ namespace FosMan {
             
         };
         static Regex m_regexNumberedHeader = new(@"^(\d+)\.(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        static public Regex RegexFullTimeTable = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        static public Regex RegexMixedTimeTable = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        static public Regex RegexPartTimeTable = new(@"^заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static List<Regex> m_regexQuestionListBeginMarker = new() {
             //Примерные вопросы к экзамену
             new(@"примерные\s+вопросы\s+к\s+(зачету|экзамену)[:.]*", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -544,32 +541,13 @@ namespace FosMan {
                     foreach (var table in docx.Tables) {
                         var testTable = true;
                         if (!rpd.EducationalWorks.Any()) {
-                            testTable = !App.TestTableForEducationalWorks(table, rpd.EducationalWorks, true);
+                            testTable = !App.TestForSummaryTableForEducationalWorks(table, rpd.EducationalWorks, PropertyAccess.Get);
                         }
                         if (testTable && rpd.CompetenceMatrix == null) {
-                            testTable = !TestTableForCompetenceMatrix(table, rpd);
+                            testTable = !TestForTableOfCompetenceMatrix(table, rpd);
                         }
                         if (testTable) {
-                            //проверка на таблицы учебных работ с темами
-                            var par = table.Paragraphs.FirstOrDefault();
-                            for (var i = 0; i < 3; i++) {
-                                par = par.PreviousParagraph;
-                                if (!fullTimeTableIsOk && RegexFullTimeTable.IsMatch(par.Text)) {
-                                    rpd.EducationalWorks[EFormOfStudy.FullTime].Table = table;
-                                    fullTimeTableIsOk = true;
-                                    break;
-                                }
-                                if (!mixedTimeTableIsOk && RegexMixedTimeTable.IsMatch(par.Text)) {
-                                    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table = table;
-                                    mixedTimeTableIsOk = true;
-                                    break;
-                                }
-                                if (!partTimeTableIsOk && RegexPartTimeTable.IsMatch(par.Text)) {
-                                    rpd.EducationalWorks[EFormOfStudy.PartTime].Table = table;
-                                    partTimeTableIsOk = true;
-                                    break;
-                                }
-                            }
+                            testTable = !App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, out _);
                         }
 
                     }
@@ -625,7 +603,7 @@ namespace FosMan {
         /// </summary>
         /// <param name="table"></param>
         /// <param name="rpd"></param>
-        private static bool TestTableForCompetenceMatrix(Table table, Rpd rpd) {
+        private static bool TestForTableOfCompetenceMatrix(Table table, Rpd rpd) {
             var matrix = new CompetenceMatrix() {
                 Items = [],
                 Errors = [],

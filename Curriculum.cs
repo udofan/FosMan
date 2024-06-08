@@ -95,7 +95,7 @@ namespace FosMan {
         /// <summary>
         /// Уникальный ключ, по которому УП будут объединяться в группы
         /// </summary>
-        public string GroupKey { get => $"{DirectionCode} - {DirectionName} - {Profile}"; }
+        public string GroupKey { get => $"{DirectionCode} - {DirectionName} - {Profile}".ToLower(); }
 
         /// <summary>
         /// Загрузка описания УП из xlsx-файла

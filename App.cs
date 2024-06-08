@@ -27,6 +27,13 @@ using static System.Resources.ResXFileRef;
 
 namespace FosMan {
     /// <summary>
+    /// Тип доступа к свойству
+    /// </summary>
+    public enum PropertyAccess {
+        Get,    //получить значение
+        Set     //установить значение
+    }
+    /// <summary>
     /// Загруженные данные
     /// </summary>
     static internal class App {
@@ -54,6 +61,13 @@ namespace FosMan {
         //static Regex m_regexTestTableEduWorks = new(@"Наименован.*раздел.*тем", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         //для выявления раздела
         static Regex m_regexRpdChapter = new(@"^(\d+).\s+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        //выражения для проверка заголовков таблиц учебных работ (содержания) по формам обучения
+        static Dictionary<EFormOfStudy, Regex> m_eduWorkTableHeaders = new() {
+            [EFormOfStudy.FullTime] = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            [EFormOfStudy.MixedTime] = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            [EFormOfStudy.PartTime] = new(@"^заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+        };
 
         static CompetenceMatrix m_competenceMatrix = null;
         static Dictionary<string, Curriculum> m_curriculumDic = [];
@@ -548,7 +562,7 @@ namespace FosMan {
                             foreach (var table in docx.Tables.ToList()) {
                                 if (!eduWorksIsOk) {
                                     //заполнение таблицы учебных работ
-                                    eduWorksIsOk = TestTableForEducationalWorks(table, eduWorks, false /*установка значений в таблицу*/);
+                                    eduWorksIsOk = TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
                                 }
                                 if (!competenceTableIsOk) {
                                     if (CompetenceMatrix.TestTable(table)) {
@@ -559,10 +573,10 @@ namespace FosMan {
                                 if (applyLoadedRpd && rpd != null) {
                                     //проверка на таблицы учебных работ с темами
                                     var par = table.Paragraphs.FirstOrDefault();
-                                    for (var j = 0; j < 3; j++) {
+                                    for (var j = 0; j < 5; j++) {
                                         par = par.PreviousParagraph;
-                                        if (!fullTimeTableIsOk && Rpd.RegexFullTimeTable.IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks[EFormOfStudy.FullTime].Table != null) {
+                                        if (!fullTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.FullTime].IsMatch(par.Text)) {
+                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.FullTime) && rpd.EducationalWorks[EFormOfStudy.FullTime].Table != null) {
                                                 ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
                                                 var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
                                                 par.InsertTableAfterSelf(newTable);
@@ -571,7 +585,7 @@ namespace FosMan {
                                             fullTimeTableIsOk = true;
                                             break;
                                         }
-                                        if (!mixedTimeTableIsOk && Rpd.RegexMixedTimeTable.IsMatch(par.Text)) {
+                                        if (!mixedTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.MixedTime].IsMatch(par.Text)) {
                                             if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.MixedTime) && rpd.EducationalWorks[EFormOfStudy.MixedTime].Table != null) {
                                                 ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
                                                 var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
@@ -581,8 +595,8 @@ namespace FosMan {
                                             mixedTimeTableIsOk = true;
                                             break;
                                         }
-                                        if (!partTimeTableIsOk && Rpd.RegexPartTimeTable.IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks[EFormOfStudy.PartTime].Table != null) {
+                                        if (!partTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.PartTime].IsMatch(par.Text)) {
+                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.PartTime) && rpd.EducationalWorks[EFormOfStudy.PartTime].Table != null) {
                                                 ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
                                                 var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
                                                 par.InsertTableAfterSelf(newTable);
@@ -771,10 +785,10 @@ namespace FosMan {
         /// <param name="getValue"></param>
         /// <param name="value"></param>
         /// <param name="prop"></param>
-        static void GetOrSetPropValue(Paragraph par, Regex propMatchCheck, string testText, bool getValue, TypeAccessor typeAccessor, 
+        static void GetOrSetPropValue(Paragraph par, Regex propMatchCheck, string testText, PropertyAccess propAccess, TypeAccessor typeAccessor, 
                                       object obj, string propName, Type propType) {
             if (propMatchCheck.IsMatch(testText)) {
-                if (getValue) {
+                if (propAccess == PropertyAccess.Get) {
                     var text = par.Text;
                     if (propType == typeof(int)) {
                         if (int.TryParse(text, out int intVal)) {
@@ -801,8 +815,8 @@ namespace FosMan {
         /// </summary>
         /// <param name="table"></param>
         /// <param name="eduWorks">словарь либо для получения, либо для простановки времен учебной работы</param>
-        /// <param name="getValues">режим работы: получить или установить значения</param>
-        public static bool TestTableForEducationalWorks(Table table, Dictionary<EFormOfStudy, EducationalWork> eduWorks, bool getValues) {
+        /// <param name="propAccess">режим работы: получить или установить значения</param>
+        public static bool TestForSummaryTableForEducationalWorks(Table table, Dictionary<EFormOfStudy, EducationalWork> eduWorks, PropertyAccess propAccess) {
             var result = false;
 
             if (table.RowCount > 5 && table.ColumnCount >= 2) {
@@ -823,15 +837,15 @@ namespace FosMan {
                         if (!string.IsNullOrEmpty(text)) {
                             if (m_regexFormFullTime.IsMatch(text)) {
                                 formColIdx[EFormOfStudy.FullTime] = colIdx;
-                                if (getValues) eduWorks[EFormOfStudy.FullTime] = new();
+                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.FullTime] = new();
                             }
                             else if (m_regexFormMixedTime.IsMatch(text)) {
                                 formColIdx[EFormOfStudy.MixedTime] = colIdx;
-                                if (getValues) eduWorks[EFormOfStudy.MixedTime] = new();
+                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.MixedTime] = new();
                             }
                             else if (m_regexFormPartTime.IsMatch(text)) {
                                 formColIdx[EFormOfStudy.PartTime] = colIdx;
-                                if (getValues) eduWorks[EFormOfStudy.PartTime] = new();
+                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.PartTime] = new();
                             }
                         }
                     }
@@ -845,16 +859,16 @@ namespace FosMan {
                                     var text = par.Text;
 
                                     var header = table.Rows[rowIdx].Cells[0].GetText();
-                                    GetOrSetPropValue(par, m_regexTotalHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.TotalHours), typeof(int));
-                                    GetOrSetPropValue(par, m_regexContactHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.ContactWorkHours), typeof(int));
-                                    GetOrSetPropValue(par, m_regexControlHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.ControlHours), typeof(int));
-                                    GetOrSetPropValue(par, m_regexLectureHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.LectureHours), typeof(int));
-                                    GetOrSetPropValue(par, m_regexLabHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.LabHours), typeof(int));
-                                    GetOrSetPropValue(par, m_regexPracticalHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.PracticalHours), typeof(int));
-                                    GetOrSetPropValue(par, m_regexSelfStudyHours, header, getValues, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.SelfStudyHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexTotalHours, header, propAccess, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.TotalHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexContactHours, header, propAccess, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.ContactWorkHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexControlHours, header, propAccess, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.ControlHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexLectureHours, header, propAccess, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.LectureHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexLabHours, header, propAccess, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.LabHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexPracticalHours, header, propAccess, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.PracticalHours), typeof(int));
+                                    GetOrSetPropValue(par, m_regexSelfStudyHours, header, propAccess, EducationalWork.TypeAccessor, eduWork, nameof(eduWork.SelfStudyHours), typeof(int));
                                     //форма итогового контроля
                                     if (m_regexControlForm.IsMatch(header)) {
-                                        if (getValues) {
+                                        if (propAccess == PropertyAccess.Get) {
                                             if (m_regexControlExam.IsMatch(text)) {
                                                 eduWork.ControlForm = EControlForm.Exam;
                                             }
@@ -1103,6 +1117,9 @@ namespace FosMan {
                 if (Config.RpdFixTableOfEduWorks) {
                     html.Append("<li>Исправление таблицы учебных работ</li>");
                 }
+                if (Config.RpdFixFillEduWorkTables) {
+                    html.Append("<li>Заполнение таблиц учебных работ для форм обучения</li>");
+                }
                 var findAndReplaceItems = Config.RpdFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
                 if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
                     var tdStyle = "style='border: 1px solid;'";
@@ -1120,28 +1137,30 @@ namespace FosMan {
                         html.Append($"<div>Исходный файл: <b>{rpd.SourceFileName}</b></div>");
                         html.Append($"<div>Дисциплина: <b>{rpd.DisciplineName}</b></div>");
 
-                        var fixCompetences = true;
+                        var fixCompetences = Config.RpdFixTableOfCompetences;
                         var discipline = FindDiscipline(rpd);
                         if (discipline == null) {
                             fixCompetences = false;
                             html.Append($"<div style='color: red'>Не удалось найти дисциплину [{rpd.DisciplineName}] в загруженных учебных планах</div>");
                         }
-                        var fixEduWorks = true;
+                        var fixEduWorksSummary = Config.RpdFixTableOfEduWorks;
                         var eduWorks = GetEducationWorks(rpd, out _);
                         //if (!(eduWorks?.Any() ?? false)) {
                         //    fixEduWorks = false;
                         //    html.Append($"<div style='color: red'>Не удалось найти учебные работы для дисциплины [{rpd.DisciplineName}] в загруженных учебных планах</div>");
                         //}
                         if (rpd.FormsOfStudy.Count != eduWorks.Count) {
-                            fixEduWorks = false;
+                            fixEduWorksSummary = false;
                             foreach (var form in rpd.FormsOfStudy) {
                                 if (!eduWorks.ContainsKey(form)) {
                                     html.Append($"<div style='color: red'>Учебный план для формы обучения [{form.GetDescription()}] не загружен</div>");
                                 }
                             }
                         }
+                        var fixEduWorkTables = Config.RpdFixFillEduWorkTables;
+                        var eduWorkTableIsFixed = rpd.FormsOfStudy.ToDictionary(x => x, x => false);
 
-                        var eduTableIsFixed = false; //флаг, что в процессе работы была исправлена таблица учебных работ
+                        var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
 
                         var setDocProperties = Config.RpdFixDocPropertyList?.Where(i => i.IsChecked).ToList(); 
 
@@ -1164,17 +1183,33 @@ namespace FosMan {
                                         table.Xml = backup;
                                     }
                                 }
-                                if (fixEduWorks && !eduTableIsFixed) {
-                                    eduTableIsFixed |= TestTableForEducationalWorks(table, eduWorks, false /*установка значений в таблицу*/);
+                                if (fixEduWorksSummary && !eduSummaryTableIsFixed) {
+                                    eduSummaryTableIsFixed |= TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
+                                }
+                                if (fixEduWorkTables) {
+                                    //фикс-заполнение таблицы учебных работ для формы обучения
+                                    if (TestForEduWorkTable(table, rpd, PropertyAccess.Set, out var formOfStudy)) {
+                                        eduWorkTableIsFixed[formOfStudy] = true;
+                                    }
                                 }
                             }
-                            if (fixEduWorks) {
-                                if (eduTableIsFixed) {
-                                    html.Append("<div style='color: green'>Таблица учебных работ заполнена по учебным планам.</div>");
+                            if (fixEduWorksSummary) {
+                                if (eduSummaryTableIsFixed) {
+                                    html.Append("<div style='color: green'>Сводная таблица учебных работ заполнена по учебным планам.</div>");
                                 }
                                 else {
-                                    html.Append("<div style='color: red'>Не удалось сформировать таблицу учебных работ.</div>");
+                                    html.Append("<div style='color: red'>Не удалось сформировать сводную таблицу учебных работ.</div>");
                                     //table.Xml = backup;
+                                }
+                            }
+                            if (fixEduWorkTables) {
+                                foreach (var item in eduWorkTableIsFixed) {
+                                    if (item.Value) {
+                                        html.Append($"<div style='color: green'>Таблица учебных работ для формы обучения [{item.Key.GetDescription()}] успешно заполнена.</div>");
+                                    }
+                                    else {
+                                        html.Append($"<div style='color: red'>Таблицу учебных работ для формы обучения [{item.Key.GetDescription()}] не удалось заполнить.</div>");
+                                    }
                                 }
                             }
 
@@ -1323,6 +1358,59 @@ namespace FosMan {
             name2 = name2.Trim().Replace('ё', 'е').ToLower();
 
             return name1.Equals(name2) || name1.StartsWith(name2) || name2.StartsWith(name1);
+        }
+
+        /// <summary>
+        /// Проверка на таблицу учебных работ по форме обучения
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="rpd"></param>
+        /// <returns></returns>
+        internal static bool TestForEduWorkTable(Table table, Rpd rpd, PropertyAccess propAccess, out EFormOfStudy formOfStudy) {
+            var result = false;
+            formOfStudy = EFormOfStudy.Unknown;
+
+            //проверка на таблицы учебных работ с темами
+            var par = table.Paragraphs.FirstOrDefault();
+            for (var i = 0; i < 5; i++) {
+                par = par.PreviousParagraph;
+                foreach (EFormOfStudy form in Enum.GetValues(typeof(EFormOfStudy))) {
+                    if (m_eduWorkTableHeaders.TryGetValue(form, out var regex) &&
+                        rpd.EducationalWorks.ContainsKey(form) &&
+                        rpd.EducationalWorks[form].Table == null &&
+                        regex.IsMatch(par.Text)) {
+                        if (propAccess == PropertyAccess.Get) {
+                            rpd.EducationalWorks[form].Table = table;
+                        }
+                        result = true;
+                        break;
+                    }
+                }
+                if (result) break;
+                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.FullTime) && 
+                //    rpd.EducationalWorks[EFormOfStudy.FullTime].Table == null && 
+                //    m_regexFullTimeTable.IsMatch(par.Text)) {
+                //    rpd.EducationalWorks[EFormOfStudy.FullTime].Table = table;
+                //    result = true;
+                //    break;
+                //}
+                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.MixedTime) &&
+                //    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table == null && 
+                //    m_regexMixedTimeTable.IsMatch(par.Text)) {
+                //    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table = table;
+                //    result = true;
+                //    break;
+                //}
+                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.PartTime) &&
+                //    rpd.EducationalWorks[EFormOfStudy.PartTime].Table == null && 
+                //    m_regexPartTimeTable.IsMatch(par.Text)) {
+                //    rpd.EducationalWorks[EFormOfStudy.PartTime].Table = table;
+                //    result = true;
+                //    break;
+                //}
+            }
+
+            return result;
         }
     }
 }

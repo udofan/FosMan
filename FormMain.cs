@@ -481,7 +481,7 @@ namespace FosMan {
             checkBoxCompetenceMatrixAutoload.Checked = App.Config.CompetenceMatrixAutoload;
             checkBoxStoreRpdList.Checked = App.Config.StoreRpdList;
             checkBoxRpdFixTableOfCompetences.Checked = App.Config.RpdFixTableOfCompetences;
-            checkBoxRpdFixTableOfEduWorks.Checked = App.Config.RpdFixTableOfEduWorks;
+            checkBoxRpdFixSummaryTableOfEduWorks.Checked = App.Config.RpdFixTableOfEduWorks;
             textBoxRpdFixTargetDir.Text = App.Config.RpdFixTargetDir;
             textBoxRpdGenFileNameTemplate.Text = App.Config.RpdGenFileNameTemplate;
             textBoxRpdGenTargetDir.Text = App.Config.RpdGenTargetDir;
@@ -1196,7 +1196,7 @@ namespace FosMan {
         }
 
         private void checkBoxRpdFixTableOfEduWorks_CheckedChanged(object sender, EventArgs e) {
-            App.Config.RpdFixTableOfEduWorks = checkBoxRpdFixTableOfEduWorks.Checked;
+            App.Config.RpdFixTableOfEduWorks = checkBoxRpdFixSummaryTableOfEduWorks.Checked;
             App.SaveConfig();
         }
 
@@ -1341,6 +1341,11 @@ namespace FosMan {
         private void button1_Click_1(object sender, EventArgs e) {
             textBoxYaGptSystemText.Text = "ты - профессор университета";
             textBoxYaGptUserText.Text = "какая цель и задачи у дисциплины \"Конъюнктура мирового рынка\"? Не используй разметку Markdown!";
+        }
+
+        private void checkBoxRpdFixFillEduWorkTables_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixFillEduWorkTables = checkBoxRpdFixFillEduWorkTables.Checked;
+            App.SaveConfig();
         }
     }
 }

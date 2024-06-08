@@ -20,10 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Templates\РПД_шаблон_2024.docx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Templates\РПД_шаблон_new_2024.docx">
+    <None Update="Templates\РПД_шаблон_бакалавр_2024.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Templates\РПД_шаблон_магистр_2024.docx">
