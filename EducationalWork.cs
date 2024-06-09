@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xceed.Document.NET;
 
@@ -19,43 +20,52 @@ namespace FosMan {
         /// <summary>
         /// Общая трудоемкость
         /// </summary>
+        [JsonInclude]
         public int? TotalHours { get; set; } = 0;
         /// <summary>
         /// Контактная (аудиторная) работы
         /// </summary>
+        [JsonInclude]
         public int? ContactWorkHours { get; set; } = 0;
         /// <summary>
         /// Лекции
         /// </summary>
+        [JsonInclude]
         public int? LectureHours { get; set; } = 0;
         /// <summary>
         /// Лабораторные работы
         /// </summary>
+        [JsonInclude]
         public int? LabHours { get; set; } = 0;
         /// <summary>
         /// Практические занятия
         /// </summary>
+        [JsonInclude] 
         public int? PracticalHours { get; set; } = 0;
         /// <summary>
         /// Самостоятельная работы
         /// </summary>
+        [JsonInclude] 
         public int? SelfStudyHours { get; set; } = 0;
         /// <summary>
         /// Контроль
         /// </summary>
+        [JsonInclude] 
         public int? ControlHours { get; set; } = 0;
         /// <summary>
         /// Форма итогового контроля
         /// </summary>
+        [JsonInclude] 
         public EControlForm ControlForm { get; set; } = EControlForm.Unknown;
         /// <summary>
         /// Значение ControlForm для экрана
         /// </summary>
+        [JsonInclude] 
         public string ControlFormForScreen { get => ControlForm.GetDescription(); }
         /// <summary>
         /// Таблица учебного времени с темами
         /// </summary>
-        public Table Table { get; set; }
+        internal Table Table { get; set; }
 
         /// <summary>
         /// Получить значение свойства по имени

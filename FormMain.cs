@@ -488,6 +488,9 @@ namespace FosMan {
             textBoxRpdGenTargetDir.Text = App.Config.RpdGenTargetDir;
             textBoxRpdFixFileTemplate.Text = App.Config.RpdFixTemplateFileName;
             checkBoxRpdFixByTemplate.Checked = App.Config.RpdFixByTemplate;
+            checkBoxRpdFixSetPrevAndNextDisciplines.Checked = App.Config.RpdFixSetPrevAndNextDisciplines;
+            checkBoxRpdFixRemoveColorSelection.Checked = App.Config.RpdFixRemoveColorSelections;
+
             if (!string.IsNullOrEmpty(App.Config.RpdGenTemplate)) {
                 if (comboBoxRpdGenTemplates.Items.Contains(App.Config.RpdGenTemplate)) {
                     comboBoxRpdGenTemplates.SelectedItem = App.Config.RpdGenTemplate;
@@ -1062,7 +1065,7 @@ namespace FosMan {
         }
 
         void ShowHideRpdFixMode(bool show) {
-            var maxDist = 240;
+            var maxDist = 260;
             var delta = 10;
 
             fastObjectListViewRpdList.BeginUpdate();
@@ -1334,7 +1337,8 @@ namespace FosMan {
         }
 
         private async void buttonYaGptSendQuestion_Click(object sender, EventArgs e) {
-            var answer = await YaGpt.TextGeneration(textBoxYaGptSystemText.Text, textBoxYaGptUserText.Text);
+            var temp = double.Parse(textBoxYaGptTemp.Text);
+            var answer = await YaGpt.TextGeneration(textBoxYaGptSystemText.Text, textBoxYaGptUserText.Text, temp);
 
             textBoxYaGptAnswer.Text = answer;
         }
@@ -1346,6 +1350,107 @@ namespace FosMan {
 
         private void checkBoxRpdFixFillEduWorkTables_CheckedChanged(object sender, EventArgs e) {
             App.Config.RpdFixFillEduWorkTables = checkBoxRpdFixFillEduWorkTables.Checked;
+            App.SaveConfig();
+        }
+
+        private void checkBoxSetPrevAndNextDisciplines_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixSetPrevAndNextDisciplines = checkBoxRpdFixSetPrevAndNextDisciplines.Checked;
+            App.SaveConfig();
+        }
+
+        private void buttonRpdSaveToDb_Click(object sender, EventArgs e) {
+            var sw = Stopwatch.StartNew();
+
+            App.AddLoadedRpdToStore();
+
+            StatusMessage($"В Стор добавлены РПД ({App.RpdList.Count} шт.) ({sw.Elapsed}). Всего в Сторе РПД: {App.Store.RpdDic.Count} шт.");
+        }
+
+        private void buttonRpdLoadFromDb_Click(object sender, EventArgs e) {
+            if (MessageBox.Show($"Вы уверены, что хотите загрузить в список РПД из Стора ({App.Store.RpdDic.Count} шт.)?", "Загрузка РПД",
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                if (App.Store?.RpdDic?.Any() ?? false) {
+                    fastObjectListViewRpdList.BeginUpdate();
+                    var selectedObjects = fastObjectListViewRpdList.SelectedObjects;
+
+                    foreach (var rpd in App.Store.RpdDic.Values) {
+                        App.AddRpd(rpd);
+
+                        fastObjectListViewRpdList.AddObject(rpd);
+                        fastObjectListViewRpdList.EnsureModelVisible(rpd);
+                        selectedObjects.Add(rpd);
+                    }
+                    fastObjectListViewRpdList.SelectedObjects = selectedObjects;
+                    fastObjectListViewRpdList.EndUpdate();
+                }
+            }
+        }
+
+        private async void linkLabelRpdFixGeneratePrevDisciplines_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var sw = Stopwatch.StartNew();
+                StatusMessage("Выполнение запросов по генерации списков дисциплин...");
+                var i = 0;
+                foreach (var rpd in rpdList) {
+                    i++;
+                    var discList = App.GetPossiblePrevDisciplines(rpd);
+                    var names = discList.Select(d => d.Name).ToList();
+                    var discNames = await YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
+                    //task.Wait();
+                    var prevNames = discNames.TakeRandom(3, 7);
+                    rpd.SetPrevDisciplines(prevNames);
+                    StatusMessage($"Выполнение запросов по генерации списков дисциплин (выполнено {i} из {rpdList.Count}) [{sw.Elapsed}]...");
+                }
+                StatusMessage($"Запросы по генерации списков дисциплин выполнены ({sw.Elapsed}).");
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, к которым требуется применить функцию.", "Генерация списка дисциплин", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+        private void fastObjectListViewCurricula_KeyDown(object sender, KeyEventArgs e) {
+            if (e.KeyCode == Keys.Delete) {
+                if ((fastObjectListViewCurricula.SelectedObjects?.Count ?? 0) > 0) {
+                    foreach (var item in fastObjectListViewCurricula.SelectedObjects) {
+                        App.Curricula.Remove((item as Curriculum).SourceFileName);
+                    }
+
+                    fastObjectListViewCurricula.RemoveObjects(fastObjectListViewCurricula.SelectedObjects);
+                }
+            }
+        }
+
+        private async void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var sw = Stopwatch.StartNew();
+                StatusMessage("Выполнение запросов по генерации списков дисциплин...");
+                var i = 0;
+                //var tasks = new Task();
+                foreach (var rpd in rpdList) {
+                    i++;
+                    var discList = App.GetPossibleNextDisciplines(rpd);
+                    var names = discList.Select(d => d.Name).ToList();
+                    var prevNames = rpd.GetPrevDisciplines();
+                    if (prevNames?.Any() ?? false) {
+                        names = names.Except(prevNames).ToList();
+                    }
+                    var discNames = await YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
+                    //task.Wait();
+                    var nextNames = discNames.TakeRandom(3, 7);
+                    rpd.SetNextDisciplines(nextNames);
+                    StatusMessage($"Выполнение запросов по генерации списков дисциплин (выполнено {i} из {rpdList.Count}) [{sw.Elapsed}]...");
+                }
+                StatusMessage($"Запросы по генерации списков дисциплин выполнены ({sw.Elapsed}).");
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, к которым требуется применить функцию.", "Генерация списка дисциплин", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+        private void checkBoxRpdFixResetColorSelection_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixRemoveColorSelections = checkBoxRpdFixRemoveColorSelection.Checked;
             App.SaveConfig();
         }
     }

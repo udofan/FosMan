@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xceed.Document.NET;
@@ -84,7 +85,8 @@ namespace FosMan {
             //изучении последующих профессиональных дисциплин
             (new(@"послед[^.]+(учеб)?[^.]+дисциплин(ы)?[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 3),
             //изучения следующих дисциплин
-            (new(@"след[^.]+(учеб)?[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 2),
+            (new(@"следующих\s+учебных\s+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
+            (new(@"следующих\s+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
             //служат основой для более глубокого восприятия таких дисциплин как
             (new(@"глуб[^.]+восприят[^.]+так[^.]+дисциплин как\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
             //В соединении с дисциплинами
@@ -165,78 +167,97 @@ namespace FosMan {
         /// <summary>
         /// Год
         /// </summary>
+        [JsonInclude]
         public string Year { get; set; }
         /// <summary>
         /// Дисциплина
         /// </summary>
+        [JsonInclude]
         public string DisciplineName { get; set; }
         /// <summary>
         /// Профиль
         /// </summary>
+        [JsonInclude]
         public string Profile { get; set; }
         /// <summary>
         /// Кафедра
         /// </summary>
+        [JsonInclude]
         public string Department { get; set; }
         /// <summary>
         /// Код направления подготовки
         /// </summary>
+        [JsonInclude]
         public string DirectionCode { get; set; }
         /// <summary>
         /// Направление подготовки
         /// </summary>
+        [JsonInclude]
         public string DirectionName { get; set; }
         /// <summary>
         /// Формы обучения
         /// </summary>
+        [JsonInclude]
         public List<Enums.EFormOfStudy> FormsOfStudy { get; set; }
         /// <summary>
         /// Матрица компетенций (п. 1 в РПД)
         /// </summary>
+        [JsonInclude]
         public CompetenceMatrix CompetenceMatrix { get; set; }
         /// <summary>
         /// Исходный docx-файл
         /// </summary>
+        [JsonInclude]
         public string SourceFileName { get; set; }
         /// <summary>
         /// Выявленные ошибки
         /// </summary>
+        [JsonIgnore]
         public List<string> Errors { get; set; }
         /// <summary>
         /// Учебная работа по формам обучения
         /// </summary>
+        [JsonInclude]
         public Dictionary<Enums.EFormOfStudy, EducationalWork> EducationalWorks { get; set; }
         /// <summary>
         /// Список доп. ошибок, выявленных при проверке
         /// </summary>
+        [JsonIgnore]
         public List<string> ExtraErrors { get; set; }
         /// <summary>
         /// Составитель
         /// </summary>
+        [JsonInclude]
         public string Compiler { get; set; }
         /// <summary>
         /// Предшествующие дисциплины
         /// </summary>
+        [JsonInclude]
         public string PrevDisciplines { get; set; }
         /// <summary>
         /// Последующие дисциплины
         /// </summary>
+        [JsonInclude]
         public string NextDisciplines { get; set; }
         /// <summary>
         /// Параграфы содержания разделов и тем
         /// </summary>
+        [JsonIgnore]
         public List<Paragraph> SummaryParagraphs { get; set; }
         /// <summary>
         /// Параграфы вопросов к экзамену/зачету
         /// </summary>
+        [JsonInclude]
         public List<string> QuestionList { get; set; }
         /// <summary>
         /// Список базовых источников
         /// </summary>
+        [JsonInclude]
         public List<string> ReferencesBase { get; set; }
         /// <summary>
         /// Список доп. источников
         /// </summary>
+        [JsonInclude]
         public List<string> ReferencesExtra { get; set; }
 
 
@@ -617,6 +638,56 @@ namespace FosMan {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Установить новый список предыд. дисциплин
+        /// </summary>
+        /// <param name="prevNames"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        internal void SetPrevDisciplines(List<string> prevNames) {
+            if (prevNames?.Any() ?? false) {
+                PrevDisciplines = string.Join(", ", prevNames.Select(n => $"«{n}»"));
+            }
+        }
+
+        /// <summary>
+        /// Установить новый список последующих дисциплин
+        /// </summary>
+        /// <param name="nextNames"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        internal void SetNextDisciplines(List<string> nextNames) {
+            if (nextNames?.Any() ?? false) {
+                NextDisciplines = string.Join(", ", nextNames.Select(n => $"«{n}»"));
+            }
+        }
+
+        /// <summary>
+        /// Получить список имён предыд. дисциплин
+        /// </summary>
+        /// <returns></returns>
+        internal HashSet<string> GetPrevDisciplines() {
+            var names = new HashSet<string>();
+
+            if (!string.IsNullOrEmpty(PrevDisciplines) && string.Compare(PrevDisciplines,"{PrevDisciplines}") != 0) {
+                names = PrevDisciplines.Split(",", StringSplitOptions.TrimEntries).Select(d => d.Trim('«', '»')).ToHashSet();
+            }
+
+            return names;
+        }
+
+        /// <summary>
+        /// Получить список имён предыд. дисциплин
+        /// </summary>
+        /// <returns></returns>
+        internal HashSet<string> GetNextDisciplines() {
+            var names = new HashSet<string>();
+
+            if (!string.IsNullOrEmpty(NextDisciplines) && string.Compare(NextDisciplines, "{NextDisciplines}") != 0) {
+                names = NextDisciplines.Split(",", StringSplitOptions.TrimEntries).Select(d => d.Trim('«', '»')).ToHashSet();
+            }
+
+            return names;
         }
     }
 }

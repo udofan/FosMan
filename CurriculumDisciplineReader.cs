@@ -614,11 +614,12 @@ namespace FosMan {
         /// <param name="rowIdx"></param>
         /// <param name="curriculum"></param>
         /// <exception cref="NotImplementedException"></exception>
-        internal static void ProcessRow(DataTable tablePlan, int rowIdx, Dictionary<int, CurriculumDisciplineHeader> headers, Curriculum curriculum) {
+        internal static CurriculumDiscipline ProcessRow(DataTable tablePlan, int rowIdx, Dictionary<int, CurriculumDisciplineHeader> headers, Curriculum curriculum) {
+            CurriculumDiscipline discipline = null;
+
             try {
                 var row = tablePlan.Rows[rowIdx];
 
-                CurriculumDiscipline discipline = null;
                 foreach (var item in headers) {
                     var cellValue = row[item.Key] as string;
 
@@ -636,6 +637,8 @@ namespace FosMan {
             catch (Exception ex) {
                 curriculum.Errors.Add($"{ex.Message}\r\n{ex.StackTrace}");
             }
+
+            return discipline;
         }
     }
 }

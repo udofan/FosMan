@@ -87,6 +87,7 @@ namespace FosMan {
                 new JsonStringEnumConverter()
             }
         };
+        static Store m_store = new();
 
         public delegate void RpdAddEventHandler(Rpd rpd);
         public static event RpdAddEventHandler RpdAdd = null;
@@ -108,6 +109,16 @@ namespace FosMan {
         /// Группы УП
         /// </summary>
         public static Dictionary<string, CurriculumGroup> CurriculumGroups { get => m_curriculumGroupDic; }
+
+        /// <summary>
+        /// Стор данных
+        /// </summary>
+        public static Store Store { get => m_store; }
+
+        static App() {
+            //m_store = new();
+            LoadStore();
+        }
 
         /// <summary>
         /// Список кафедр
@@ -1092,6 +1103,26 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Попытка десериализация JSON в объект
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public static bool TryDeserialize<T>(string json, out T obj) {
+            var result = false;
+            obj = default;
+            
+            try {
+                obj = JsonSerializer.Deserialize<T>(json, m_jsonOptions);
+                result = true;
+            }
+            catch (Exception ex) {
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Загрузить конфиг
         /// </summary>
         static public void LoadConfig() {
@@ -1143,6 +1174,9 @@ namespace FosMan {
                 }
                 if (Config.RpdFixFillEduWorkTables) {
                     html.Append("<li>Заполнение таблиц учебных работ для форм обучения</li>");
+                }
+                if (Config.RpdFixSetPrevAndNextDisciplines) {
+                    html.Append("<li>Заполнение списков предыдущих и последующих дисциплин</li>");
                 }
                 var findAndReplaceItems = Config.RpdFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
                 if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
@@ -1242,6 +1276,22 @@ namespace FosMan {
 
                             //обработка "найти и заменить"
                             var replaceCount = 0;
+
+                            //заполнение предыд. и послед. дисциплин осуществим с помощью поиска и замены
+                            List<RpdFindAndReplaceItem> extraReplaceItems = new();
+                            
+                            if (Config.RpdFixSetPrevAndNextDisciplines) {
+                                extraReplaceItems.Add(new RpdFindAndReplaceItem() {
+                                    FindPattern = "{PrevDisciplines}",
+                                    ReplacePattern = rpd.PrevDisciplines
+                                });
+                                extraReplaceItems.Add(new RpdFindAndReplaceItem() {
+                                    FindPattern = "{NextDisciplines}",
+                                    ReplacePattern = rpd.NextDisciplines
+                                });
+                                findAndReplaceItems.AddRange(extraReplaceItems);
+                            }
+
                             if (findAndReplaceItems?.Any() ?? false) {
                                 foreach (var par in docx.Paragraphs) {
                                     foreach (var findItem in findAndReplaceItems) {
@@ -1259,6 +1309,7 @@ namespace FosMan {
                                 }
                                 html.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
                             }
+                            extraReplaceItems?.ForEach(x => findAndReplaceItems.Remove(x)); //убираем, т.к. это было нужно только для текущего РПД
 
                             //фикс разделов по шаблону
                             if (fixByTemplate) {
@@ -1723,6 +1774,117 @@ namespace FosMan {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Вернуть список возможных предшествующих дисциплин (список далее будет фильтроваться YaGPT)
+        /// </summary>
+        /// <param name="discipline"></param>
+        /// <returns></returns>
+        internal static List<CurriculumDiscipline> GetPossiblePrevDisciplines(Rpd rpd) {
+            var discList = new List<CurriculumDiscipline>();
+
+            var curricula = App.FindCurricula(rpd);
+            if (curricula != null && curricula.Any()) {
+                var curr = curricula.First().Value;
+
+                var disc = curr.FindDiscipline(rpd.DisciplineName);
+                if (disc != null && disc.StartSemesterIdx >= 0) {
+                    //ищем все дисциплины, которые стартуют раньше нужной или одновременно
+                    discList = curr.Disciplines.Values.Where(d => d != disc && 
+                                                                  d.StartSemesterIdx <= disc.StartSemesterIdx && 
+                                                                  d.Type != EDisciplineType.Optional).ToList();
+                }
+            }
+
+            return discList;
+        }
+
+        /// <summary>
+        /// Нормализация имени "Основы микро- и макроэкономики" -> "ОСНОВЫМИКРОИМАКРОЭКОНОМИКИ"
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        internal static string NormalizeName(string name) {
+            if (!string.IsNullOrEmpty(name)) {
+                var newName = string.Join("", name.Split(' ', '-', '(', ')', '/', '.', ';', ':', '[', ']'));
+                return newName.ToUpper().Replace('Ё', 'Е');
+            }
+            else {
+                return name;
+            }
+        }
+
+        /// <summary>
+        /// Вернуть список возможных последующих дисциплин (список далее будет фильтроваться YaGPT)
+        /// </summary>
+        /// <param name="discipline"></param>
+        /// <returns></returns>
+        internal static List<CurriculumDiscipline> GetPossibleNextDisciplines(Rpd rpd) {
+            var discList = new List<CurriculumDiscipline>();
+
+            var curricula = App.FindCurricula(rpd);
+            if (curricula != null && curricula.Any()) {
+                var curr = curricula.First().Value;
+
+                var disc = curr.FindDiscipline(rpd.DisciplineName);
+                if (disc != null && disc.LastSemesterIdx >= 0) {
+                    //ищем все дисциплины, которые стартуют раньше нужной или одновременно
+                    discList = curr.Disciplines.Values.Where(d => d != disc && 
+                                                                  d.LastSemesterIdx >= disc.LastSemesterIdx &&
+                                                                  d.Type != EDisciplineType.Optional).ToList();
+                }
+            }
+
+            return discList;
+        }
+
+        /// <summary>
+        /// Сохранить стор
+        /// </summary>
+        public static void SaveStore() {
+            var storeFile = Path.Combine(Environment.CurrentDirectory, $"Store.json");
+            if (m_config != null) {
+                var json = JsonSerializer.Serialize(m_store, m_jsonOptions);
+                File.WriteAllText(storeFile, json, Encoding.UTF8);
+            }
+        }
+
+        /// <summary>
+        /// Загрузить стор
+        /// </summary>
+        public static void LoadStore() {
+            var storeFile = Path.Combine(Environment.CurrentDirectory, $"Store.json");
+            if (File.Exists(storeFile)) {
+                var json = File.ReadAllText(storeFile);
+                m_store = JsonSerializer.Deserialize<Store>(json, m_jsonOptions);
+            }
+            else {
+                m_store = new();
+            }
+        }
+
+        /// <summary>
+        /// Добавить/обновить загруженные РПД в стор
+        /// </summary>
+        public static void AddLoadedRpdToStore() {
+            foreach (var rpd in m_rpdDic) {
+                m_store.RpdDic[rpd.Key] = rpd.Value;
+            }
+            SaveStore();
+        }
+
+        /// <summary>
+        /// Вернуть случайное значение элементов из списка (от, до)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="fromCount"></param>
+        /// <param name="toCount"></param>
+        /// <returns></returns>
+        public static List<T> TakeRandom<T>(this List<T> list, int fromCount, int toCount) {
+            var count = fromCount + new Random().Next(toCount - fromCount + 1);
+            return list.Take(count).ToList();
         }
     }
 }

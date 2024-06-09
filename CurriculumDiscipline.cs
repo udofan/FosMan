@@ -60,12 +60,14 @@ namespace FosMan {
 
         string m_competences = null;
         EDisciplineType? m_type = null;
+        int m_startSemIdx = -1;
+        int m_lastSemIdx = -1;
 
         /// <summary>
         /// Наименование дисциплины [ключ]
         /// </summary>
         public string Name { get; set; }
-        public string Key { get => Name?.ToUpper(); }
+        public string Key { get => App.NormalizeName(Name); }
         /// <summary>
         /// Индекс дисциплины
         /// </summary>
@@ -262,12 +264,44 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Индекс стартового семестра
+        /// </summary>
+        public int StartSemesterIdx {
+            get {
+                if (m_startSemIdx < 0) {
+                    var sem = this.Semesters.FirstOrDefault(s => s.TotalHours.HasValue && s.TotalHours > 0);
+                    if (sem != null) {
+                        m_startSemIdx = Array.IndexOf(this.Semesters, sem);
+                    }
+                }
+                return m_startSemIdx;
+            }
+        }
+
+        /// <summary>
+        /// Индекс последнего семестра
+        /// </summary>
+        public int LastSemesterIdx {
+            get {
+                if (m_lastSemIdx < 0) {
+                    var sem = this.Semesters.LastOrDefault(s => s.TotalHours.HasValue && s.TotalHours > 0);
+                    if (sem != null) {
+                        m_lastSemIdx = Array.IndexOf(this.Semesters, sem);
+                    }
+                }
+                return m_lastSemIdx;
+            }
+        }
+
+        /// <summary>
         /// Проверка дисциплины
         /// </summary>
         /// <param name="curriculum"></param>
         internal bool Check(Curriculum curriculum, int rowIdx) {
+            var result = false;
+
             if (string.IsNullOrEmpty(Name)) {
-                return false;
+                return result;
             }
 
             if (Type == EDisciplineType.Unknown) {
@@ -308,8 +342,12 @@ namespace FosMan {
                 Errors.Add(err);
             }
             //if (TotalContactWorkHours != prac)
+            //пропуска строку с названием модуля - у нее не заполнена ячейка кафедры
+            if (!string.IsNullOrEmpty(DepartmentName)) {
+                result = true;
+            }
 
-            return true;
+            return result;
         }
 
         /// <summary>

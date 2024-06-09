@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FosMan {
@@ -109,7 +110,7 @@ namespace FosMan {
             return result;
         }
 
-        internal static async Task<string> TextGeneration(string systemText, string userText) {
+        internal static async Task<string> TextGeneration(string systemText, string userText, double temp) {
             var resultText = "";
 
             var request = new YaGptCompletionRequest() {
@@ -125,18 +126,43 @@ namespace FosMan {
                 },
                 completionOptions = new() {
                     stream = false,
-                    temperature = 0.3,
+                    temperature = temp,
                     maxTokens = 8000
                 },
                 modelUri = $"gpt://{m_folderId}/yandexgpt/latest"
             };
             var result = await Completion(request);
             
-            if (result != null && result.result.alternatives.Any()) {
+            if (result?.result?.alternatives?.Any() ?? false) {
                 resultText = result.result.alternatives.FirstOrDefault().message.text;
             }
 
             return resultText;
+        }
+
+        /// <summary>
+        /// Получить список связанных дисциплин с указанной по списку возможных вариантов
+        /// </summary>
+        /// <param name="possibleDisciplineNames"></param>
+        /// <param name="keyDisciplineName"></param>
+        /// <returns></returns>
+        internal static async Task<List<string>> GetRelatedDisciplines(string disciplineName, List<string> possibleDisciplines) {
+            var resultList = new List<string>();
+            var systemText = "Из заданного списка дисциплин определи только те, которые связаны с указанной дисциплиной. " +
+                             "Ответ сформируй в формате JSON, где будет поле result со значением, где будут названия дисциплин.";
+            var userText = $"Какие дисциплины связаны с дисциплиной \"{disciplineName}\" из следующего списка:\r\n{string.Join(",\r\n", possibleDisciplines)}";
+            var result = await TextGeneration(systemText, userText, 0.0);
+            if (!string.IsNullOrEmpty(result)) {
+                //очистка ответа
+                var posStart = result.IndexOf('{');
+                var posLast = result.LastIndexOf('}');
+                var json = result.Substring(posStart, posLast - posStart + 1);
+                if (App.TryDeserialize(json, out YaGptDisciplineList list)) {
+                    resultList = list.result;
+                }
+            }
+
+            return resultList;
         }
     }
 }

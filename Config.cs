@@ -69,6 +69,16 @@ namespace FosMan {
         [JsonInclude]
         public bool RpdFixFillEduWorkTables { get; set; }
         /// <summary>
+        /// Задать списки предшествующих и последующих дисциплин
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixSetPrevAndNextDisciplines { get; set; }
+        /// <summary>
+        /// Убирать выделение цветом служебных областей
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixRemoveColorSelections { get; set; }
+        /// <summary>
         /// Последняя выбранная локация файлов УП
         /// </summary>
         [JsonInclude]

@@ -263,10 +263,10 @@ namespace FosMan {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         internal CurriculumDiscipline FindDiscipline(string? disciplineName) {
-            disciplineName = disciplineName.ToLower().Replace('ё', 'е');
-            var discipline = Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').Equals(disciplineName));
-            discipline ??= Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').StartsWith(disciplineName));
-            discipline ??= Disciplines.Values.FirstOrDefault(d => disciplineName.StartsWith(d.Name.ToLower().Replace('ё', 'е')));
+            disciplineName = App.NormalizeName(disciplineName); // disciplineName.ToLower().Replace('ё', 'е');
+            var discipline = Disciplines.Values.FirstOrDefault(d => App.NormalizeName(d.Name).Equals(disciplineName));
+            discipline ??= Disciplines.Values.FirstOrDefault(d => App.NormalizeName(d.Name).StartsWith(disciplineName));
+            discipline ??= Disciplines.Values.FirstOrDefault(d => disciplineName.StartsWith(App.NormalizeName(d.Name)));
 
             return discipline; // Disciplines.Values.FirstOrDefault(d => d.Name.ToLower().Replace('ё', 'е').Equals(disciplineName));
         }
