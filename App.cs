@@ -1401,24 +1401,27 @@ namespace FosMan {
         /// <param name="luckyNumbers"></param>
         /// <param name="useOddHours">можно использовать нечетное кол-во часов</param>
         /// <returns></returns>
-        static int[] SplitTime(int total, int count, Random rand, HashSet<int> luckyNumbers, 
+        static int[] SplitTime(int total, int count, Random rand, 
+                               out HashSet<int> luckyNumbers, 
+                               HashSet<int> includeNumbers = null, 
                                HashSet<int> excludeNumbers = null,
                                bool useOddHours = false) {
             var items = new int[count];
+            luckyNumbers = includeNumbers?.ToHashSet() ?? new();
 
             var extraTime = 0;
 
             double oneItemTime = (double)total / count;
             if (oneItemTime >= 2) { //хватает времени на пару для всех топиков?
-                if (oneItemTime % 2 == 0) { //удалось поделить на всех поровну?
+                if (oneItemTime % 2 == 0 || useOddHours && oneItemTime % 1 == 0) { //удалось поделить на всех поровну?
                     for (var i = 0; i < count; i++) {
                         items[i] = Convert.ToInt32(oneItemTime);
                     }
                 }
                 else { //поровну не хватило, надо делить
-                    //приводим значение к ближайшему четному в меньшую сторону
+                    //приводим значение к ближайшему четному (или нечетному, если разрешено) в меньшую сторону
                     var fixedTime = (int)oneItemTime;
-                    if (fixedTime % 2 != 0) fixedTime -= 1;
+                    if (!useOddHours && fixedTime % 2 != 0) fixedTime -= 1;
                     for (int i = 0; i < items.Length; i++) { items[i] = fixedTime; }
                     extraTime = total - fixedTime * count;   //время для распределения
                 }
@@ -1427,7 +1430,7 @@ namespace FosMan {
                 extraTime = total;
             }
             if (extraTime > 0) {
-                var luckyCount = extraTime >> 1;               //кол-во счастливых топиков, которые получат доп. время
+                var luckyCount = useOddHours ? extraTime : extraTime >> 1;               //кол-во счастливых топиков, которые получат доп. время
                 //var unluckyTopicCount = count - luckyTopicCount;    //оставшиеся - несчастные
                 //выбираем случайным образом счастливые топики с учетом уже выбранных номеров, переданных функции
                 //var numbers = luckyNumbers?.Take(luckyTopicCount).ToHashSet() ?? new();
@@ -1443,9 +1446,10 @@ namespace FosMan {
                         }
                     }
                 }
-                foreach (var num in luckyNumbers.Take(luckyCount)) {
-                    items[num] += 2;
-                    extraTime -= 2;
+                luckyNumbers = luckyNumbers.Take(luckyCount).ToHashSet();
+                foreach (var num in luckyNumbers) {
+                    items[num] += useOddHours ? 1 : 2;
+                    extraTime -= useOddHours ? 1 : 2;
                 }
             }
             if (extraTime > 0 && useOddHours) { //если осталось доп. время и можно применять нечетные часы (так можно для СР)
@@ -1472,26 +1476,21 @@ namespace FosMan {
         static (int total, int contact, int lecture, int practical, int selfStudy)[] SplitEduTime(int topicCount, EducationalWork eduWork, Random rand) {
             var topics = new (int total, int contact, int lecture, int practical, int selfStudy)[topicCount];
 
-            var luckyNumbers = new HashSet<int>();
-
             //распределяем время на лекции
-            var lecItems = SplitTime(eduWork.LectureHours.Value, topicCount, rand, luckyNumbers);
+            var lecItems = SplitTime(eduWork.LectureHours.Value, topicCount, rand, out var luckyNumbers);
 
-            //обновляем список счастливых номеров для следующего шага - ими станут текущие несчастливые
-            var luckyNumbersCopy = luckyNumbers.ToHashSet();
-            //var luckyNums = luckyNumbers.ToHashSet();
-            if (luckyNumbers.Any()) {
-                luckyNumbers.Clear();
-
-                for (var i = 0; i < topicCount; i++) {
-                    if (!luckyNumbersCopy.Contains(i)) luckyNumbers.Add(i);
-                }
+            //формируем список счастливых номеров для следующего шага - ими станут текущие несчастливые
+            var includeNumbers = new HashSet<int>();
+            for (var i = 0; i < topicCount; i++) {
+                if (!luckyNumbers.Contains(i)) includeNumbers.Add(i);
             }
             
-            var practicalItems = SplitTime(eduWork.PracticalHours.Value, topicCount, rand, luckyNumbers);
-            var superLuckyNumbers = luckyNumbers.Except(luckyNumbersCopy).ToHashSet();
+            var practicalItems = SplitTime(eduWork.PracticalHours.Value, topicCount, rand, out var luckyNumbers2, includeNumbers: includeNumbers);
+            var superLuckyNumbers = luckyNumbers.Intersect(luckyNumbers2).ToHashSet();
 
-            var selfStudyItems = SplitTime(eduWork.SelfStudyHours.Value, topicCount, rand, luckyNumbersCopy, excludeNumbers: superLuckyNumbers, true);
+            includeNumbers = includeNumbers.Except(luckyNumbers2).ToHashSet();
+
+            var selfStudyItems = SplitTime(eduWork.SelfStudyHours.Value, topicCount, rand, out _, includeNumbers: includeNumbers, excludeNumbers: superLuckyNumbers, true);
 
             for (int i = 0; i < topicCount; i++) {
                 topics[i].lecture = lecItems[i];
