@@ -1178,6 +1178,9 @@ namespace FosMan {
                 if (Config.RpdFixSetPrevAndNextDisciplines) {
                     html.Append("<li>Заполнение списков предыдущих и последующих дисциплин</li>");
                 }
+                if (Config.RpdFixRemoveColorSelections) {
+                    html.Append("<li>Очистка цветных выделений для служебных областей``</li>");
+                }
                 var findAndReplaceItems = Config.RpdFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
                 if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
                     var tdStyle = "style='border: 1px solid;'";
@@ -1292,19 +1295,27 @@ namespace FosMan {
                                 findAndReplaceItems.AddRange(extraReplaceItems);
                             }
 
-                            if (findAndReplaceItems?.Any() ?? false) {
+                            if ((findAndReplaceItems?.Any() ?? false) || App.Config.RpdFixRemoveColorSelections) {
                                 foreach (var par in docx.Paragraphs) {
-                                    foreach (var findItem in findAndReplaceItems) {
-                                        var replaceOptions = new FunctionReplaceTextOptions() {
-                                            FindPattern = findItem.FindPattern,
-                                            ContainerLocation = ReplaceTextContainer.All,
-                                            StopAfterOneReplacement = false,
-                                            RegexMatchHandler = m => findItem.ReplacePattern,
-                                            RegExOptions = RegexOptions.IgnoreCase
-                                        };
-                                        if (par.ReplaceText(replaceOptions)) {
-                                            replaceCount++;
+                                    //поиск и замена
+                                    if (findAndReplaceItems?.Any() ?? false) {
+                                        foreach (var findItem in findAndReplaceItems) {
+                                            var replaceOptions = new FunctionReplaceTextOptions() {
+                                                FindPattern = findItem.FindPattern,
+                                                ContainerLocation = ReplaceTextContainer.All,
+                                                StopAfterOneReplacement = false,
+                                                RegexMatchHandler = m => findItem.ReplacePattern,
+                                                RegExOptions = RegexOptions.IgnoreCase
+                                            };
+                                            if (par.ReplaceText(replaceOptions)) {
+                                                replaceCount++;
+                                            }
                                         }
+                                    }
+                                    //очистка цветных выделений
+                                    if (App.Config.RpdFixRemoveColorSelections) {
+                                        par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
+                                        par.Highlight(Highlight.none);
                                     }
                                 }
                                 html.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");

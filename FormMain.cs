@@ -1065,7 +1065,7 @@ namespace FosMan {
         }
 
         void ShowHideRpdFixMode(bool show) {
-            var maxDist = 260;
+            var maxDist = 280;
             var delta = 10;
 
             fastObjectListViewRpdList.BeginUpdate();
