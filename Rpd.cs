@@ -189,7 +189,7 @@ namespace FosMan {
         /// <summary>
         /// Формы обучения
         /// </summary>
-        public List<EFormOfStudy> FormsOfStudy { get; set; }
+        public List<Enums.EFormOfStudy> FormsOfStudy { get; set; }
         /// <summary>
         /// Матрица компетенций (п. 1 в РПД)
         /// </summary>
@@ -205,7 +205,7 @@ namespace FosMan {
         /// <summary>
         /// Учебная работа по формам обучения
         /// </summary>
-        public Dictionary<EFormOfStudy, EducationalWork> EducationalWorks { get; set; }
+        public Dictionary<Enums.EFormOfStudy, EducationalWork> EducationalWorks { get; set; }
         /// <summary>
         /// Список доп. ошибок, выявленных при проверке
         /// </summary>
@@ -504,16 +504,16 @@ namespace FosMan {
                                 foreach (var item in items) {
                                     switch (item.Trim().ToLower()) {
                                         case "очная":
-                                            rpd.FormsOfStudy.Add(EFormOfStudy.FullTime);
+                                            rpd.FormsOfStudy.Add(Enums.EFormOfStudy.FullTime);
                                             break;
                                         case "заочная":
-                                            rpd.FormsOfStudy.Add(EFormOfStudy.PartTime);
+                                            rpd.FormsOfStudy.Add(Enums.EFormOfStudy.PartTime);
                                             break;
                                         case "очно-заочная":
-                                            rpd.FormsOfStudy.Add(EFormOfStudy.MixedTime);
+                                            rpd.FormsOfStudy.Add(Enums.EFormOfStudy.MixedTime);
                                             break;
                                         default:
-                                            rpd.FormsOfStudy.Add(EFormOfStudy.Unknown);
+                                            rpd.FormsOfStudy.Add(Enums.EFormOfStudy.Unknown);
                                             break;
 
                                     }

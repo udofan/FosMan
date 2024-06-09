@@ -14,6 +14,6 @@ namespace FosMan {
         /// Код контролируемого индикатора достижения компетенции
         /// </summary>
         public string CompetenceIndicator { get; set; }
-        public EEvaluationTool EvaluationTool { get; set; }
+        public Enums.EEvaluationTool EvaluationTool { get; set; }
     }
 }

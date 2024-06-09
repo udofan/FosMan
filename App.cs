@@ -22,6 +22,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Text.Unicode;
 using System.Threading.Tasks;
+using System.Transactions;
 using System.Web;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
@@ -65,10 +66,10 @@ namespace FosMan {
         static Regex m_regexRpdChapter = new(@"^(\d+).\s+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         //выражения для проверка заголовков таблиц учебных работ (содержания) по формам обучения
-        static Dictionary<EFormOfStudy, Regex> m_eduWorkTableHeaders = new() {
-            [EFormOfStudy.FullTime] = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-            [EFormOfStudy.MixedTime] = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-            [EFormOfStudy.PartTime] = new(@"^заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+        static Dictionary<Enums.EFormOfStudy, Regex> m_eduWorkTableHeaders = new() {
+            [Enums.EFormOfStudy.FullTime] = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            [Enums.EFormOfStudy.MixedTime] = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            [Enums.EFormOfStudy.PartTime] = new(@"^заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled)
         };
 
         static CompetenceMatrix m_competenceMatrix = null;
@@ -178,6 +179,25 @@ namespace FosMan {
             return text;
         }
 
+        /// <summary>
+        /// Extension для ячейки: установить текст первому абзацу
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="joinParText"></param>
+        /// <returns></returns>
+        static public void SetText(this Cell cell, string text = "") {
+            var par = cell.Paragraphs.FirstOrDefault();
+
+            if (par != null) {
+                var replaceTextOptions = new FunctionReplaceTextOptions() {
+                    FindPattern = @"^.*$",
+                    ContainerLocation = ReplaceTextContainer.All,
+                    RegexMatchHandler = m => text
+                };
+                par.ReplaceText(replaceTextOptions);
+            }
+        }
+
         static void AddError(this StringBuilder report, string error) {
             report.Append($"<div style='color: red'>{error}</div>");
         }
@@ -206,7 +226,7 @@ namespace FosMan {
         /// <param name="rpd"></param>
         /// <param name="discipline"></param>
         /// <param name="repTable"></param>
-        static bool ApplyDisciplineCheck(EFormOfStudy formOfStudy, Rpd rpd, CurriculumDiscipline discipline, StringBuilder repTable,
+        static bool ApplyDisciplineCheck(Enums.EFormOfStudy formOfStudy, Rpd rpd, CurriculumDiscipline discipline, StringBuilder repTable,
                                          ref int pos, ref int errorCount, string description, Func<EducationalWork, (bool result, string msg)> func) {
             pos++;
 
@@ -428,7 +448,7 @@ namespace FosMan {
         /// <param name="profile"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static Dictionary<EFormOfStudy, Curriculum> FindCurricula(Rpd rpd) {
+        public static Dictionary<Enums.EFormOfStudy, Curriculum> FindCurricula(Rpd rpd) {
             if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(rpd.Profile)) {  //} && !string.IsNullOrEmpty(rpd.Department)) {
                 var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, rpd.DirectionCode, true) == 0 &&
                                                               string.Compare(c.Profile, rpd.Profile, true) == 0); // &&
@@ -505,7 +525,7 @@ namespace FosMan {
                         var targetFile = Path.Combine(targetDir, fileName);
                         File.Copy(rpdTemplate, targetFile, true);
 
-                        var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
+                        var eduWorks = new Dictionary<Enums.EFormOfStudy, EducationalWork>();
                         foreach (var curr in curriculumGroup.Curricula.Values) {
                             if (curr.Disciplines.TryGetValue(disc.Key, out CurriculumDiscipline currDisc)) {
                                 eduWorks[curr.FormOfStudy] = currDisc.EducationalWork;
@@ -577,30 +597,30 @@ namespace FosMan {
                                     var par = table.Paragraphs.FirstOrDefault();
                                     for (var j = 0; j < 5; j++) {
                                         par = par.PreviousParagraph;
-                                        if (!fullTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.FullTime].IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.FullTime) && rpd.EducationalWorks[EFormOfStudy.FullTime].Table != null) {
-                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
-                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
+                                        if (!fullTimeTableIsOk && m_eduWorkTableHeaders[Enums.EFormOfStudy.FullTime].IsMatch(par.Text)) {
+                                            if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.FullTime) && rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table);
                                                 par.InsertTableAfterSelf(newTable);
                                                 table.Remove();
                                             }
                                             fullTimeTableIsOk = true;
                                             break;
                                         }
-                                        if (!mixedTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.MixedTime].IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.MixedTime) && rpd.EducationalWorks[EFormOfStudy.MixedTime].Table != null) {
-                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
-                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
+                                        if (!mixedTimeTableIsOk && m_eduWorkTableHeaders[Enums.EFormOfStudy.MixedTime].IsMatch(par.Text)) {
+                                            if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.MixedTime) && rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table);
                                                 par.InsertTableAfterSelf(newTable);
                                                 table.Remove();
                                             }
                                             mixedTimeTableIsOk = true;
                                             break;
                                         }
-                                        if (!partTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.PartTime].IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.PartTime) && rpd.EducationalWorks[EFormOfStudy.PartTime].Table != null) {
-                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
-                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
+                                        if (!partTimeTableIsOk && m_eduWorkTableHeaders[Enums.EFormOfStudy.PartTime].IsMatch(par.Text)) {
+                                            if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.PartTime) && rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table);
                                                 par.InsertTableAfterSelf(newTable);
                                                 table.Remove();
                                             }
@@ -661,7 +681,7 @@ namespace FosMan {
             //проверка на поле типа {FullTime.TotalHours} для таблиц времен учебных работ
             var parts = propName.Split('.');
             if (parts.Length == 2) {
-                if (Enum.TryParse(parts[0], true, out EFormOfStudy formOfStudy)) {
+                if (Enum.TryParse(parts[0], true, out Enums.EFormOfStudy formOfStudy)) {
                     var curriculum = curriculumGroup.Curricula.Values.FirstOrDefault(c => c.FormOfStudy == formOfStudy);
                     if (curriculum != null) {
                         var disc = curriculum.FindDiscipline(discipline.Name);
@@ -818,7 +838,7 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="eduWorks">словарь либо для получения, либо для простановки времен учебной работы</param>
         /// <param name="propAccess">режим работы: получить или установить значения</param>
-        public static bool TestForSummaryTableForEducationalWorks(Table table, Dictionary<EFormOfStudy, EducationalWork> eduWorks, PropertyAccess propAccess) {
+        public static bool TestForSummaryTableForEducationalWorks(Table table, Dictionary<Enums.EFormOfStudy, EducationalWork> eduWorks, PropertyAccess propAccess) {
             var result = false;
 
             if (table.RowCount > 5 && table.ColumnCount >= 2) {
@@ -829,25 +849,25 @@ namespace FosMan {
                 //проверка левой верхней ячейки
                 if (m_regexEduWorkType.IsMatch(cellText) ||
                     string.IsNullOrWhiteSpace(cellText) /* встречаются РПД, где в этой ячейке таблицы пусто */) {
-                    Dictionary<EFormOfStudy, int> formColIdx = new() {
-                        { EFormOfStudy.FullTime, -1 },
-                        { EFormOfStudy.MixedTime, -1 },
-                        { EFormOfStudy.PartTime, -1 }
+                    Dictionary<Enums.EFormOfStudy, int> formColIdx = new() {
+                        { Enums.EFormOfStudy.FullTime, -1 },
+                        { Enums.EFormOfStudy.MixedTime, -1 },
+                        { Enums.EFormOfStudy.PartTime, -1 }
                     };
                     for (var colIdx = 1; colIdx < headerRow.Cells.Count; colIdx++) {
                         var text = headerRow.Cells[colIdx].GetText();
                         if (!string.IsNullOrEmpty(text)) {
                             if (m_regexFormFullTime.IsMatch(text)) {
-                                formColIdx[EFormOfStudy.FullTime] = colIdx;
-                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.FullTime] = new();
+                                formColIdx[Enums.EFormOfStudy.FullTime] = colIdx;
+                                if (propAccess == PropertyAccess.Get) eduWorks[Enums.EFormOfStudy.FullTime] = new();
                             }
                             else if (m_regexFormMixedTime.IsMatch(text)) {
-                                formColIdx[EFormOfStudy.MixedTime] = colIdx;
-                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.MixedTime] = new();
+                                formColIdx[Enums.EFormOfStudy.MixedTime] = colIdx;
+                                if (propAccess == PropertyAccess.Get) eduWorks[Enums.EFormOfStudy.MixedTime] = new();
                             }
                             else if (m_regexFormPartTime.IsMatch(text)) {
-                                formColIdx[EFormOfStudy.PartTime] = colIdx;
-                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.PartTime] = new();
+                                formColIdx[Enums.EFormOfStudy.PartTime] = colIdx;
+                                if (propAccess == PropertyAccess.Get) eduWorks[Enums.EFormOfStudy.PartTime] = new();
                             }
                         }
                     }
@@ -1271,9 +1291,9 @@ namespace FosMan {
         /// </summary>
         /// <param name="rpd"></param>
         /// <returns></returns>
-        public static Dictionary<EFormOfStudy, EducationalWork> GetEducationWorks(Rpd rpd, out Dictionary<EFormOfStudy, Curriculum> curricula) {
+        public static Dictionary<Enums.EFormOfStudy, EducationalWork> GetEducationWorks(Rpd rpd, out Dictionary<Enums.EFormOfStudy, Curriculum> curricula) {
             curricula = FindCurricula(rpd);
-            var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
+            var eduWorks = new Dictionary<Enums.EFormOfStudy, EducationalWork>();
             if (curricula != null) {
                 foreach (var curr in curricula.Values) {
                     var disc = curr.FindDiscipline(rpd.DisciplineName);
@@ -1375,7 +1395,7 @@ namespace FosMan {
         /// <param name="count"></param>
         /// <param name="luckyNumbers"></param>
         /// <returns></returns>
-        static int[] SplitTime(int total, int count, HashSet<int> luckyNumbers) {
+        static int[] SplitTime(int total, int count, Random rand, HashSet<int> luckyNumbers, HashSet<int> excludeNumbers = null) {
             var items = new int[count];
 
             var extraTime = 0;
@@ -1389,7 +1409,8 @@ namespace FosMan {
                 }
                 else { //поровну не хватило, надо делить
                     //приводим значение к ближайшему четному в меньшую сторону
-                    var fixedTime = (int)oneItemTime - 1;
+                    var fixedTime = (int)oneItemTime;
+                    if (fixedTime % 2 != 0) fixedTime -= 1;
                     for (int i = 0; i < items.Length; i++) { items[i] = fixedTime; }
                     extraTime = total - fixedTime * count;   //время для распределения
                 }
@@ -1398,20 +1419,20 @@ namespace FosMan {
                 extraTime = total;
             }
             if (extraTime > 0) {
-                var luckyTopicCount = extraTime >> 1;               //кол-во счастливых топиков, которые получат доп. время
+                var luckyCount = extraTime >> 1;               //кол-во счастливых топиков, которые получат доп. время
                 //var unluckyTopicCount = count - luckyTopicCount;    //оставшиеся - несчастные
                 //выбираем случайным образом счастливые топики с учетом уже выбранных номеров, переданных функции
                 //var numbers = luckyNumbers?.Take(luckyTopicCount).ToHashSet() ?? new();
-                var rand = new Random();
-                while (luckyNumbers.Count < luckyTopicCount) {
+                while (luckyNumbers.Count < luckyCount) {
                     while (true) {
                         var num = rand.Next(count);
+                        if (excludeNumbers?.Contains(num) ?? false) continue; //номер надо исключить
                         if (luckyNumbers.Add(num)) {
                             break;
                         }
                     }
                 }
-                foreach (var num in luckyNumbers.Take(luckyTopicCount)) {
+                foreach (var num in luckyNumbers.Take(luckyCount)) {
                     items[num] += 2;
                 }
             }
@@ -1425,52 +1446,34 @@ namespace FosMan {
         /// <param name="topicCount"></param>
         /// <param name="eduWork"></param>
         /// <returns></returns>
-        static (int total, int contact, int lecture, int practical, int selfStudy)[] SplitEduTime(int topicCount, EducationalWork eduWork) {
+        static (int total, int contact, int lecture, int practical, int selfStudy)[] SplitEduTime(int topicCount, EducationalWork eduWork, Random rand) {
             var topics = new (int total, int contact, int lecture, int practical, int selfStudy)[topicCount];
 
-            //делим лекционное время
-            var lectureHours = eduWork.LectureHours;
-            double oneLectureTime = (double)lectureHours / topicCount;
-            if (oneLectureTime >= 2) { //хватает времени на пару для всех топиков?
-                if (oneLectureTime % 2 == 0) { //удалось поделить на всех поровну?
-                    for (var topic = 0; topic < topicCount; topic++) {
-                        topics[topic].lecture = Convert.ToInt32(oneLectureTime);
-                    }
-                }
-                else { //поровну не хватило, надо делить
-                    //приводим значение к ближайшему четному в меньшую сторону
-                    var lecTime = (int)oneLectureTime - 1;
-                    for (int i = 0; i < topics.Length; i++) { topics[i].lecture = lecTime; }
-                    var lecExtraTime = lectureHours - lecTime * topicCount; //время для распределения
-                    var luckyTopicCount = lecExtraTime >> 1;                //кол-во счастливых топиков, которые получат доп. время
-                    var unluckyTopicCount  = topicCount - luckyTopicCount;  //оставшиеся - несчастные
-                    //выбираем случайным образом счастливые топики
-                    var luckyNumbers = new HashSet<int>();
-                    var rand = new Random();
-                    while (luckyNumbers.Count < luckyTopicCount) {
-                        while (true) {
-                            var num = rand.Next(topicCount);
-                            if (luckyNumbers.Add(num)) {
-                                break;
-                            }
-                        }
-                    }
-                    //topics.ForEach(t => t.lecture = 6);
-                    foreach (var num in luckyNumbers) {
-                        topics[num].lecture += 2;
-                    }
-                    var t = 0;
-                    //while (true) {
-                    //    for (var topic = 0; topic < topicCount - 1; topic += 2) {
-                    //        topics[topic + 1].lecture -= 1;
-                    //    }
-                    //    topics[t].lecture--;
-                    //    //topics
-                    //}
-                }
-            }
-            else { //не хватает времени на все топики
+            var luckyNumbers = new HashSet<int>();
 
+            //распределяем время на лекции
+            var lecItems = SplitTime(eduWork.LectureHours.Value, topicCount, rand, luckyNumbers);
+
+            //обновляем список счастливых номеров для следующего шага - ими станут текущие несчастливые
+            var luckyNums = luckyNumbers.ToHashSet();
+            luckyNumbers.Clear();
+            
+            for (var i = 0; i < topicCount; i++) {
+                if (!luckyNums.Contains(i)) luckyNumbers.Add(i);
+            }
+            var luckyNumbersCopy = luckyNumbers.ToHashSet();
+            
+            var practicalItems = SplitTime(eduWork.PracticalHours.Value, topicCount, rand, luckyNumbers);
+            var superLuckyNumbers = luckyNumbers.Except(luckyNumbersCopy).ToHashSet();
+
+            var selfStudyItems = SplitTime(eduWork.SelfStudyHours.Value, topicCount, rand, luckyNumbersCopy, excludeNumbers: superLuckyNumbers);
+
+            for (int i = 0; i < topicCount; i++) {
+                topics[i].lecture = lecItems[i];
+                topics[i].practical = practicalItems[i];
+                topics[i].selfStudy = selfStudyItems[i];
+                topics[i].contact = lecItems[i] + practicalItems[i];
+                topics[i].total = lecItems[i] + selfStudyItems[i] + practicalItems[i];
             }
 
             return topics;
@@ -1482,26 +1485,116 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="rpd"></param>
         /// <param name="formOfStudy"></param>
-        static void FillEduWorkTable(Table table, Rpd rpd, EFormOfStudy formOfStudy) {
+        static void FillEduWorkTable(Table table, Rpd rpd, Enums.EFormOfStudy formOfStudy) {
             var curricula = FindCurricula(rpd);
             if (curricula?.Any() ?? false) {
                 if (table.ColumnCount == 8) {
+                    var seed = rpd.DisciplineName.ToCharArray().Sum(c => c);
+                    var rand = new Random(seed);
+
                     var topicCount = table.RowCount - 5;
                     //распределяем время (время должно быть четным)
-                    var topics = SplitEduTime(topicCount, rpd.EducationalWorks[formOfStudy]); // new (int total, int contact, int lecture, int practical, int selfStudy)[topicCount];
+                    var topics = SplitEduTime(topicCount, rpd.EducationalWorks[formOfStudy], rand);
                     
-                    for (int row = 3; row < table.RowCount - 2; row++) {
-                        var cellTopic = table.Rows[row].Cells[0];
-                        var cellTimeTotal = table.Rows[row].Cells[1];
-                        var cellTimeContactTotal = table.Rows[row].Cells[2];
-                        var cellTimeLectures = table.Rows[row].Cells[3];
-                        var cellTimePractical = table.Rows[row].Cells[4];
-                        var cellTimeSelfStudy = table.Rows[row].Cells[5];
-                        var cellEvalTools = table.Rows[row].Cells[6];
-                        var cellResults = table.Rows[row].Cells[7];
+                    //проверка
+                    if (topics.Sum(t => t.contact) != rpd.EducationalWorks[formOfStudy].ContactWorkHours.Value) {
+                        throw new Exception("Сумма времени контактной работы по темам не совпадает с итоговой");
+                    }
+                    if (topics.Sum(t => t.total) != rpd.EducationalWorks[formOfStudy].TotalHours.Value) {
+                        throw new Exception("Сумма итогового времени по темам не совпадает с итоговой");
+                    }
+                    if (topics.Sum(t => t.selfStudy) != rpd.EducationalWorks[formOfStudy].SelfStudyHours.Value) {
+                        throw new Exception("Сумма времени самостоятельной работы не совпадает с итоговой");
+                    }
+
+                    //формирование оценочных средств
+                    var evalTools = GetEvalTools(topicCount, rand);
+
+                    //формирование результатов обучения
+                    var studyResults = GetStudyResults(topicCount, rand);
+
+                    for (int topic = 0; topic < topicCount; topic++) {
+                        var row = topic + 3;
+                        //var cellTopic = table.Rows[row].Cells[0];
+                        table.Rows[row].Cells[1].SetText(topics[topic].total.ToString());
+                        table.Rows[row].Cells[2].SetText(topics[topic].contact.ToString());
+                        table.Rows[row].Cells[3].SetText(topics[topic].lecture.ToString());
+                        table.Rows[row].Cells[4].SetText(topics[topic].practical.ToString());
+                        table.Rows[row].Cells[5].SetText(topics[topic].selfStudy.ToString());
+                        table.Rows[row].Cells[6].SetText(evalTools[topic].GetDescription());
+                        //var cellResults = table.Rows[row].Cells[7];
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Формирование случайных результатов обучения
+        /// </summary>
+        /// <param name="topicCount"></param>
+        /// <param name="rand"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private static string[][] GetStudyResults(int topicCount, Random rand) {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Формирование случайного списка оценочных средств
+        /// </summary>
+        /// <param name="topicCount"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private static Enums.EEvaluationTool[] GetEvalTools(int topicCount, Random rand) {
+            var tools = new Enums.EEvaluationTool[topicCount];
+            var firstTools = new[] { 
+                Enums.EEvaluationTool.Survey, 
+                Enums.EEvaluationTool.Testing 
+            };
+            //для первых тем распределим firstTools
+            var usedNumbers = new HashSet<int>();
+            for (var i = 0; i < firstTools.Length; i++) {
+                var num = 0;
+                while (true) {
+                    num = rand.Next(firstTools.Length);
+                    if (usedNumbers.Add(num)) break;
+                }
+                tools[i] = firstTools[num];
+            }
+            var secondTools = new[] {
+                Enums.EEvaluationTool.Essay,
+                Enums.EEvaluationTool.ControlWork,
+                Enums.EEvaluationTool.Paper,
+                Enums.EEvaluationTool.Presentation
+            };
+            //вторая порция средств
+            usedNumbers.Clear();
+            for (var i = 0; i < Math.Min(topicCount - firstTools.Length, secondTools.Length); i++) {
+                var num = 0;
+                while (true) {
+                    num = rand.Next(secondTools.Length);
+                    if (usedNumbers.Add(num)) break;
+                }
+                tools[i + firstTools.Length] = secondTools[num];
+            }
+            //третья и последующая порция
+            var thirdTools = Enum.GetValues(typeof(Enums.EEvaluationTool)).Cast<Enums.EEvaluationTool>().ToArray();
+            var topicIdx = firstTools.Length + secondTools.Length;
+            usedNumbers.Clear();
+
+            while (topicIdx < topicCount) {
+                if (usedNumbers.Count == thirdTools.Length) {
+                    usedNumbers.Clear(); //следующий цикл
+                }
+                var num = 0;
+                while (true) {
+                    num = rand.Next(thirdTools.Length);
+                    if (usedNumbers.Add(num)) break;
+                }
+                tools[topicIdx++] = thirdTools[num];
+            }
+
+            return tools;
         }
 
         /// <summary>
@@ -1510,9 +1603,9 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="rpd"></param>
         /// <returns></returns>
-        internal static bool TestForEduWorkTable(Table table, Rpd rpd, PropertyAccess propAccess, out EFormOfStudy formOfStudy) {
+        internal static bool TestForEduWorkTable(Table table, Rpd rpd, PropertyAccess propAccess, out Enums.EFormOfStudy formOfStudy) {
             var result = false;
-            formOfStudy = EFormOfStudy.Unknown;
+            formOfStudy = Enums.EFormOfStudy.Unknown;
 
             //проверка на таблицы учебных работ с темами
             var par = table.Paragraphs.FirstOrDefault();
@@ -1524,7 +1617,7 @@ namespace FosMan {
                 if (string.IsNullOrWhiteSpace(par.Text)) {
                     continue;
                 }
-                foreach (EFormOfStudy form in Enum.GetValues(typeof(EFormOfStudy))) {
+                foreach (Enums.EFormOfStudy form in Enum.GetValues(typeof(Enums.EFormOfStudy))) {
                     if (m_eduWorkTableHeaders.TryGetValue(form, out var regex) &&
                         rpd.EducationalWorks.ContainsKey(form) &&
                         regex.IsMatch(par.Text)) {
@@ -1542,24 +1635,24 @@ namespace FosMan {
                     }
                 }
                 if (result) break;
-                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.FullTime) && 
-                //    rpd.EducationalWorks[EFormOfStudy.FullTime].Table == null && 
+                //if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.FullTime) && 
+                //    rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table == null && 
                 //    m_regexFullTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[EFormOfStudy.FullTime].Table = table;
+                //    rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table = table;
                 //    result = true;
                 //    break;
                 //}
-                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.MixedTime) &&
-                //    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table == null && 
+                //if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.MixedTime) &&
+                //    rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table == null && 
                 //    m_regexMixedTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table = table;
+                //    rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table = table;
                 //    result = true;
                 //    break;
                 //}
-                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.PartTime) &&
-                //    rpd.EducationalWorks[EFormOfStudy.PartTime].Table == null && 
+                //if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.PartTime) &&
+                //    rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table == null && 
                 //    m_regexPartTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[EFormOfStudy.PartTime].Table = table;
+                //    rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table = table;
                 //    result = true;
                 //    break;
                 //}

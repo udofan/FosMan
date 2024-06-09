@@ -93,17 +93,17 @@ namespace FosMan {
                     var value = x?.ToString();
                     var curriculum = x as Curriculum;
                     if (curriculum != null) {
-                        if (curriculum.FormOfStudy == EFormOfStudy.FullTime) {
-                            value = EFormOfStudy.FullTime.GetDescription();
+                        if (curriculum.FormOfStudy == Enums.EFormOfStudy.FullTime) {
+                            value = Enums.EFormOfStudy.FullTime.GetDescription();
                         }
-                        else if (curriculum.FormOfStudy == EFormOfStudy.PartTime) {
-                            value = EFormOfStudy.PartTime.GetDescription();
+                        else if (curriculum.FormOfStudy == Enums.EFormOfStudy.PartTime) {
+                            value = Enums.EFormOfStudy.PartTime.GetDescription();
                         }
-                        else if (curriculum.FormOfStudy == EFormOfStudy.MixedTime) {
-                            value = EFormOfStudy.MixedTime.GetDescription();
+                        else if (curriculum.FormOfStudy == Enums.EFormOfStudy.MixedTime) {
+                            value = Enums.EFormOfStudy.MixedTime.GetDescription();
                         }
                         else {
-                            value = EFormOfStudy.Unknown.GetDescription();
+                            value = Enums.EFormOfStudy.Unknown.GetDescription();
                         }
                     }
                     return value;
@@ -483,6 +483,7 @@ namespace FosMan {
             checkBoxRpdFixTableOfCompetences.Checked = App.Config.RpdFixTableOfCompetences;
             checkBoxRpdFixSummaryTableOfEduWorks.Checked = App.Config.RpdFixTableOfEduWorks;
             textBoxRpdFixTargetDir.Text = App.Config.RpdFixTargetDir;
+            checkBoxRpdFixFillEduWorkTables.Checked = App.Config.RpdFixFillEduWorkTables;
             textBoxRpdGenFileNameTemplate.Text = App.Config.RpdGenFileNameTemplate;
             textBoxRpdGenTargetDir.Text = App.Config.RpdGenTargetDir;
             textBoxRpdFixFileTemplate.Text = App.Config.RpdFixTemplateFileName;

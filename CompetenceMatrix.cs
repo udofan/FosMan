@@ -216,6 +216,19 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Список кодов всех результатов достижений матрицы
+        /// </summary>
+        /// <returns></returns>
+        public HashSet<string> GetAllResultCodes(List<CompetenceMatrixItem> items = null) {
+            var achiList = new List<CompetenceAchievement>();
+            items ??= Items;
+            items.ForEach(x => achiList.AddRange(x.Achievements));
+            var resultCodeList = new List<string>();
+            achiList.ForEach(x => resultCodeList.AddRange(x.Results.Select(a => a.Code)));
+            return [.. resultCodeList];
+        }
+
+        /// <summary>
         /// Получить список элементов матрицы по списку кодов индикаторов
         /// </summary>
         /// <param name="achievementCodes"></param>

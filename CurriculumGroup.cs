@@ -40,7 +40,7 @@ namespace FosMan {
         /// <summary>
         /// Формы обучения по всем УП из группы
         /// </summary>
-        public List<EFormOfStudy> FormsOfStudy { get => Curricula?.Values.Select(c => c.FormOfStudy).ToList(); }
+        public List<Enums.EFormOfStudy> FormsOfStudy { get => Curricula?.Values.Select(c => c.FormOfStudy).ToList(); }
         /// <summary>
         /// Формы обучения в виде списка [исп. для вставки в РПД]
         /// </summary>

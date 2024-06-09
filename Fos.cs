@@ -1,22 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FosMan {
-    /// <summary>
-    /// Тип оценочного средства
-    /// </summary>
-    public enum EEvaluationTool {
-        Survey,         //опрос
-        Essay,          //реферат
-        Testing,        //тестирование
-        ControlWork,    //контрольная работа
-        PracticalWork   //практическая работа
-    }
-
     /// <summary>
     /// Описание ФОСа
     /// </summary>

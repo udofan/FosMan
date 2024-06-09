@@ -101,7 +101,7 @@ namespace FosMan {
         public string TypeDescription {
             get {
                 var text = "";
-                var degree = Curriculum?.Degree == EDegree.Master ? "магистратуры" : "бакалавриата";
+                var degree = Curriculum?.Degree == Enums.EDegree.Master ? "магистратуры" : "бакалавриата";
 
                 if (Type == EDisciplineType.Required) {
                     text = $"обязательным дисциплинам программы {degree}";
