@@ -547,7 +547,9 @@ namespace FosMan {
                             testTable = !TestForTableOfCompetenceMatrix(table, rpd);
                         }
                         if (testTable) {
-                            testTable = !App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, out _);
+                            Enums.EEvaluationTool[] evalTools = null;
+                            string[][] studyResults = null;
+                            testTable = !App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, ref evalTools, ref studyResults, out _);
                         }
 
                     }

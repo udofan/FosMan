@@ -2,6 +2,7 @@
 using Microsoft.Web.WebView2.Core;
 using System;
 using System.CodeDom;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,6 +14,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Security.Cryptography.Xml;
 using System.Security.Policy;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -1194,6 +1196,9 @@ namespace FosMan {
                                 }
                             }
 
+                            Enums.EEvaluationTool[] evalTools = null;
+                            string[][] studyResults = null;             //здесь будут формироваться значения для таблиц учебных работ по формам обучения
+
                             foreach (var table in docx.Tables) {
                                 var backup = table.Xml;
                                 if (fixCompetences && CompetenceMatrix.TestTable(table)) {
@@ -1210,7 +1215,7 @@ namespace FosMan {
                                 }
                                 if (fixEduWorkTables) {
                                     //фикс-заполнение таблицы учебных работ для формы обучения
-                                    if (TestForEduWorkTable(table, rpd, PropertyAccess.Set, out var formOfStudy)) {
+                                    if (TestForEduWorkTable(table, rpd, PropertyAccess.Set, ref evalTools, ref studyResults, out var formOfStudy)) {
                                         eduWorkTableIsFixed[formOfStudy] = true;
                                     }
                                 }
@@ -1394,8 +1399,11 @@ namespace FosMan {
         /// <param name="totalValue"></param>
         /// <param name="count"></param>
         /// <param name="luckyNumbers"></param>
+        /// <param name="useOddHours">можно использовать нечетное кол-во часов</param>
         /// <returns></returns>
-        static int[] SplitTime(int total, int count, Random rand, HashSet<int> luckyNumbers, HashSet<int> excludeNumbers = null) {
+        static int[] SplitTime(int total, int count, Random rand, HashSet<int> luckyNumbers, 
+                               HashSet<int> excludeNumbers = null,
+                               bool useOddHours = false) {
             var items = new int[count];
 
             var extraTime = 0;
@@ -1423,6 +1431,9 @@ namespace FosMan {
                 //var unluckyTopicCount = count - luckyTopicCount;    //оставшиеся - несчастные
                 //выбираем случайным образом счастливые топики с учетом уже выбранных номеров, переданных функции
                 //var numbers = luckyNumbers?.Take(luckyTopicCount).ToHashSet() ?? new();
+                if (excludeNumbers != null && excludeNumbers.Count > count - luckyCount) {
+                    excludeNumbers = excludeNumbers.Take(count - luckyCount).ToHashSet();
+                }
                 while (luckyNumbers.Count < luckyCount) {
                     while (true) {
                         var num = rand.Next(count);
@@ -1434,7 +1445,19 @@ namespace FosMan {
                 }
                 foreach (var num in luckyNumbers.Take(luckyCount)) {
                     items[num] += 2;
+                    extraTime -= 2;
                 }
+            }
+            if (extraTime > 0 && useOddHours) { //если осталось доп. время и можно применять нечетные часы (так можно для СР)
+                //выдадим доп. час случайному топику, кому перепало меньше всего времени
+                var minValue = items.Min();
+                var indicies = new List<int>();
+                for (var i = 0; i < count; i++) {
+                    if (items[i] == minValue) {
+                        indicies.Add(i);
+                    }
+                }
+                items[indicies[rand.Next(indicies.Count)]] += 1;
             }
 
             return items;
@@ -1455,18 +1478,20 @@ namespace FosMan {
             var lecItems = SplitTime(eduWork.LectureHours.Value, topicCount, rand, luckyNumbers);
 
             //обновляем список счастливых номеров для следующего шага - ими станут текущие несчастливые
-            var luckyNums = luckyNumbers.ToHashSet();
-            luckyNumbers.Clear();
-            
-            for (var i = 0; i < topicCount; i++) {
-                if (!luckyNums.Contains(i)) luckyNumbers.Add(i);
-            }
             var luckyNumbersCopy = luckyNumbers.ToHashSet();
+            //var luckyNums = luckyNumbers.ToHashSet();
+            if (luckyNumbers.Any()) {
+                luckyNumbers.Clear();
+
+                for (var i = 0; i < topicCount; i++) {
+                    if (!luckyNumbersCopy.Contains(i)) luckyNumbers.Add(i);
+                }
+            }
             
             var practicalItems = SplitTime(eduWork.PracticalHours.Value, topicCount, rand, luckyNumbers);
             var superLuckyNumbers = luckyNumbers.Except(luckyNumbersCopy).ToHashSet();
 
-            var selfStudyItems = SplitTime(eduWork.SelfStudyHours.Value, topicCount, rand, luckyNumbersCopy, excludeNumbers: superLuckyNumbers);
+            var selfStudyItems = SplitTime(eduWork.SelfStudyHours.Value, topicCount, rand, luckyNumbersCopy, excludeNumbers: superLuckyNumbers, true);
 
             for (int i = 0; i < topicCount; i++) {
                 topics[i].lecture = lecItems[i];
@@ -1485,7 +1510,9 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="rpd"></param>
         /// <param name="formOfStudy"></param>
-        static void FillEduWorkTable(Table table, Rpd rpd, Enums.EFormOfStudy formOfStudy) {
+        static void FillEduWorkTable(Table table, Rpd rpd, Enums.EFormOfStudy formOfStudy, 
+                                     ref Enums.EEvaluationTool[] evalTools,
+                                     ref string[][] studyResults) {
             var curricula = FindCurricula(rpd);
             if (curricula?.Any() ?? false) {
                 if (table.ColumnCount == 8) {
@@ -1497,21 +1524,27 @@ namespace FosMan {
                     var topics = SplitEduTime(topicCount, rpd.EducationalWorks[formOfStudy], rand);
                     
                     //проверка
-                    if (topics.Sum(t => t.contact) != rpd.EducationalWorks[formOfStudy].ContactWorkHours.Value) {
+                    if (topics.Sum(t => t.contact) != (rpd.EducationalWorks[formOfStudy].ContactWorkHours ?? 0)) {
                         throw new Exception("Сумма времени контактной работы по темам не совпадает с итоговой");
                     }
-                    if (topics.Sum(t => t.total) != rpd.EducationalWorks[formOfStudy].TotalHours.Value) {
+                    if (topics.Sum(t => t.total) != (rpd.EducationalWorks[formOfStudy].TotalHours ?? 0) - (rpd.EducationalWorks[formOfStudy].ControlHours ?? 0)) {
                         throw new Exception("Сумма итогового времени по темам не совпадает с итоговой");
                     }
-                    if (topics.Sum(t => t.selfStudy) != rpd.EducationalWorks[formOfStudy].SelfStudyHours.Value) {
+                    if (topics.Sum(t => t.selfStudy) != (rpd.EducationalWorks[formOfStudy].SelfStudyHours ?? 0)) {
                         throw new Exception("Сумма времени самостоятельной работы не совпадает с итоговой");
                     }
 
                     //формирование оценочных средств
-                    var evalTools = GetEvalTools(topicCount, rand);
+                    if (evalTools == null) {
+                        evalTools = GetEvalTools(topicCount, rand);
+                    }
+
+                    var resultCodes = rpd.CompetenceMatrix.GetAllResultCodes().ToList();
 
                     //формирование результатов обучения
-                    var studyResults = GetStudyResults(topicCount, rand);
+                    if (studyResults == null) {
+                        studyResults = GetStudyResults(topicCount, resultCodes.ToList(), 3, rand);
+                    }
 
                     for (int topic = 0; topic < topicCount; topic++) {
                         var row = topic + 3;
@@ -1522,7 +1555,9 @@ namespace FosMan {
                         table.Rows[row].Cells[4].SetText(topics[topic].practical.ToString());
                         table.Rows[row].Cells[5].SetText(topics[topic].selfStudy.ToString());
                         table.Rows[row].Cells[6].SetText(evalTools[topic].GetDescription());
-                        //var cellResults = table.Rows[row].Cells[7];
+                        var codes = studyResults[topic].ToHashSet().ToList();
+                        codes.Sort((x1, x2) => resultCodes.IndexOf(x1) - resultCodes.IndexOf(x2));
+                        table.Rows[row].Cells[7].SetText(string.Join("\n", codes));
                     }
                 }
             }
@@ -1535,8 +1570,34 @@ namespace FosMan {
         /// <param name="rand"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static string[][] GetStudyResults(int topicCount, Random rand) {
-            throw new NotImplementedException();
+        private static string[][] GetStudyResults(int topicCount, List<string> codeList, int maxCount, Random rand) {
+            var results = new string[topicCount][];
+
+            var codesToDistrib = codeList.ToList();
+
+            while (codesToDistrib.Any()) {
+                var usedNumbers = new HashSet<int>();
+                for (var i = 0; i < topicCount; i++) {
+                    var max = rand.Next(maxCount) + 1;
+                    results[i] = new string[max];
+                    for (var r = 0; r < max; r++) {
+                        var num = 0;
+                        while (true) {
+                            if (usedNumbers.Count == codesToDistrib.Count) {
+                                usedNumbers.Clear();    //используем повторно полный список результатов компетенций
+                            }
+                            num = rand.Next(codesToDistrib.Count);
+                            if (usedNumbers.Add(num)) break;
+                        }
+                        results[i][r] = codesToDistrib[num];
+                    }
+                }
+                var usedCodes = new List<string>();
+                foreach (var r in results) usedCodes.AddRange(r);
+                codesToDistrib = codeList.Except(usedCodes).ToList();
+            }
+
+            return results;
         }
 
         /// <summary>
@@ -1603,7 +1664,10 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="rpd"></param>
         /// <returns></returns>
-        internal static bool TestForEduWorkTable(Table table, Rpd rpd, PropertyAccess propAccess, out Enums.EFormOfStudy formOfStudy) {
+        internal static bool TestForEduWorkTable(Table table, Rpd rpd, PropertyAccess propAccess, 
+                                                 ref Enums.EEvaluationTool[] evalTools,
+                                                 ref string[][] studyResults,
+                                                 out Enums.EFormOfStudy formOfStudy) {
             var result = false;
             formOfStudy = Enums.EFormOfStudy.Unknown;
 
@@ -1628,8 +1692,9 @@ namespace FosMan {
                         }
                         else {
                             //простановка времени по темам
-                            FillEduWorkTable(table, rpd, form);
+                            FillEduWorkTable(table, rpd, form, ref evalTools, ref studyResults);
                         }
+                        formOfStudy = form;
                         result = true;
                         break;
                     }
