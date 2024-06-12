@@ -75,7 +75,7 @@ namespace FosMan {
         };
 
         static CompetenceMatrix m_competenceMatrix = null;
-        static Dictionary<string, Curriculum> m_curriculumDic = [];
+        static ConcurrentDictionary<string, Curriculum> m_curriculumDic = [];
         static ConcurrentDictionary<string, Rpd> m_rpdDic = [];
         static Dictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
         //static Dictionary<string, Department> m_departments = [];
@@ -104,7 +104,7 @@ namespace FosMan {
         /// <summary>
         /// Учебные планы в сторе
         /// </summary>
-        public static Dictionary<string, Curriculum> Curricula { get => m_curriculumDic; }
+        public static ConcurrentDictionary<string, Curriculum> Curricula { get => m_curriculumDic; }
         /// <summary>
         /// Группы УП
         /// </summary>
@@ -462,11 +462,11 @@ namespace FosMan {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public static Dictionary<Enums.EFormOfStudy, Curriculum> FindCurricula(Rpd rpd) {
-            if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(rpd.Profile)) {  //} && !string.IsNullOrEmpty(rpd.Department)) {
+            if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(rpd.Profile)) {
                 var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, rpd.DirectionCode, true) == 0 &&
-                                                              string.Compare(c.Profile, rpd.Profile, true) == 0); // &&
-                                                                                                                  //string.Compare(c.Department, rpd.Department, true) == 0);
-                var dic = items.ToDictionary(x => x.FormOfStudy, x => x);
+                                                              string.Compare(c.Profile, rpd.Profile, true) == 0);
+
+                var dic = items.Distinct().ToDictionary(x => x.FormOfStudy, x => x);
                 return dic;
             }
             else {
@@ -1117,6 +1117,7 @@ namespace FosMan {
                 result = true;
             }
             catch (Exception ex) {
+                var u = 0;
             }
 
             return result;
@@ -1316,6 +1317,8 @@ namespace FosMan {
                                     if (App.Config.RpdFixRemoveColorSelections) {
                                         par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
                                         par.Highlight(Highlight.none);
+                                        //par.lis
+                                        //docx.Lists.ForEach(l => l.sele)
                                     }
                                 }
                                 html.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
@@ -1897,5 +1900,17 @@ namespace FosMan {
             var count = fromCount + new Random().Next(toCount - fromCount + 1);
             return list.Take(count).ToList();
         }
+
+        public static Task ForEachAsync<T>(this IEnumerable<T> sequence, Func<T, Task> action) {
+            return Task.WhenAll(sequence.Select(action));
+        }
+
+        //public static async Task GeneratePrevDisciplinesForRpd(Rpd rpd) {
+        //    var discList = App.GetPossiblePrevDisciplines(rpd);
+        //    var names = discList.Select(d => d.Name).ToList();
+        //    var discNames = await YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
+        //    var prevNames = discNames.TakeRandom(3, 7);
+        //    rpd.SetPrevDisciplines(prevNames);
+        //}
     }
 }

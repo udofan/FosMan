@@ -9,5 +9,7 @@ namespace FosMan {
     internal class YaGptCompletionResult {
         [JsonInclude]
         public YaGptCompletionResultBody result { get; set; }
+        [JsonInclude]
+        public YaGptCompletionErrorBody error { get; set; }
     }
 }

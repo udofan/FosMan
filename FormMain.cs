@@ -1,5 +1,6 @@
 using BrightIdeasSoftware;
 using Microsoft.VisualBasic;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -10,6 +11,7 @@ using System.Windows.Forms;
 using System.Xml.Schema;
 using Xceed.Document.NET;
 using static FosMan.App;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FosMan {
     public partial class FormMain : Form {
@@ -1338,9 +1340,9 @@ namespace FosMan {
 
         private async void buttonYaGptSendQuestion_Click(object sender, EventArgs e) {
             var temp = double.Parse(textBoxYaGptTemp.Text);
-            var answer = await YaGpt.TextGeneration(textBoxYaGptSystemText.Text, textBoxYaGptUserText.Text, temp);
+            var ret = await YaGpt.TextGenerationAsync(textBoxYaGptSystemText.Text, textBoxYaGptUserText.Text, temp);
 
-            textBoxYaGptAnswer.Text = answer;
+            textBoxYaGptAnswer.Text = ret.text ?? ret.error?.message;
         }
 
         private void button1_Click_1(object sender, EventArgs e) {
@@ -1386,22 +1388,101 @@ namespace FosMan {
             }
         }
 
+        async void GenerateRelatedDisciplines(List<Rpd> rpdList, bool prevDisciplines) {
+            var tasks = new List<Task>();
+            
+            int idx = 0;
+            //foreach (var rpd in rpdList) {
+            //tasks.Add(Task.Run(async () => {
+            Parallel.ForEach(rpdList, async rpd => {
+                //});
+                Interlocked.Increment(ref idx);
+
+                Debug.WriteLine($"{idx}: start");
+
+                List<string> names;
+                if (prevDisciplines) {
+                    var discList = App.GetPossiblePrevDisciplines(rpd);
+                    names = discList.Select(d => d.Name).ToList();
+                }
+                else {
+                    var discList = App.GetPossibleNextDisciplines(rpd);
+                    names = discList.Select(d => d.Name).ToList();
+
+                    var prevNames = rpd.GetPrevDisciplines();
+                    if (prevNames?.Any() ?? false) {
+                        names = names.Except(prevNames).ToList();
+                    }
+                }
+                //var discList = prevDisciplines ? App.GetPossiblePrevDisciplines(rpd) : App.GetPossibleNextDisciplines(rpd);
+                //var names = discList.Select(d => d.Name).ToList();
+                var sw = Stopwatch.StartNew();
+                var discNames = await YaGpt.GetRelatedDisciplinesAsync(rpd.DisciplineName, names);
+                Debug.WriteLine($"{idx}: await GetRelatedDisciplinesAsync - {sw.ElapsedMilliseconds} ms.");
+                /*
+                var task = YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
+                task.Wait();
+                var discNames = task.Result;
+                */
+
+                Debug.WriteLine($"{idx}: setting disc - discNames.Count = {discNames.Count}");
+
+                names = discNames.TakeRandom(3, 7);
+                if (prevDisciplines) {
+                    rpd.SetPrevDisciplines(names);
+                }
+                else {
+                    rpd.SetNextDisciplines(names);
+                }
+
+                Debug.WriteLine($"{idx}: form.Invoke...");
+                this.Invoke(new MethodInvoker(() => {
+                    fastObjectListViewRpdList.UpdateObject(rpd);
+
+                    //var msg = $"Загрузка файлов ({idx} из {files.Length})...";
+                    //labelLoadRpd.Text = msg;
+                    //StatusMessage(msg);
+                    //if (idx == files.Length) {
+                    //    labelLoadRpd.Text += " завершено.";
+                    //}
+                    Debug.WriteLine($"{idx}: inside form.Invoke");
+                    StatusMessage($"Обработано РПД ({idx} из {rpdList.Count})...");
+                    Application.DoEvents();
+                }));
+
+                Debug.WriteLine($"{idx}: end");
+                //}));
+            });
+
+            await Task.WhenAll(tasks.ToArray());
+        }
+
         private async void linkLabelRpdFixGeneratePrevDisciplines_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
                 var sw = Stopwatch.StartNew();
                 StatusMessage("Выполнение запросов по генерации списков дисциплин...");
-                var i = 0;
+                /*
+                var tasks = new List<Task>();
+                //foreach (var rpd in rpdList) {
+                //    tasks.Add(App.GeneratePrevDisciplinesForRpd(rpd));
+                //}
+                //await Task.WhenAll(tasks);
+                ////await rpdList.ForEachAsync(async rpd => {
+                //Parallel.ForEach(rpdList, async rpd => {
                 foreach (var rpd in rpdList) {
-                    i++;
+                    //i++;
+
                     var discList = App.GetPossiblePrevDisciplines(rpd);
                     var names = discList.Select(d => d.Name).ToList();
                     var discNames = await YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
                     //task.Wait();
                     var prevNames = discNames.TakeRandom(3, 7);
                     rpd.SetPrevDisciplines(prevNames);
-                    StatusMessage($"Выполнение запросов по генерации списков дисциплин (выполнено {i} из {rpdList.Count}) [{sw.Elapsed}]...");
+                    //StatusMessage($"Выполнение запросов по генерации списков дисциплин (выполнено {i} из {rpdList.Count}) [{sw.Elapsed}]...");
                 }
+                */
+                GenerateRelatedDisciplines(rpdList, true);
                 StatusMessage($"Запросы по генерации списков дисциплин выполнены ({sw.Elapsed}).");
             }
             else {
@@ -1413,7 +1494,7 @@ namespace FosMan {
             if (e.KeyCode == Keys.Delete) {
                 if ((fastObjectListViewCurricula.SelectedObjects?.Count ?? 0) > 0) {
                     foreach (var item in fastObjectListViewCurricula.SelectedObjects) {
-                        App.Curricula.Remove((item as Curriculum).SourceFileName);
+                        App.Curricula.TryRemove((item as Curriculum).SourceFileName, out _);
                     }
 
                     fastObjectListViewCurricula.RemoveObjects(fastObjectListViewCurricula.SelectedObjects);
@@ -1426,22 +1507,23 @@ namespace FosMan {
             if (rpdList.Any()) {
                 var sw = Stopwatch.StartNew();
                 StatusMessage("Выполнение запросов по генерации списков дисциплин...");
-                var i = 0;
-                //var tasks = new Task();
-                foreach (var rpd in rpdList) {
-                    i++;
-                    var discList = App.GetPossibleNextDisciplines(rpd);
-                    var names = discList.Select(d => d.Name).ToList();
-                    var prevNames = rpd.GetPrevDisciplines();
-                    if (prevNames?.Any() ?? false) {
-                        names = names.Except(prevNames).ToList();
-                    }
-                    var discNames = await YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
-                    //task.Wait();
-                    var nextNames = discNames.TakeRandom(3, 7);
-                    rpd.SetNextDisciplines(nextNames);
-                    StatusMessage($"Выполнение запросов по генерации списков дисциплин (выполнено {i} из {rpdList.Count}) [{sw.Elapsed}]...");
-                }
+                //var i = 0;
+                ////var tasks = new Task();
+                //foreach (var rpd in rpdList) {
+                //    i++;
+                //    var discList = App.GetPossibleNextDisciplines(rpd);
+                //    var names = discList.Select(d => d.Name).ToList();
+                //    var prevNames = rpd.GetPrevDisciplines();
+                //    if (prevNames?.Any() ?? false) {
+                //        names = names.Except(prevNames).ToList();
+                //    }
+                //    var discNames = await YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
+                //    //task.Wait();
+                //    var nextNames = discNames.TakeRandom(3, 7);
+                //    rpd.SetNextDisciplines(nextNames);
+                //    StatusMessage($"Выполнение запросов по генерации списков дисциплин (выполнено {i} из {rpdList.Count}) [{sw.Elapsed}]...");
+                //}
+                GenerateRelatedDisciplines(rpdList, false);
                 StatusMessage($"Запросы по генерации списков дисциплин выполнены ({sw.Elapsed}).");
             }
             else {
