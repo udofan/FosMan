@@ -500,7 +500,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(985, 646);
+            splitContainer1.Size = new Size(985, 648);
             splitContainer1.SplitterDistance = 280;
             splitContainer1.TabIndex = 7;
             // 
@@ -783,7 +783,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(985, 362);
+            fastObjectListViewRpdList.Size = new Size(985, 364);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;

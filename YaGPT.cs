@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
@@ -245,7 +246,9 @@ namespace FosMan {
             var systemText = "Из заданного списка дисциплин определи только те, которые связаны с указанной дисциплиной. " +
                              "Ответ сформируй в формате JSON, где будет поле result со значением, где будут названия дисциплин.";
             var userText = $"Какие дисциплины связаны с дисциплиной \"{disciplineName}\" из следующего списка:\r\n{string.Join(",\r\n", possibleDisciplines)}";
+            //Debug.WriteLine($"TextGenerationAsync call...");
             var result = await TextGenerationAsync(systemText, userText, 0.0);
+            //Debug.WriteLine($"TextGenerationAsync done.");
             if (result.success && !string.IsNullOrEmpty(result.text)) {
                 var text = result.text;
                 //очистка ответа
@@ -257,7 +260,9 @@ namespace FosMan {
                 }
             }
             else {
-                throw new Exception(result.error.message);
+                Thread.Sleep(1000);
+                resultList = await GetRelatedDisciplinesAsync(disciplineName, possibleDisciplines);
+                //throw new Exception(result.error.message);
             }
 
             return resultList;

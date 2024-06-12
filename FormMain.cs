@@ -1388,17 +1388,22 @@ namespace FosMan {
             }
         }
 
-        async void GenerateRelatedDisciplines(List<Rpd> rpdList, bool prevDisciplines) {
+        async Task GenerateRelatedDisciplines(List<Rpd> rpdList, bool prevDisciplines) {
             var tasks = new List<Task>();
-            
+            var swMain = Stopwatch.StartNew();
+
             int idx = 0;
             //foreach (var rpd in rpdList) {
             //tasks.Add(Task.Run(async () => {
-            Parallel.ForEach(rpdList, async rpd => {
-                //});
-                Interlocked.Increment(ref idx);
+            //Task task = Task.Run(() => { });
+            foreach (var rpd in rpdList) {
+                //task = task.ContinueWith(async t => {
+                idx++;
 
-                Debug.WriteLine($"{idx}: start");
+                //});
+                //task = newTask;
+
+                //Debug.WriteLine($"{idx}: start");
 
                 List<string> names;
                 if (prevDisciplines) {
@@ -1417,15 +1422,16 @@ namespace FosMan {
                 //var discList = prevDisciplines ? App.GetPossiblePrevDisciplines(rpd) : App.GetPossibleNextDisciplines(rpd);
                 //var names = discList.Select(d => d.Name).ToList();
                 var sw = Stopwatch.StartNew();
+                //Debug.WriteLine($"{idx}: GetRelatedDisciplinesAsync call...");
                 var discNames = await YaGpt.GetRelatedDisciplinesAsync(rpd.DisciplineName, names);
-                Debug.WriteLine($"{idx}: await GetRelatedDisciplinesAsync - {sw.ElapsedMilliseconds} ms.");
+                //Debug.WriteLine($"{idx}: await GetRelatedDisciplinesAsync - {sw.ElapsedMilliseconds} ms.");
                 /*
                 var task = YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
                 task.Wait();
                 var discNames = task.Result;
                 */
 
-                Debug.WriteLine($"{idx}: setting disc - discNames.Count = {discNames.Count}");
+                //Debug.WriteLine($"{idx}: setting disc - discNames.Count = {discNames.Count}");
 
                 names = discNames.TakeRandom(3, 7);
                 if (prevDisciplines) {
@@ -1435,7 +1441,7 @@ namespace FosMan {
                     rpd.SetNextDisciplines(names);
                 }
 
-                Debug.WriteLine($"{idx}: form.Invoke...");
+                //Debug.WriteLine($"{idx}: form.Invoke...");
                 this.Invoke(new MethodInvoker(() => {
                     fastObjectListViewRpdList.UpdateObject(rpd);
 
@@ -1445,16 +1451,16 @@ namespace FosMan {
                     //if (idx == files.Length) {
                     //    labelLoadRpd.Text += " завершено.";
                     //}
-                    Debug.WriteLine($"{idx}: inside form.Invoke");
-                    StatusMessage($"Обработано РПД ({idx} из {rpdList.Count})...");
+                    //Debug.WriteLine($"{idx}: inside form.Invoke");
+                    StatusMessage($"Обработано РПД ({idx} из {rpdList.Count}) (последний запрос: {sw.Elapsed}, всего: {swMain.Elapsed})...");
                     Application.DoEvents();
                 }));
 
-                Debug.WriteLine($"{idx}: end");
-                //}));
-            });
+                //Debug.WriteLine($"{idx}: end");
+                //});
+            }
 
-            await Task.WhenAll(tasks.ToArray());
+            //await task;
         }
 
         private async void linkLabelRpdFixGeneratePrevDisciplines_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
@@ -1482,7 +1488,7 @@ namespace FosMan {
                     //StatusMessage($"Выполнение запросов по генерации списков дисциплин (выполнено {i} из {rpdList.Count}) [{sw.Elapsed}]...");
                 }
                 */
-                GenerateRelatedDisciplines(rpdList, true);
+                await GenerateRelatedDisciplines(rpdList, true);
                 StatusMessage($"Запросы по генерации списков дисциплин выполнены ({sw.Elapsed}).");
             }
             else {
@@ -1523,7 +1529,7 @@ namespace FosMan {
                 //    rpd.SetNextDisciplines(nextNames);
                 //    StatusMessage($"Выполнение запросов по генерации списков дисциплин (выполнено {i} из {rpdList.Count}) [{sw.Elapsed}]...");
                 //}
-                GenerateRelatedDisciplines(rpdList, false);
+                await GenerateRelatedDisciplines(rpdList, false);
                 StatusMessage($"Запросы по генерации списков дисциплин выполнены ({sw.Elapsed}).");
             }
             else {
