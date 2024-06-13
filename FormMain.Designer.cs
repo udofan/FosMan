@@ -46,6 +46,7 @@
             fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
             buttonSelectExcelFiles = new Button();
             tabPageRpd = new TabPage();
+            iconButtonRpdRefresh = new FontAwesome.Sharp.IconButton();
             buttonRpdLoadFromDb = new Button();
             buttonRpdSaveToDb = new Button();
             buttonRpdListClear = new Button();
@@ -409,6 +410,7 @@
             // 
             // tabPageRpd
             // 
+            tabPageRpd.Controls.Add(iconButtonRpdRefresh);
             tabPageRpd.Controls.Add(buttonRpdLoadFromDb);
             tabPageRpd.Controls.Add(buttonRpdSaveToDb);
             tabPageRpd.Controls.Add(buttonRpdListClear);
@@ -425,6 +427,19 @@
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
+            // 
+            // iconButtonRpdRefresh
+            // 
+            iconButtonRpdRefresh.IconChar = FontAwesome.Sharp.IconChar.Refresh;
+            iconButtonRpdRefresh.IconColor = Color.Black;
+            iconButtonRpdRefresh.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconButtonRpdRefresh.IconSize = 20;
+            iconButtonRpdRefresh.Location = new Point(487, 18);
+            iconButtonRpdRefresh.Name = "iconButtonRpdRefresh";
+            iconButtonRpdRefresh.Size = new Size(30, 23);
+            iconButtonRpdRefresh.TabIndex = 13;
+            iconButtonRpdRefresh.UseVisualStyleBackColor = true;
+            iconButtonRpdRefresh.Click += iconButtonRpdRefresh_Click;
             // 
             // buttonRpdLoadFromDb
             // 
@@ -462,7 +477,7 @@
             // checkBoxStoreRpdList
             // 
             checkBoxStoreRpdList.AutoSize = true;
-            checkBoxStoreRpdList.Location = new Point(425, 21);
+            checkBoxStoreRpdList.Location = new Point(389, 21);
             checkBoxStoreRpdList.Name = "checkBoxStoreRpdList";
             checkBoxStoreRpdList.Size = new Size(92, 18);
             checkBoxStoreRpdList.TabIndex = 9;
@@ -500,7 +515,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(985, 648);
+            splitContainer1.Size = new Size(985, 682);
             splitContainer1.SplitterDistance = 280;
             splitContainer1.TabIndex = 7;
             // 
@@ -783,7 +798,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(985, 364);
+            fastObjectListViewRpdList.Size = new Size(985, 398);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1584,5 +1599,6 @@
         private LinkLabel linkLabelRpdFixGenerateNextDisciplines;
         private LinkLabel linkLabelRpdFixGeneratePrevDisciplines;
         private CheckBox checkBoxRpdFixRemoveColorSelection;
+        private FontAwesome.Sharp.IconButton iconButtonRpdRefresh;
     }
 }

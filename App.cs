@@ -1,4 +1,5 @@
 ﻿using FastMember;
+using Microsoft.VisualBasic;
 using Microsoft.Web.WebView2.Core;
 using System;
 using System.CodeDom;
@@ -28,7 +29,9 @@ using System.Transactions;
 using System.Web;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
+using static FosMan.Enums;
 using static System.Resources.ResXFileRef;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace FosMan {
     /// <summary>
@@ -155,11 +158,10 @@ namespace FosMan {
         }
 
         static public bool AddRpd(Rpd rpd) {
-            var result = m_rpdDic.TryAdd(rpd.SourceFileName, rpd);
-            if (result) {
-                RpdAdd?.Invoke(rpd);
-            }
-            return result;
+            m_rpdDic[rpd.SourceFileName] = rpd;
+            RpdAdd?.Invoke(rpd);
+            
+            return true;
         }
 
         /// <summary>
@@ -242,10 +244,17 @@ namespace FosMan {
         static bool ApplyDisciplineCheck(Enums.EFormOfStudy formOfStudy, Rpd rpd, CurriculumDiscipline discipline, StringBuilder repTable,
                                          ref int pos, ref int errorCount, string description, Func<EducationalWork, (bool result, string msg)> func) {
             pos++;
+            (bool result, string msg) ret = (false, "?");
 
-            rpd.EducationalWorks.TryGetValue(formOfStudy, out EducationalWork eduWork);
-            var ret = func.Invoke(eduWork);
-            if (!ret.result) errorCount++;
+            try {
+                rpd.EducationalWorks.TryGetValue(formOfStudy, out EducationalWork eduWork);
+                ret = func.Invoke(eduWork);
+                if (!ret.result) errorCount++;
+            }
+            catch (Exception ex) {
+                ret.result = false;
+                ret.msg = $"<b>{ex.Message}</b><br />{ex.StackTrace}";
+            }
 
             repTable.AddDisciplineCheckTableRow(pos, description, ret.result, ret.msg);
 
@@ -313,34 +322,34 @@ namespace FosMan {
                                 return (result, msg);
                             })) {
                                 //проверка времен учебной работы
-                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Итоговое время", (eduWork) => {
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Сводная таблица учебных работ: итоговое время", (eduWork) => {
                                     var result = discipline.EducationalWork.TotalHours == eduWork.TotalHours;
                                     var msg = result ? "" : $"Итоговое время [{discipline.EducationalWork.TotalHours}] не соответствует УП (д.б. {eduWork.TotalHours}).";
                                     return (result, msg);
                                 });
-                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время контактной работы", (eduWork) => {
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Сводная таблица учебных работ: время контактной работы", (eduWork) => {
                                     var result = (discipline.EducationalWork.ContactWorkHours ?? 0) == (eduWork.ContactWorkHours ?? 0);
-                                    var msg = result ? "" : $"Время контактной работы [{discipline.EducationalWork.ContactWorkHours}] не соответствует УП (д.б. {eduWork.ContactWorkHours}).";
+                                    var msg = result ? "" : $"Время контактной работы [{eduWork.ContactWorkHours}] не соответствует значению из УП [{discipline.EducationalWork.ContactWorkHours}].";
                                     return (result, msg);
                                 });
-                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время контроля", (eduWork) => {
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Сводная таблица учебных работ: время контроля", (eduWork) => {
                                     var result = (discipline.EducationalWork.ControlHours ?? 0) == (eduWork.ControlHours ?? 0);
-                                    var msg = result ? "" : $"Время контроля [{discipline.EducationalWork.ControlHours}] не соответствует УП (д.б. {eduWork.ControlHours}).";
+                                    var msg = result ? "" : $"Время контроля [{eduWork.ControlHours}] не соответствует значению из УП [{discipline.EducationalWork.ControlHours}].";
                                     return (result, msg);
                                 });
-                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время самостоятельной работы", (eduWork) => {
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Сводная таблица учебных работ: время самостоятельной работы", (eduWork) => {
                                     var result = (discipline.EducationalWork.SelfStudyHours ?? 0) == (eduWork.SelfStudyHours ?? 0);
-                                    var msg = result ? "" : $"Время самостоятельных работ [{discipline.EducationalWork.SelfStudyHours}] не соответствует УП (д.б. {eduWork.SelfStudyHours}).";
+                                    var msg = result ? "" : $"Время самостоятельных работ [{eduWork.SelfStudyHours}] не соответствует значению из УП [{discipline.EducationalWork.SelfStudyHours}].";
                                     return (result, msg);
                                 });
-                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время практических работ", (eduWork) => {
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Сводная таблица учебных работ: время практических работ", (eduWork) => {
                                     var result = (discipline.EducationalWork.PracticalHours ?? 0) == (eduWork.PracticalHours ?? 0);
-                                    var msg = result ? "" : $"Время практических работ [{discipline.EducationalWork.PracticalHours}] не соответствует УП (д.б. {eduWork.PracticalHours}).";
+                                    var msg = result ? "" : $"Время практических работ [{eduWork.PracticalHours}] не соответствует значению из УП [{discipline.EducationalWork.PracticalHours}].";
                                     return (result, msg);
                                 });
-                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Время лекций", (eduWork) => {
+                                ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Сводная таблица учебных работ: время лекций", (eduWork) => {
                                     var result = (discipline.EducationalWork.LectureHours ?? 0) == (eduWork.LectureHours ?? 0);
-                                    var msg = result ? "" : $"Время лекций [{discipline.EducationalWork.LectureHours}] не соответствует УП (д.б. {eduWork.LectureHours}).";
+                                    var msg = result ? "" : $"Время лекций [{eduWork.LectureHours}] не соответствует из УП [{discipline.EducationalWork.LectureHours}].";
                                     return (result, msg);
                                 });
                                 //проверка итогового контроля
@@ -426,6 +435,117 @@ namespace FosMan {
                                     return (!matrixError, msg);
                                 });
                             }
+                            //проверка таблицы учебных работ для текущей формы обучения curriculum.Key
+                            ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount,
+                                $"Проверка времени в таблице тем ({curriculum.Key.GetDescription()})",
+                                eduWork => {
+                                    if (eduWork.Table == null) {
+                                        return (false, "Таблица не найдена");
+                                    }
+                                    else {
+                                        var msg = "";
+                                        try {
+                                            var result = true;
+                                            //var rowCount = eduWork.Table.RowCount - 4;
+                                            //проверка по столбцам и по рядам
+                                            var cells = new int[eduWork.Table.RowCount, eduWork.Table.ColumnCount - 2];
+                                            var startRow = 3; // eduWork.Table.RowCount - ;
+                                            var startCol = -1;
+                                            //первый ряд - ряд без объединений ячеек
+                                            var numColCount = 0;
+                                            while (startRow < eduWork.Table.RowCount) {
+                                                numColCount = 0;
+                                                for (var col = 0; col < eduWork.Table.Rows[startRow].Cells.Count; col++) {
+                                                    var cell = eduWork.Table.Rows[startRow].Cells[col];
+                                                    if (cell.GridSpan > 0) {
+                                                        startRow++;
+                                                        continue;
+                                                    }
+                                                    var text = cell.GetText();
+                                                    if (int.TryParse(text, out _)) {
+                                                        if (col > 0) { //} && startCol < 0) {
+                                                            if (startCol < 0) startCol = col;
+                                                            numColCount++;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                            }
+                                            //тестируем на кол-во ячеек с числовыми значениями: должно быть 4 или 5 (когда есть подитог по КР)
+                                            var hasSubTotal = numColCount == 5;
+
+                                            //var startCol = eduWork.Table.ColumnCount - 6;
+
+                                            for (int row = startRow; row < cells.GetLength(0) - 1; row++) {
+                                                for (int col = startCol; col < cells.GetLength(1); col++) {
+                                                    var cellValue = eduWork.Table.Rows[row].Cells[col].GetText();
+                                                    if (!string.IsNullOrEmpty(cellValue) && int.TryParse(cellValue, out var intVal)) {
+                                                        cells[row, col] = intVal;
+                                                    }
+                                                }
+                                                //проверка строки
+                                                if (row < cells.GetLength(0) - 2) { //последние 2 строки пропускаем
+                                                                                    //итог контактной работы
+                                                    if (hasSubTotal) {
+                                                        var subTotal = cells[row, startCol + 2] + cells[row, startCol + 3];
+                                                        if (cells[row, startCol + 1] != subTotal) {
+                                                            if (msg.Length > 0) msg += "<br />";
+                                                            msg += $"Ряд <b>{eduWork.Table.Rows[row].Cells[startCol - 1].GetText()}</b>: значение [{cells[row, startCol + 1]}] в колонке [Контактная работа.Всего часов] не совпадает с суммой [{subTotal}]";
+                                                        }
+                                                    }
+                                                    //обшее кол-во часов
+                                                    var colDelta = hasSubTotal ? 1 : 0;
+                                                    var total = cells[row, startCol + 1 + colDelta] + cells[row, startCol + 2 + colDelta] + cells[row, startCol + 3 + colDelta];
+                                                    if (cells[row, startCol] != total) {
+                                                        if (msg.Length > 0) msg += "<br />";
+                                                        msg += $"Ряд <b>{eduWork.Table.Rows[row].Cells[startCol - 1].GetText()}</b>: значение [{cells[row, startCol]}] в колонке [Общее к-во часов] не совпадает с суммой [{total}]";
+                                                    }
+                                                }
+                                            }
+                                            //подсчет нижнего итогового ряда (в нем могут быть объединения ячеек)
+                                            var total1stCol = 0;
+                                            var physColIdx = 0;
+                                            while (physColIdx < startCol) {
+                                                physColIdx += eduWork.Table.Rows[eduWork.Table.RowCount - 1].Cells[total1stCol].GridSpan;
+                                                physColIdx++;
+                                                total1stCol++;
+                                            }
+                                            var matrixCol = startCol - 1;
+                                            for (var c = total1stCol; c < eduWork.Table.Rows[eduWork.Table.RowCount - 1].Cells.Count; c++) {
+                                                matrixCol++;
+                                                var text = eduWork.Table.Rows[eduWork.Table.RowCount - 1].Cells[c].GetText();
+                                                if (int.TryParse(text, out var intVal)) {
+                                                    cells[eduWork.Table.RowCount - 1, matrixCol] = intVal;
+                                                }
+                                            }
+
+                                            //проверка итоговой строки
+                                            Func<int, int> colSum = colIdx => {
+                                                int sum = 0;
+                                                for (int row = startRow; row < cells.GetLength(0) - 1; row++) {
+                                                    sum += cells[row, colIdx];
+                                                }
+                                                return sum;
+                                            };
+
+                                            for (var col = startCol; col < cells.GetLength(1); col++) {
+                                                if (cells[eduWork.Table.RowCount - 1, col] != colSum(col)) {
+                                                    if (msg.Length > 0) msg += "<br />";
+                                                    var header = col.ToString(); // GetTableHeaderText(eduWork.Table, 3, col);
+                                                    msg += $"Колонка <b>{header}</b>: итоговая сумма [{colSum(col)}] не совпадает с необходимой [{cells[eduWork.Table.RowCount - 1, col]}]";
+                                                }
+                                            }
+                                        }
+                                        catch (Exception ex2) {
+                                            msg = $"<b>{ex2.Message}</b><br />{ex2.StackTrace}";
+                                        }
+
+                                        return (string.IsNullOrEmpty(msg), msg);
+                                    }
+                                    //var result = discipline.EducationalWork.TotalHours == eduWork.TotalHours;
+                                    //var msg = result ? "" : $"Итоговое время [{discipline.EducationalWork.TotalHours}] не соответствует УП (д.б. {eduWork.TotalHours}).";
+                                });
+                           
                             table.Append("</table>");
                             rep.Append(table);
                         }
@@ -452,6 +572,31 @@ namespace FosMan {
             html.Append(toc).Append(rep).Append("</body></html>");
 
             htmlReport = html.ToString();
+        }
+
+        /// <summary>
+        /// Получение текста ячейки заголовка с учетом объединения ячеек
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="headerRowCount"></param>
+        /// <param name="colIdx"></param>
+        /// <returns></returns>
+        static string GetTableHeaderText(Table table, int headerRowCount, int colIdx) {
+            //TODO
+            var text = "";
+
+            //for (var row = headerRowCount - 1; row >= 0; row--) {
+            //    if (row < table.RowCount && colIdx < table.ColumnCount) {
+            //        //table.Rows[0].me
+            //        var cellText = table.Rows[row].gr.Cells[colIdx].GetText();
+            //        if (!string.IsNullOrEmpty(cellText)) {
+            //            text = cellText;
+            //            break;
+            //        }
+            //    }
+            //}
+
+            return text;
         }
 
         /// <summary>

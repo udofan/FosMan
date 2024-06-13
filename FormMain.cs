@@ -790,12 +790,18 @@ namespace FosMan {
 
                     if (File.Exists(file)) {
                         var rpd = Rpd.LoadFromFile(file);
-                        App.AddRpd(rpd);
+                        AddRpd(rpd);
 
                         this.Invoke(new MethodInvoker(() => {
                             fastObjectListViewRpdList.BeginUpdate();
                             var selectedObjects = fastObjectListViewRpdList.SelectedObjects;
-                            fastObjectListViewRpdList.AddObject(rpd);
+                            var idx = fastObjectListViewRpdList.IndexOf(rpd);
+                            if (idx >= 0) {
+                                fastObjectListViewRpdList.UpdateObject(rpd);
+                            }
+                            else {
+                                fastObjectListViewRpdList.AddObject(rpd);
+                            }
                             fastObjectListViewRpdList.EnsureModelVisible(rpd);
                             selectedObjects.Add(rpd);
                             fastObjectListViewRpdList.SelectedObjects = selectedObjects;
@@ -1540,6 +1546,14 @@ namespace FosMan {
         private void checkBoxRpdFixResetColorSelection_CheckedChanged(object sender, EventArgs e) {
             App.Config.RpdFixRemoveColorSelections = checkBoxRpdFixRemoveColorSelection.Checked;
             App.SaveConfig();
+        }
+
+        private void iconButtonRpdRefresh_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var files = rpdList.Select(rpd => rpd.SourceFileName);
+                LoadRpdFilesAsync(files.ToArray());
+            }
         }
     }
 }
