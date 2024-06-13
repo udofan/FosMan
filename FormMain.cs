@@ -789,14 +789,19 @@ namespace FosMan {
                     Interlocked.Increment(ref idx);
 
                     if (File.Exists(file)) {
-                        var rpd = Rpd.LoadFromFile(file);
-                        AddRpd(rpd);
-
+                        //проверяем: не загружен ли еще файл?
+                        var rpd = App.RpdList.Values.FirstOrDefault(r => r.SourceFileName.Equals(file));
+                        if (rpd != null) {
+                            Rpd.LoadFromFile(file, rpd);
+                        }
+                        else {
+                            rpd = Rpd.LoadFromFile(file);
+                            AddRpd(rpd);
+                        }
                         this.Invoke(new MethodInvoker(() => {
                             fastObjectListViewRpdList.BeginUpdate();
                             var selectedObjects = fastObjectListViewRpdList.SelectedObjects;
-                            var idx = fastObjectListViewRpdList.IndexOf(rpd);
-                            if (idx >= 0) {
+                            if (fastObjectListViewRpdList.IndexOf(rpd) >= 0) {
                                 fastObjectListViewRpdList.UpdateObject(rpd);
                             }
                             else {

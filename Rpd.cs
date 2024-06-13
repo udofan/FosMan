@@ -265,17 +265,27 @@ namespace FosMan {
         /// Загрузка РПД из файла
         /// </summary>
         /// <param name="fileName"></param>
-        public static Rpd LoadFromFile(string fileName) {
-            var rpd = new Rpd() {
-                Errors = [], 
-                SourceFileName = fileName, 
-                EducationalWorks = [], 
-                FormsOfStudy = [], 
-                SummaryParagraphs = [], 
-                QuestionList = [], 
-                ReferencesBase = [],
-                ReferencesExtra = []
-            };
+        public static Rpd LoadFromFile(string fileName, Rpd rpd = null) {
+            if (rpd == null) {
+                rpd = new();
+            }
+            rpd.Errors = [];
+            rpd.SourceFileName = fileName;
+            rpd.EducationalWorks = [];
+            rpd.FormsOfStudy = [];
+            rpd.SummaryParagraphs = [];
+            rpd.QuestionList = [];
+            rpd.ReferencesBase = [];
+            rpd.ReferencesExtra = [];
+            rpd.Compiler = "";
+            rpd.Department = "";
+            rpd.DirectionCode = "";
+            rpd.DirectionName = "";
+            rpd.DisciplineName = "";
+            rpd.NextDisciplines = "";
+            rpd.PrevDisciplines = "";
+            rpd.Profile = "";
+            rpd.Year = "";
 
             try {
                 using (var docx = DocX.Load(fileName)) {
