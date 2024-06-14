@@ -19,31 +19,11 @@ namespace FosMan {
         const string DIR_REPORTS = "Reports";
         const string DIR_LOGS = "Logs";
 
-        //string m_matrixFileName = null;
+        string m_matrixFileName = null;
         //string m_rpdHtmlReport = null;
 
         public FormMain() {
             InitializeComponent();
-        }
-
-        private void button1_Click(object sender, EventArgs e) {
-            if (!string.IsNullOrEmpty(textBoxMatrixFileName.Text) && File.Exists(textBoxMatrixFileName.Text)) {
-                openFileDialogSelectCompetenceMatrixFile.FileName = textBoxMatrixFileName.Text;
-                openFileDialogSelectCompetenceMatrixFile.InitialDirectory = Path.GetDirectoryName(textBoxMatrixFileName.Text);
-            }
-            else {
-                openFileDialogSelectCompetenceMatrixFile.InitialDirectory = Environment.CurrentDirectory;
-            }
-
-            if (openFileDialogSelectCompetenceMatrixFile.ShowDialog(this) == DialogResult.OK) {
-                textBoxMatrixFileName.Text = openFileDialogSelectCompetenceMatrixFile.FileName;
-                buttonLoadCompetenceMatrix.PerformClick();
-                //m_matrixFileName = openFileDialog1.FileName;
-            }
-        }
-
-        private void buttonLoadCompetenceMatrix_Click(object sender, EventArgs e) {
-            LoadCompetenceMatrix(textBoxMatrixFileName.Text, false);
         }
 
         /// <summary>
@@ -477,11 +457,11 @@ namespace FosMan {
             //восстановим элементы из конфига
             fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFindAndReplaceItems);
             fastObjectListViewDocProperties.AddObjects(App.Config.RpdFixDocPropertyList);
-            textBoxMatrixFileName.Text = App.Config.CompetenceMatrixFileName ?? "";
+            m_matrixFileName = App.Config.CompetenceMatrixFileName ?? "";
             ShowHideRpdFixMode(false);
             checkBoxStoreCurriculumList.Checked = App.Config.StoreCurriculumList;
-            checkBoxCompetenceMatrixAutoload.Checked = App.Config.CompetenceMatrixAutoload;
-            checkBoxStoreRpdList.Checked = App.Config.StoreRpdList;
+            iconToolStripButtonCompetenceMatrixAutoload.Checked = App.Config.CompetenceMatrixAutoload;
+            iconToolStripButtonRpdRememberList.Checked = App.Config.StoreRpdList;
             checkBoxRpdFixTableOfCompetences.Checked = App.Config.RpdFixTableOfCompetences;
             checkBoxRpdFixSummaryTableOfEduWorks.Checked = App.Config.RpdFixTableOfEduWorks;
             textBoxRpdFixTargetDir.Text = App.Config.RpdFixTargetDir;
@@ -514,8 +494,8 @@ namespace FosMan {
                 this.Invoke(new MethodInvoker(() => {
                     tabControl1.SelectTab(tabPageCompetenceMatrix);
                     if (App.Config.CompetenceMatrixAutoload) {
-                        textBoxMatrixFileName.Text = App.Config.CompetenceMatrixFileName;
-                        LoadCompetenceMatrix(textBoxMatrixFileName.Text, true);
+                        m_matrixFileName = App.Config.CompetenceMatrixFileName;
+                        LoadCompetenceMatrix(m_matrixFileName, true);
                     }
 
                     if (App.Config.CurriculumList?.Any() ?? false) {
@@ -765,9 +745,9 @@ namespace FosMan {
         /// </summary>
         /// <param name="files"></param>
         private async Task LoadRpdFilesAsync(string[] files) {
-            labelLoadRpd.Visible = true;
+            //labelLoadRpd.Visible = true;
             Application.UseWaitCursor = true;
-            labelLoadRpd.Text = "";
+            //labelLoadRpd.Text = "";
 
             var errLog = new ConcurrentDictionary<string, List<string>>();
             var idx = 0;
@@ -813,7 +793,7 @@ namespace FosMan {
                             fastObjectListViewRpdList.EndUpdate();
 
                             var msg = $"Загрузка файлов ({idx} из {files.Length})...";
-                            labelLoadRpd.Text = msg;
+                            //labelLoadRpd.Text = msg;
                             StatusMessage(msg);
                             //if (idx == files.Length) {
                             //    labelLoadRpd.Text += " завершено.";
@@ -830,7 +810,7 @@ namespace FosMan {
 
             await Task.WhenAll(tasks.ToArray());
 
-            labelLoadRpd.Text += " завершено.";
+            //labelLoadRpd.Text += " завершено.";
 
             if (errLog.Any()) {
                 var logFile = WriteErrorLog(errLog, "РПД");
@@ -1136,11 +1116,6 @@ namespace FosMan {
             }
         }
 
-        private void textBoxMatrixFileName_TextChanged(object sender, EventArgs e) {
-            App.Config.CompetenceMatrixFileName = textBoxMatrixFileName.Text;
-            App.SaveConfig();
-        }
-
         private void checkBoxStoreCurriculumList_CheckedChanged(object sender, EventArgs e) {
             App.Config.StoreCurriculumList = checkBoxStoreCurriculumList.Checked;
             App.SaveConfig();
@@ -1164,16 +1139,6 @@ namespace FosMan {
                 App.Curricula.Clear();
                 fastObjectListViewCurricula.ClearObjects();
             }
-        }
-
-        private void checkBoxCompetenceMatrixAutoload_CheckedChanged(object sender, EventArgs e) {
-            App.Config.CompetenceMatrixAutoload = checkBoxCompetenceMatrixAutoload.Checked;
-            App.SaveConfig();
-        }
-
-        private void checkBoxStoreRpdList_CheckedChanged(object sender, EventArgs e) {
-            App.Config.StoreRpdList = checkBoxStoreRpdList.Checked;
-            App.SaveConfig();
         }
 
         private void tabControlReports_DrawItem(object sender, DrawItemEventArgs e) {
@@ -1642,6 +1607,33 @@ namespace FosMan {
 
         private void iconToolStripButtonRpdRememberList_Click(object sender, EventArgs e) {
             App.Config.StoreRpdList = iconToolStripButtonRpdRememberList.Checked;
+            App.SaveConfig();
+        }
+
+        private void iconToolStripButtonComptenceMatrixReload_Click(object sender, EventArgs e) {
+            if (!string.IsNullOrEmpty(m_matrixFileName)) {
+                LoadCompetenceMatrix(m_matrixFileName, false);
+            }
+        }
+
+        private void iconToolStripButtonCompetenceMatrixOpen_Click(object sender, EventArgs e) {
+            if (!string.IsNullOrEmpty(m_matrixFileName) && File.Exists(m_matrixFileName)) {
+                openFileDialogSelectCompetenceMatrixFile.FileName = m_matrixFileName;
+                openFileDialogSelectCompetenceMatrixFile.InitialDirectory = Path.GetDirectoryName(m_matrixFileName);
+            }
+            else {
+                openFileDialogSelectCompetenceMatrixFile.InitialDirectory = Environment.CurrentDirectory;
+            }
+
+            if (openFileDialogSelectCompetenceMatrixFile.ShowDialog(this) == DialogResult.OK) {
+                m_matrixFileName = openFileDialogSelectCompetenceMatrixFile.FileName;
+                App.SaveConfig();
+                iconToolStripButtonComptenceMatrixReload.PerformClick();
+            }
+        }
+
+        private void iconToolStripButtonCompetenceMatrixAutoload_Click(object sender, EventArgs e) {
+            App.Config.CompetenceMatrixAutoload = iconToolStripButtonCompetenceMatrixAutoload.Checked;
             App.SaveConfig();
         }
     }

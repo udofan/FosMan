@@ -31,12 +31,12 @@
             fastObjectListViewFosList = new BrightIdeasSoftware.FastObjectListView();
             tabControl1 = new TabControl();
             tabPageCompetenceMatrix = new TabPage();
-            checkBoxCompetenceMatrixAutoload = new CheckBox();
+            toolStripCompetenceMatrix = new ToolStrip();
+            iconToolStripButtonCompetenceMatrixOpen = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButtonComptenceMatrixReload = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator8 = new ToolStripSeparator();
+            iconToolStripButtonCompetenceMatrixAutoload = new FontAwesome.Sharp.IconToolStripButton();
             webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
-            buttonLoadCompetenceMatrix = new Button();
-            buttonSelectMatrixFile = new Button();
-            label2 = new Label();
-            textBoxMatrixFileName = new TextBox();
             tabPageСurriculum = new TabPage();
             checkBoxStoreCurriculumList = new CheckBox();
             buttonCurriculumClearList = new Button();
@@ -144,6 +144,7 @@
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
+            toolStripCompetenceMatrix.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
             tabPageСurriculum.SuspendLayout();
             groupBoxDisciplines.SuspendLayout();
@@ -218,12 +219,8 @@
             // 
             // tabPageCompetenceMatrix
             // 
-            tabPageCompetenceMatrix.Controls.Add(checkBoxCompetenceMatrixAutoload);
+            tabPageCompetenceMatrix.Controls.Add(toolStripCompetenceMatrix);
             tabPageCompetenceMatrix.Controls.Add(webView21);
-            tabPageCompetenceMatrix.Controls.Add(buttonLoadCompetenceMatrix);
-            tabPageCompetenceMatrix.Controls.Add(buttonSelectMatrixFile);
-            tabPageCompetenceMatrix.Controls.Add(label2);
-            tabPageCompetenceMatrix.Controls.Add(textBoxMatrixFileName);
             tabPageCompetenceMatrix.Location = new Point(4, 23);
             tabPageCompetenceMatrix.Name = "tabPageCompetenceMatrix";
             tabPageCompetenceMatrix.Padding = new Padding(3);
@@ -232,19 +229,61 @@
             tabPageCompetenceMatrix.Text = "Матрица компетенций";
             tabPageCompetenceMatrix.UseVisualStyleBackColor = true;
             // 
-            // checkBoxCompetenceMatrixAutoload
+            // toolStripCompetenceMatrix
             // 
-            checkBoxCompetenceMatrixAutoload.AutoSize = true;
-            checkBoxCompetenceMatrixAutoload.Checked = true;
-            checkBoxCompetenceMatrixAutoload.CheckState = CheckState.Checked;
-            checkBoxCompetenceMatrixAutoload.Location = new Point(792, 17);
-            checkBoxCompetenceMatrixAutoload.Name = "checkBoxCompetenceMatrixAutoload";
-            checkBoxCompetenceMatrixAutoload.Size = new Size(99, 18);
-            checkBoxCompetenceMatrixAutoload.TabIndex = 5;
-            checkBoxCompetenceMatrixAutoload.Text = "Автозагрузка";
-            toolTip1.SetToolTip(checkBoxCompetenceMatrixAutoload, "Загружать последнюю выбранную матрицу \r\nкомпетенций при запуске приложения");
-            checkBoxCompetenceMatrixAutoload.UseVisualStyleBackColor = true;
-            checkBoxCompetenceMatrixAutoload.CheckedChanged += checkBoxCompetenceMatrixAutoload_CheckedChanged;
+            toolStripCompetenceMatrix.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            toolStripCompetenceMatrix.ImageScalingSize = new Size(24, 24);
+            toolStripCompetenceMatrix.Items.AddRange(new ToolStripItem[] { iconToolStripButtonCompetenceMatrixOpen, iconToolStripButtonComptenceMatrixReload, toolStripSeparator8, iconToolStripButtonCompetenceMatrixAutoload });
+            toolStripCompetenceMatrix.Location = new Point(3, 3);
+            toolStripCompetenceMatrix.Name = "toolStripCompetenceMatrix";
+            toolStripCompetenceMatrix.Size = new Size(995, 31);
+            toolStripCompetenceMatrix.TabIndex = 15;
+            toolStripCompetenceMatrix.Text = "toolStrip1";
+            // 
+            // iconToolStripButtonCompetenceMatrixOpen
+            // 
+            iconToolStripButtonCompetenceMatrixOpen.IconChar = FontAwesome.Sharp.IconChar.FolderOpen;
+            iconToolStripButtonCompetenceMatrixOpen.IconColor = Color.DarkBlue;
+            iconToolStripButtonCompetenceMatrixOpen.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonCompetenceMatrixOpen.IconSize = 24;
+            iconToolStripButtonCompetenceMatrixOpen.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonCompetenceMatrixOpen.Name = "iconToolStripButtonCompetenceMatrixOpen";
+            iconToolStripButtonCompetenceMatrixOpen.Size = new Size(95, 28);
+            iconToolStripButtonCompetenceMatrixOpen.Text = "Открыть...";
+            iconToolStripButtonCompetenceMatrixOpen.ToolTipText = "Открыть РПД-файлы и добавить в список";
+            iconToolStripButtonCompetenceMatrixOpen.Click += iconToolStripButtonCompetenceMatrixOpen_Click;
+            // 
+            // iconToolStripButtonComptenceMatrixReload
+            // 
+            iconToolStripButtonComptenceMatrixReload.IconChar = FontAwesome.Sharp.IconChar.Refresh;
+            iconToolStripButtonComptenceMatrixReload.IconColor = Color.DarkBlue;
+            iconToolStripButtonComptenceMatrixReload.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonComptenceMatrixReload.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonComptenceMatrixReload.Name = "iconToolStripButtonComptenceMatrixReload";
+            iconToolStripButtonComptenceMatrixReload.Size = new Size(102, 28);
+            iconToolStripButtonComptenceMatrixReload.Text = "Перечитать";
+            iconToolStripButtonComptenceMatrixReload.ToolTipText = "Перечитать выбранный файл матрицы компетенций";
+            iconToolStripButtonComptenceMatrixReload.Click += iconToolStripButtonComptenceMatrixReload_Click;
+            // 
+            // toolStripSeparator8
+            // 
+            toolStripSeparator8.Name = "toolStripSeparator8";
+            toolStripSeparator8.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonCompetenceMatrixAutoload
+            // 
+            iconToolStripButtonCompetenceMatrixAutoload.Checked = true;
+            iconToolStripButtonCompetenceMatrixAutoload.CheckOnClick = true;
+            iconToolStripButtonCompetenceMatrixAutoload.CheckState = CheckState.Checked;
+            iconToolStripButtonCompetenceMatrixAutoload.IconChar = FontAwesome.Sharp.IconChar.Brain;
+            iconToolStripButtonCompetenceMatrixAutoload.IconColor = Color.DarkBlue;
+            iconToolStripButtonCompetenceMatrixAutoload.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonCompetenceMatrixAutoload.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonCompetenceMatrixAutoload.Name = "iconToolStripButtonCompetenceMatrixAutoload";
+            iconToolStripButtonCompetenceMatrixAutoload.Size = new Size(108, 28);
+            iconToolStripButtonCompetenceMatrixAutoload.Text = "Автозагрузка";
+            iconToolStripButtonCompetenceMatrixAutoload.ToolTipText = "Загружать последнюю выбранную матрицу ";
+            iconToolStripButtonCompetenceMatrixAutoload.Click += iconToolStripButtonCompetenceMatrixAutoload_Click;
             // 
             // webView21
             // 
@@ -252,51 +291,11 @@
             webView21.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             webView21.CreationProperties = null;
             webView21.DefaultBackgroundColor = Color.White;
-            webView21.Location = new Point(8, 59);
+            webView21.Location = new Point(8, 37);
             webView21.Name = "webView21";
-            webView21.Size = new Size(985, 611);
+            webView21.Size = new Size(985, 633);
             webView21.TabIndex = 4;
             webView21.ZoomFactor = 1D;
-            // 
-            // buttonLoadCompetenceMatrix
-            // 
-            buttonLoadCompetenceMatrix.Location = new Point(676, 14);
-            buttonLoadCompetenceMatrix.Name = "buttonLoadCompetenceMatrix";
-            buttonLoadCompetenceMatrix.Size = new Size(91, 23);
-            buttonLoadCompetenceMatrix.TabIndex = 3;
-            buttonLoadCompetenceMatrix.Text = "Загрузить";
-            toolTip1.SetToolTip(buttonLoadCompetenceMatrix, "Загрузить в программу указанный файл матрицы компетенций");
-            buttonLoadCompetenceMatrix.UseVisualStyleBackColor = true;
-            buttonLoadCompetenceMatrix.Click += buttonLoadCompetenceMatrix_Click;
-            // 
-            // buttonSelectMatrixFile
-            // 
-            buttonSelectMatrixFile.Location = new Point(603, 14);
-            buttonSelectMatrixFile.Name = "buttonSelectMatrixFile";
-            buttonSelectMatrixFile.Size = new Size(33, 23);
-            buttonSelectMatrixFile.TabIndex = 2;
-            buttonSelectMatrixFile.Text = "...";
-            toolTip1.SetToolTip(buttonSelectMatrixFile, "Открыть диалог выбора файла матрицы компетенций");
-            buttonSelectMatrixFile.UseVisualStyleBackColor = true;
-            buttonSelectMatrixFile.Click += button1_Click;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Location = new Point(20, 18);
-            label2.Name = "label2";
-            label2.Size = new Size(41, 14);
-            label2.TabIndex = 1;
-            label2.Text = "Файл:";
-            // 
-            // textBoxMatrixFileName
-            // 
-            textBoxMatrixFileName.Location = new Point(67, 15);
-            textBoxMatrixFileName.Name = "textBoxMatrixFileName";
-            textBoxMatrixFileName.Size = new Size(530, 22);
-            textBoxMatrixFileName.TabIndex = 0;
-            textBoxMatrixFileName.Text = "c:\\FosMan\\Матрицы_компетенций\\test4.docx";
-            textBoxMatrixFileName.TextChanged += textBoxMatrixFileName_TextChanged;
             // 
             // tabPageСurriculum
             // 
@@ -306,10 +305,10 @@
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Location = new Point(4, 24);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1001, 678);
+            tabPageСurriculum.Size = new Size(1001, 677);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -418,10 +417,10 @@
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainer1);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1001, 678);
+            tabPageRpd.Size = new Size(1001, 677);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -882,10 +881,10 @@
             tabPage2.Controls.Add(fastObjectListViewFosList);
             tabPage2.Controls.Add(textBoxFosDir);
             tabPage2.Controls.Add(buttonSelectFosDir);
-            tabPage2.Location = new Point(4, 23);
+            tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1001, 678);
+            tabPage2.Size = new Size(1001, 677);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "ФОС";
             tabPage2.UseVisualStyleBackColor = true;
@@ -1100,7 +1099,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 578);
+            labelRpdGenStatus.Location = new Point(652, 579);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -1120,7 +1119,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(6, 536);
+            groupBox2.Location = new Point(6, 537);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 138);
             groupBox2.TabIndex = 14;
@@ -1225,7 +1224,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 536);
+            buttonGenerate.Location = new Point(652, 537);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -1240,7 +1239,7 @@
             groupBoxRpdGenDisciplineList.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxRpdGenDisciplineList.Location = new Point(8, 237);
             groupBoxRpdGenDisciplineList.Name = "groupBoxRpdGenDisciplineList";
-            groupBoxRpdGenDisciplineList.Size = new Size(984, 288);
+            groupBoxRpdGenDisciplineList.Size = new Size(984, 289);
             groupBoxRpdGenDisciplineList.TabIndex = 4;
             groupBoxRpdGenDisciplineList.TabStop = false;
             groupBoxRpdGenDisciplineList.Text = "3. Выбор дисциплин";
@@ -1257,7 +1256,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 267);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 268);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -1479,6 +1478,8 @@
             tabControl1.ResumeLayout(false);
             tabPageCompetenceMatrix.ResumeLayout(false);
             tabPageCompetenceMatrix.PerformLayout();
+            toolStripCompetenceMatrix.ResumeLayout(false);
+            toolStripCompetenceMatrix.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             tabPageСurriculum.ResumeLayout(false);
             tabPageСurriculum.PerformLayout();
@@ -1529,10 +1530,6 @@
         private TabPage tabPage2;
         private Label label1;
         private TabPage tabPageCompetenceMatrix;
-        private Button buttonLoadCompetenceMatrix;
-        private Button buttonSelectMatrixFile;
-        private Label label2;
-        private TextBox textBoxMatrixFileName;
         private OpenFileDialog openFileDialogSelectCompetenceMatrixFile;
         private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
         private TabPage tabPageСurriculum;
@@ -1592,7 +1589,6 @@
         private ToolTip toolTip1;
         private Button buttonCurriculumClearList;
         private CheckBox checkBoxStoreCurriculumList;
-        private CheckBox checkBoxCompetenceMatrixAutoload;
         private TabControl tabControlReports;
         private LinkLabel linkLabelRpdFixSelectFilesToFix;
         private Button buttonRpdFixSelectTargetDir;
@@ -1639,5 +1635,10 @@
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdFixMode;
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdRememberList;
         private ToolStripSeparator toolStripSeparator5;
+        private ToolStrip toolStripCompetenceMatrix;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonCompetenceMatrixOpen;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonComptenceMatrixReload;
+        private ToolStripSeparator toolStripSeparator8;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonCompetenceMatrixAutoload;
     }
 }
