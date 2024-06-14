@@ -116,6 +116,8 @@ namespace FosMan {
                 FillsFreeSpace = true
             };
             fastObjectListViewCurricula.Columns.Add(olvColumnCurriculumFileName);
+
+            fastObjectListViewCurricula.PrimarySortColumn = olvColumnCurriculumProfile;
         }
 
         void TuneDisciplineList(FastObjectListView list, bool addSemesterColumns) {
@@ -281,6 +283,8 @@ namespace FosMan {
                 }
             };
             list.Columns.Add(olvColumnTotalCompetenceList);
+
+            list.PrimarySortColumn = olvColumnName;
         }
 
         void TuneRpdList(FastObjectListView list) {
@@ -398,6 +402,8 @@ namespace FosMan {
                 FillsFreeSpace = true
             };
             list.Columns.Add(olvColumnFileName);
+
+            list.PrimarySortColumn = olvColumnDisciplineName;
         }
 
         void TuneRpdFindAndReplaceList() {
@@ -500,7 +506,7 @@ namespace FosMan {
 
                     if (App.Config.CurriculumList?.Any() ?? false) {
                         tabControl1.SelectTab(tabPageСurriculum);
-                        LoadCurriculumFiles(App.Config.CurriculumList.ToArray());
+                        LoadCurriculumFilesAsync(App.Config.CurriculumList.ToArray());
                     }
                     if (App.Config.RpdList?.Any() ?? false) {
                         tabControl1.SelectTab(tabPageRpd);
@@ -581,6 +587,8 @@ namespace FosMan {
         /// Загрузка УП по списку имен файлов
         /// </summary>
         /// <param name="files"></param>
+        /// 
+        /*
         void LoadCurriculumFiles(string[] files) {
             //labelExcelFileLoading.Visible = true;
             Application.UseWaitCursor = true;
@@ -622,20 +630,79 @@ namespace FosMan {
 
             Application.UseWaitCursor = false;
         }
+        */
 
-        private void buttonSelectExcelFiles_Click(object sender, EventArgs e) {
-            openFileDialogSelectCurriculumFiles.InitialDirectory = App.Config.CurriculumLastLocation ?? Environment.CurrentDirectory;
+        /// <summary>
+        /// Загрузка УП по списку имен файлов (асинхронно)
+        /// </summary>
+        /// <param name="files"></param>
+        private async Task LoadCurriculumFilesAsync(string[] files) {
+            Application.UseWaitCursor = true;
 
-            if (openFileDialogSelectCurriculumFiles.ShowDialog(this) == DialogResult.OK) {
-                if (openFileDialogSelectCurriculumFiles.FileNames.Length > 0) {
-                    App.Config.CurriculumLastLocation = Path.GetDirectoryName(openFileDialogSelectCurriculumFiles.FileNames[0]);
-                    App.SaveConfig();
-                }
+            var errLog = new ConcurrentDictionary<string, List<string>>();
+            var idx = 0;
 
-                var files = openFileDialogSelectCurriculumFiles.FileNames.Where(x => !App.HasCurriculumFile(x)).ToArray();
+            StatusMessage("Загружаем файлы...");
 
-                LoadCurriculumFiles(files);
+            var tasks = new List<Task>();
+
+            foreach (var file in files) {
+                tasks.Add(Task.Run(() => {
+                    Interlocked.Increment(ref idx);
+
+                    if (File.Exists(file)) {
+                        //проверяем: не загружен ли еще файл?
+                        var curr = App.Curricula.Values.FirstOrDefault(r => r.SourceFileName.Equals(file));
+                        if (curr != null) {
+                            Curriculum.LoadFromFile(file, curr);
+                        }
+                        else {
+                            curr = Curriculum.LoadFromFile(file, null);
+                            AddCurriculum(curr);
+                        }
+                        this.Invoke(new MethodInvoker(() => {
+                            fastObjectListViewCurricula.BeginUpdate();
+                            var selectedObjects = fastObjectListViewCurricula.SelectedObjects;
+                            if (fastObjectListViewCurricula.IndexOf(curr) >= 0) {
+                                fastObjectListViewCurricula.UpdateObject(curr);
+                            }
+                            else {
+                                fastObjectListViewCurricula.AddObject(curr);
+                            }
+                            fastObjectListViewCurricula.EnsureModelVisible(curr);
+                            selectedObjects.Add(curr);
+                            fastObjectListViewCurricula.SelectedObjects = selectedObjects;
+                            fastObjectListViewCurricula.EndUpdate();
+
+                            var msg = $"Загрузка файлов ({idx} из {files.Length})...";
+                            //labelLoadRpd.Text = msg;
+                            StatusMessage(msg);
+                            //if (idx == files.Length) {
+                            //    labelLoadRpd.Text += " завершено.";
+                            //}
+                            Application.DoEvents();
+                        }));
+
+                        if (curr.Errors.Any()) {
+                            errLog.TryAdd(file, curr.Errors);
+                        }
+                    }
+                }));
             }
+
+            await Task.WhenAll(tasks.ToArray());
+
+            //labelLoadRpd.Text += " завершено.";
+
+            if (errLog.Any()) {
+                var logFile = WriteErrorLog(errLog, "УП");
+            }
+            else {
+                StatusMessage($"Успешно загружено {files.Length} файл(а,ов)");
+            }
+
+            Application.UseWaitCursor = false;
+            Application.DoEvents();
         }
 
         private void fastObjectListViewCurricula_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
@@ -745,22 +812,12 @@ namespace FosMan {
         /// </summary>
         /// <param name="files"></param>
         private async Task LoadRpdFilesAsync(string[] files) {
-            //labelLoadRpd.Visible = true;
             Application.UseWaitCursor = true;
-            //labelLoadRpd.Text = "";
 
             var errLog = new ConcurrentDictionary<string, List<string>>();
             var idx = 0;
 
             StatusMessage("Загружаем файлы...");
-
-            //RpdAddEventHandler OnRpdAdd = (rpd) => {
-            //    this.BeginInvoke(new MethodInvoker(() => {
-            //        fastObjectListViewRpdList.AddObject(rpd);
-            //        labelLoadRpd.Text = $"Загрузка файлов ({idx} из {files.Length})...";
-            //    }));
-            //};
-            //App.RpdAdd += OnRpdAdd;
 
             var tasks = new List<Task>();
 
@@ -814,11 +871,6 @@ namespace FosMan {
 
             if (errLog.Any()) {
                 var logFile = WriteErrorLog(errLog, "РПД");
-
-                //var errCount = errLog.Sum(r => r.Value.Count);
-                //StatusMessage($"Во время загрузки обнаружены ошибки ({errCount}). Они сохранены в журнале {logFile}", true);
-                //MessageBox.Show($"Во время загрузки обнаружены ошибки.\r\nОни сохранены в журнале {reportFile}.", "Внимание",
-                //              MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             else {
                 StatusMessage($"Успешно загружено {files.Length} файл(а,ов)");
@@ -1644,7 +1696,7 @@ namespace FosMan {
 
                 var files = openFileDialogSelectCurriculumFiles.FileNames.Where(x => !App.HasCurriculumFile(x)).ToArray();
 
-                LoadCurriculumFiles(files);
+                LoadCurriculumFilesAsync(files);
             }
         }
 
@@ -1659,6 +1711,14 @@ namespace FosMan {
         private void iconToolStripButtonCurriculaRememberList_Click(object sender, EventArgs e) {
             App.Config.StoreCurriculumList = iconToolStripButtonCurriculaRememberList.Checked;
             App.SaveConfig();
+        }
+
+        private void iconToolStripButton2_Click(object sender, EventArgs e) {
+            var curriculaList = fastObjectListViewCurricula.SelectedObjects?.Cast<Curriculum>().ToList();
+            if (curriculaList.Any()) {
+                var files = curriculaList.Select(curr => curr.SourceFileName);
+                LoadCurriculumFilesAsync(files.ToArray());
+            }
         }
     }
 }

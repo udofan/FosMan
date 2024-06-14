@@ -266,9 +266,8 @@ namespace FosMan {
         /// </summary>
         /// <param name="fileName"></param>
         public static Rpd LoadFromFile(string fileName, Rpd rpd = null) {
-            if (rpd == null) {
-                rpd = new();
-            }
+            rpd ??= new();
+            
             rpd.Errors = [];
             rpd.SourceFileName = fileName;
             rpd.EducationalWorks = [];

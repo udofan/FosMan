@@ -76,12 +76,21 @@ namespace FosMan {
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static Curriculum LoadFromFile(string fileName) {
-            var curriculum = new Curriculum() {
-                SourceFileName = fileName,
-                Errors = [], 
-                Disciplines = []
-            };
+        public static Curriculum LoadFromFile(string fileName, Curriculum curriculum) {
+            curriculum ??= new();
+
+            curriculum.SourceFileName = fileName;
+            curriculum.Errors = [];
+            curriculum.Disciplines = [];
+            curriculum.FSES = string.Empty;
+            curriculum.Faculty = string.Empty;
+            curriculum.AcademicYear = string.Empty;
+            curriculum.Degree = Enums.EDegree.Unknown;
+            curriculum.Department = string.Empty;
+            curriculum.DirectionCode = string.Empty;
+            curriculum.DirectionName = string.Empty;
+            curriculum.FormOfStudy = Enums.EFormOfStudy.Unknown;
+            curriculum.Profile = string.Empty;
 
             try {
                 Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);

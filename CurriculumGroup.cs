@@ -1,5 +1,6 @@
 ﻿using FastMember;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,8 +14,8 @@ namespace FosMan {
     /// </summary>
     internal class CurriculumGroup {
         static TypeAccessor m_typeAccessor = TypeAccessor.Create(typeof(CurriculumGroup));
-        Dictionary<string, CurriculumDiscipline> m_disciplines = [];
-        Dictionary<string, Curriculum> m_curricula = [];
+        ConcurrentDictionary<string, CurriculumDiscipline> m_disciplines = [];
+        ConcurrentDictionary<string, Curriculum> m_curricula = [];
         string m_formsOfStudyList = null;
 
         /// <summary>
@@ -51,11 +52,11 @@ namespace FosMan {
         /// <summary>
         /// УП, входящие в группу
         /// </summary>
-        public Dictionary<string, Curriculum> Curricula { get => m_curricula; }
+        public ConcurrentDictionary<string, Curriculum> Curricula { get => m_curricula; }
         /// <summary>
         /// Список дисциплин из группы
         /// </summary>
-        public Dictionary<string, CurriculumDiscipline> Disciplines { get => m_disciplines; }
+        public ConcurrentDictionary<string, CurriculumDiscipline> Disciplines { get => m_disciplines; }
         /// <summary>
         /// Дисциплины для генерации
         /// </summary>
