@@ -1560,5 +1560,89 @@ namespace FosMan {
                 LoadRpdFilesAsync(files.ToArray());
             }
         }
+
+        private void iconToolStripButtonRpdOpen_Click(object sender, EventArgs e) {
+            openFileDialogSelectRpd.InitialDirectory = App.Config.RpdLastLocation ?? Environment.CurrentDirectory;
+
+            if (openFileDialogSelectRpd.ShowDialog(this) == DialogResult.OK) {
+                var files = openFileDialogSelectRpd.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
+
+                if (openFileDialogSelectRpd.FileNames.Length > 0) {
+                    App.Config.RpdLastLocation = Path.GetDirectoryName(openFileDialogSelectRpd.FileNames[0]);
+                    App.SaveConfig();
+                }
+
+                LoadRpdFilesAsync(files);
+            }
+        }
+
+        private void iconToolStripButtonRpdReload_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var files = rpdList.Select(rpd => rpd.SourceFileName);
+                LoadRpdFilesAsync(files.ToArray());
+            }
+        }
+
+        private void iconToolStripButtonRpdClear_Click(object sender, EventArgs e) {
+            if (MessageBox.Show("Вы уверены, что хотите очистить список загруженных РПД?",
+                    "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                App.RpdList.Clear();
+                fastObjectListViewRpdList.ClearObjects();
+            }
+        }
+
+        private void iconToolStripButtonRpdToDb_Click(object sender, EventArgs e) {
+            var sw = Stopwatch.StartNew();
+
+            App.AddLoadedRpdToStore();
+
+            StatusMessage($"В Стор добавлены РПД ({App.RpdList.Count} шт.) ({sw.Elapsed}). Всего в Сторе РПД: {App.Store.RpdDic.Count} шт.");
+        }
+
+        private void iconToolStripButtonRpdFromDb_Click(object sender, EventArgs e) {
+            if (MessageBox.Show($"Вы уверены, что хотите загрузить в список РПД из Стора ({App.Store.RpdDic.Count} шт.)?", "Загрузка РПД",
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                if (App.Store?.RpdDic?.Any() ?? false) {
+                    fastObjectListViewRpdList.BeginUpdate();
+                    var selectedObjects = fastObjectListViewRpdList.SelectedObjects;
+
+                    foreach (var rpd in App.Store.RpdDic.Values) {
+                        App.AddRpd(rpd);
+
+                        fastObjectListViewRpdList.AddObject(rpd);
+                        fastObjectListViewRpdList.EnsureModelVisible(rpd);
+                        selectedObjects.Add(rpd);
+                    }
+                    fastObjectListViewRpdList.SelectedObjects = selectedObjects;
+                    fastObjectListViewRpdList.EndUpdate();
+                }
+            }
+        }
+
+        private void iconToolStripButtonRpdCheck_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var targetDir = textBoxRpdGenTargetDir.Text;
+                if (string.IsNullOrEmpty(targetDir)) {
+                    targetDir = Path.Combine(Environment.CurrentDirectory, $"Исправленные_РПД_{DateTime.Now:yyyy-MM-dd}");
+                }
+                App.CheckRdp(rpdList, out var report);
+
+                AddReport("Проверка РПД", report);
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Исправление РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+        private void iconToolStripButtonRpdFixMode_Click(object sender, EventArgs e) {
+            ShowHideRpdFixMode(splitContainer1.SplitterDistance == 0);
+        }
+
+        private void iconToolStripButtonRpdRememberList_Click(object sender, EventArgs e) {
+            App.Config.StoreRpdList = iconToolStripButtonRpdRememberList.Checked;
+            App.SaveConfig();
+        }
     }
 }

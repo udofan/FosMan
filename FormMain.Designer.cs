@@ -46,12 +46,20 @@
             fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
             buttonSelectExcelFiles = new Button();
             tabPageRpd = new TabPage();
-            iconButtonRpdRefresh = new FontAwesome.Sharp.IconButton();
-            buttonRpdLoadFromDb = new Button();
-            buttonRpdSaveToDb = new Button();
-            buttonRpdListClear = new Button();
-            checkBoxStoreRpdList = new CheckBox();
-            buttonRpdShowFixMode = new Button();
+            toolStripRpd = new ToolStrip();
+            iconToolStripButtonRpdOpen = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButtonRpdReload = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator1 = new ToolStripSeparator();
+            iconToolStripButtonRpdClear = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator2 = new ToolStripSeparator();
+            iconToolStripButtonRpdFromDb = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButtonRpdToDb = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator3 = new ToolStripSeparator();
+            iconToolStripButtonRpdRememberList = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator5 = new ToolStripSeparator();
+            iconToolStripButtonRpdCheck = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator4 = new ToolStripSeparator();
+            iconToolStripButtonRpdFixMode = new FontAwesome.Sharp.IconToolStripButton();
             splitContainer1 = new SplitContainer();
             groupBox4 = new GroupBox();
             checkBoxRpdFixRemoveColorSelection = new CheckBox();
@@ -75,9 +83,6 @@
             checkBoxRpdFixSummaryTableOfEduWorks = new CheckBox();
             checkBoxRpdFixTableOfCompetences = new CheckBox();
             fastObjectListViewRpdList = new BrightIdeasSoftware.FastObjectListView();
-            buttonRpdCheck = new Button();
-            labelLoadRpd = new Label();
-            buttonSelectRpdFiles = new Button();
             tabPage2 = new TabPage();
             label1 = new Label();
             tabPageReports = new TabPage();
@@ -145,6 +150,7 @@
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplines).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).BeginInit();
             tabPageRpd.SuspendLayout();
+            toolStripRpd.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -300,10 +306,10 @@
             tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
             tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 24);
+            tabPageСurriculum.Location = new Point(4, 23);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1001, 677);
+            tabPageСurriculum.Size = new Size(1001, 678);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -337,7 +343,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 402);
+            groupBoxDisciplines.Location = new Point(8, 403);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(985, 279);
             groupBoxDisciplines.TabIndex = 3;
@@ -383,7 +389,7 @@
             fastObjectListViewCurricula.Location = new Point(8, 57);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(985, 339);
+            fastObjectListViewCurricula.Size = new Size(985, 340);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -410,16 +416,8 @@
             // 
             // tabPageRpd
             // 
-            tabPageRpd.Controls.Add(iconButtonRpdRefresh);
-            tabPageRpd.Controls.Add(buttonRpdLoadFromDb);
-            tabPageRpd.Controls.Add(buttonRpdSaveToDb);
-            tabPageRpd.Controls.Add(buttonRpdListClear);
-            tabPageRpd.Controls.Add(checkBoxStoreRpdList);
-            tabPageRpd.Controls.Add(buttonRpdShowFixMode);
+            tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainer1);
-            tabPageRpd.Controls.Add(buttonRpdCheck);
-            tabPageRpd.Controls.Add(labelLoadRpd);
-            tabPageRpd.Controls.Add(buttonSelectRpdFiles);
             tabPageRpd.Location = new Point(4, 23);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
@@ -428,82 +426,149 @@
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
             // 
-            // iconButtonRpdRefresh
+            // toolStripRpd
             // 
-            iconButtonRpdRefresh.IconChar = FontAwesome.Sharp.IconChar.Refresh;
-            iconButtonRpdRefresh.IconColor = Color.Black;
-            iconButtonRpdRefresh.IconFont = FontAwesome.Sharp.IconFont.Auto;
-            iconButtonRpdRefresh.IconSize = 20;
-            iconButtonRpdRefresh.Location = new Point(487, 18);
-            iconButtonRpdRefresh.Name = "iconButtonRpdRefresh";
-            iconButtonRpdRefresh.Size = new Size(30, 23);
-            iconButtonRpdRefresh.TabIndex = 13;
-            iconButtonRpdRefresh.UseVisualStyleBackColor = true;
-            iconButtonRpdRefresh.Click += iconButtonRpdRefresh_Click;
+            toolStripRpd.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            toolStripRpd.ImageScalingSize = new Size(24, 24);
+            toolStripRpd.Items.AddRange(new ToolStripItem[] { iconToolStripButtonRpdOpen, iconToolStripButtonRpdReload, toolStripSeparator1, iconToolStripButtonRpdClear, toolStripSeparator2, iconToolStripButtonRpdFromDb, iconToolStripButtonRpdToDb, toolStripSeparator3, iconToolStripButtonRpdRememberList, toolStripSeparator5, iconToolStripButtonRpdCheck, toolStripSeparator4, iconToolStripButtonRpdFixMode });
+            toolStripRpd.Location = new Point(3, 3);
+            toolStripRpd.Name = "toolStripRpd";
+            toolStripRpd.Size = new Size(995, 31);
+            toolStripRpd.TabIndex = 14;
+            toolStripRpd.Text = "toolStrip1";
             // 
-            // buttonRpdLoadFromDb
+            // iconToolStripButtonRpdOpen
             // 
-            buttonRpdLoadFromDb.Location = new Point(608, 18);
-            buttonRpdLoadFromDb.Name = "buttonRpdLoadFromDb";
-            buttonRpdLoadFromDb.Size = new Size(59, 23);
-            buttonRpdLoadFromDb.TabIndex = 12;
-            buttonRpdLoadFromDb.Text = "Из БД";
-            toolTip1.SetToolTip(buttonRpdLoadFromDb, "Загрузить РПД из БД");
-            buttonRpdLoadFromDb.UseVisualStyleBackColor = true;
-            buttonRpdLoadFromDb.Click += buttonRpdLoadFromDb_Click;
+            iconToolStripButtonRpdOpen.IconChar = FontAwesome.Sharp.IconChar.FolderOpen;
+            iconToolStripButtonRpdOpen.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdOpen.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdOpen.IconSize = 24;
+            iconToolStripButtonRpdOpen.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdOpen.Name = "iconToolStripButtonRpdOpen";
+            iconToolStripButtonRpdOpen.Size = new Size(95, 28);
+            iconToolStripButtonRpdOpen.Text = "Открыть...";
+            iconToolStripButtonRpdOpen.ToolTipText = "Открыть РПД-файлы и добавить в список";
+            iconToolStripButtonRpdOpen.Click += iconToolStripButtonRpdOpen_Click;
             // 
-            // buttonRpdSaveToDb
+            // iconToolStripButtonRpdReload
             // 
-            buttonRpdSaveToDb.Location = new Point(673, 18);
-            buttonRpdSaveToDb.Name = "buttonRpdSaveToDb";
-            buttonRpdSaveToDb.Size = new Size(59, 23);
-            buttonRpdSaveToDb.TabIndex = 11;
-            buttonRpdSaveToDb.Text = "В БД";
-            toolTip1.SetToolTip(buttonRpdSaveToDb, "Сохранить РПД из списка в БД");
-            buttonRpdSaveToDb.UseVisualStyleBackColor = true;
-            buttonRpdSaveToDb.Click += buttonRpdSaveToDb_Click;
+            iconToolStripButtonRpdReload.IconChar = FontAwesome.Sharp.IconChar.Refresh;
+            iconToolStripButtonRpdReload.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdReload.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdReload.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdReload.Name = "iconToolStripButtonRpdReload";
+            iconToolStripButtonRpdReload.Size = new Size(102, 28);
+            iconToolStripButtonRpdReload.Text = "Перечитать";
+            iconToolStripButtonRpdReload.ToolTipText = "Перечитать выделенные РПД";
+            iconToolStripButtonRpdReload.Click += iconToolStripButtonRpdReload_Click;
             // 
-            // buttonRpdListClear
+            // toolStripSeparator1
             // 
-            buttonRpdListClear.Location = new Point(523, 18);
-            buttonRpdListClear.Name = "buttonRpdListClear";
-            buttonRpdListClear.Size = new Size(75, 23);
-            buttonRpdListClear.TabIndex = 10;
-            buttonRpdListClear.Text = "Очистить";
-            toolTip1.SetToolTip(buttonRpdListClear, "Очистить список загруженных РПД");
-            buttonRpdListClear.UseVisualStyleBackColor = true;
-            buttonRpdListClear.Click += buttonRpdListClear_Click;
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(6, 31);
             // 
-            // checkBoxStoreRpdList
+            // iconToolStripButtonRpdClear
             // 
-            checkBoxStoreRpdList.AutoSize = true;
-            checkBoxStoreRpdList.Location = new Point(389, 21);
-            checkBoxStoreRpdList.Name = "checkBoxStoreRpdList";
-            checkBoxStoreRpdList.Size = new Size(92, 18);
-            checkBoxStoreRpdList.TabIndex = 9;
-            checkBoxStoreRpdList.Text = "Запоминать";
-            toolTip1.SetToolTip(checkBoxStoreRpdList, "Запоминать список при выходе из приложения");
-            checkBoxStoreRpdList.UseVisualStyleBackColor = true;
-            checkBoxStoreRpdList.CheckedChanged += checkBoxStoreRpdList_CheckedChanged;
+            iconToolStripButtonRpdClear.IconChar = FontAwesome.Sharp.IconChar.TrashCan;
+            iconToolStripButtonRpdClear.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdClear.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdClear.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdClear.Name = "iconToolStripButtonRpdClear";
+            iconToolStripButtonRpdClear.Size = new Size(101, 28);
+            iconToolStripButtonRpdClear.Text = "Очистить...";
+            iconToolStripButtonRpdClear.ToolTipText = "Очистить список";
+            iconToolStripButtonRpdClear.Click += iconToolStripButtonRpdClear_Click;
             // 
-            // buttonRpdShowFixMode
+            // toolStripSeparator2
             // 
-            buttonRpdShowFixMode.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonRpdShowFixMode.Location = new Point(838, 18);
-            buttonRpdShowFixMode.Name = "buttonRpdShowFixMode";
-            buttonRpdShowFixMode.Size = new Size(154, 23);
-            buttonRpdShowFixMode.TabIndex = 8;
-            buttonRpdShowFixMode.Text = "Режим исправлений";
-            toolTip1.SetToolTip(buttonRpdShowFixMode, "Показать/Скрыть режим исправлений");
-            buttonRpdShowFixMode.UseVisualStyleBackColor = true;
-            buttonRpdShowFixMode.Click += buttonRpdShowFixMode_Click;
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonRpdFromDb
+            // 
+            iconToolStripButtonRpdFromDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightFromFile;
+            iconToolStripButtonRpdFromDb.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdFromDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdFromDb.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdFromDb.Name = "iconToolStripButtonRpdFromDb";
+            iconToolStripButtonRpdFromDb.Size = new Size(89, 28);
+            iconToolStripButtonRpdFromDb.Text = "Загрузить";
+            iconToolStripButtonRpdFromDb.ToolTipText = "Загрузить РПД из БД";
+            iconToolStripButtonRpdFromDb.Click += iconToolStripButtonRpdFromDb_Click;
+            // 
+            // iconToolStripButtonRpdToDb
+            // 
+            iconToolStripButtonRpdToDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightToFile;
+            iconToolStripButtonRpdToDb.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdToDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdToDb.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdToDb.Name = "iconToolStripButtonRpdToDb";
+            iconToolStripButtonRpdToDb.Size = new Size(94, 28);
+            iconToolStripButtonRpdToDb.Text = "Сохранить";
+            iconToolStripButtonRpdToDb.ToolTipText = "Сохранить РПД из списка в БД";
+            iconToolStripButtonRpdToDb.Click += iconToolStripButtonRpdToDb_Click;
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonRpdRememberList
+            // 
+            iconToolStripButtonRpdRememberList.Checked = true;
+            iconToolStripButtonRpdRememberList.CheckOnClick = true;
+            iconToolStripButtonRpdRememberList.CheckState = CheckState.Checked;
+            iconToolStripButtonRpdRememberList.IconChar = FontAwesome.Sharp.IconChar.Brain;
+            iconToolStripButtonRpdRememberList.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdRememberList.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdRememberList.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdRememberList.Name = "iconToolStripButtonRpdRememberList";
+            iconToolStripButtonRpdRememberList.Size = new Size(101, 28);
+            iconToolStripButtonRpdRememberList.Text = "Запоминать";
+            iconToolStripButtonRpdRememberList.ToolTipText = "Запоминать список при выходе из приложения";
+            iconToolStripButtonRpdRememberList.Click += iconToolStripButtonRpdRememberList_Click;
+            // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonRpdCheck
+            // 
+            iconToolStripButtonRpdCheck.IconChar = FontAwesome.Sharp.IconChar.ListCheck;
+            iconToolStripButtonRpdCheck.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdCheck.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdCheck.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdCheck.Name = "iconToolStripButtonRpdCheck";
+            iconToolStripButtonRpdCheck.Size = new Size(96, 28);
+            iconToolStripButtonRpdCheck.Text = "Проверить";
+            iconToolStripButtonRpdCheck.ToolTipText = "Проверить загруженные РПД и сформировать отчёт";
+            iconToolStripButtonRpdCheck.Click += iconToolStripButtonRpdCheck_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonRpdFixMode
+            // 
+            iconToolStripButtonRpdFixMode.CheckOnClick = true;
+            iconToolStripButtonRpdFixMode.IconChar = FontAwesome.Sharp.IconChar.ScrewdriverWrench;
+            iconToolStripButtonRpdFixMode.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdFixMode.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdFixMode.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdFixMode.Name = "iconToolStripButtonRpdFixMode";
+            iconToolStripButtonRpdFixMode.Size = new Size(152, 28);
+            iconToolStripButtonRpdFixMode.Text = "Режим исправлений";
+            iconToolStripButtonRpdFixMode.ToolTipText = "Показать/Скрыть режим исправлений";
+            iconToolStripButtonRpdFixMode.Click += iconToolStripButtonRpdFixMode_Click;
             // 
             // splitContainer1
             // 
             splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             splitContainer1.FixedPanel = FixedPanel.Panel1;
             splitContainer1.IsSplitterFixed = true;
-            splitContainer1.Location = new Point(8, 56);
+            splitContainer1.Location = new Point(8, 37);
             splitContainer1.Name = "splitContainer1";
             splitContainer1.Orientation = Orientation.Horizontal;
             // 
@@ -515,7 +580,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(985, 683);
+            splitContainer1.Size = new Size(985, 635);
             splitContainer1.SplitterDistance = 280;
             splitContainer1.TabIndex = 7;
             // 
@@ -798,7 +863,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(985, 399);
+            fastObjectListViewRpdList.Size = new Size(985, 351);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -811,49 +876,16 @@
             fastObjectListViewRpdList.FormatRow += fastObjectListViewRpdList_FormatRow;
             fastObjectListViewRpdList.ItemActivate += fastObjectListViewRpdList_ItemActivate;
             // 
-            // buttonRpdCheck
-            // 
-            buttonRpdCheck.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonRpdCheck.Location = new Point(738, 18);
-            buttonRpdCheck.Name = "buttonRpdCheck";
-            buttonRpdCheck.Size = new Size(94, 23);
-            buttonRpdCheck.TabIndex = 6;
-            buttonRpdCheck.Text = "Проверить";
-            toolTip1.SetToolTip(buttonRpdCheck, "Проверить загруженные РПД и сформировать отчёт");
-            buttonRpdCheck.UseVisualStyleBackColor = true;
-            buttonRpdCheck.Click += buttonRpdCheck_Click;
-            // 
-            // labelLoadRpd
-            // 
-            labelLoadRpd.AutoSize = true;
-            labelLoadRpd.Location = new Point(145, 22);
-            labelLoadRpd.Name = "labelLoadRpd";
-            labelLoadRpd.Size = new Size(66, 14);
-            labelLoadRpd.TabIndex = 5;
-            labelLoadRpd.Text = "Загрузка...";
-            labelLoadRpd.Visible = false;
-            // 
-            // buttonSelectRpdFiles
-            // 
-            buttonSelectRpdFiles.Location = new Point(16, 18);
-            buttonSelectRpdFiles.Name = "buttonSelectRpdFiles";
-            buttonSelectRpdFiles.Size = new Size(123, 23);
-            buttonSelectRpdFiles.TabIndex = 3;
-            buttonSelectRpdFiles.Text = "Выбор файлов...";
-            toolTip1.SetToolTip(buttonSelectRpdFiles, "Открыть диалог выбора РПД-файлов");
-            buttonSelectRpdFiles.UseVisualStyleBackColor = true;
-            buttonSelectRpdFiles.Click += buttonSelectRpdFiles_Click;
-            // 
             // tabPage2
             // 
             tabPage2.Controls.Add(label1);
             tabPage2.Controls.Add(fastObjectListViewFosList);
             tabPage2.Controls.Add(textBoxFosDir);
             tabPage2.Controls.Add(buttonSelectFosDir);
-            tabPage2.Location = new Point(4, 24);
+            tabPage2.Location = new Point(4, 23);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1001, 677);
+            tabPage2.Size = new Size(1001, 678);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "ФОС";
             tabPage2.UseVisualStyleBackColor = true;
@@ -1455,6 +1487,8 @@
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).EndInit();
             tabPageRpd.ResumeLayout(false);
             tabPageRpd.PerformLayout();
+            toolStripRpd.ResumeLayout(false);
+            toolStripRpd.PerformLayout();
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
@@ -1508,12 +1542,9 @@
         private Label labelExcelFileLoading;
         private GroupBox groupBoxDisciplines;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewDisciplines;
-        private Label labelLoadRpd;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewRpdList;
-        private Button buttonSelectRpdFiles;
         private OpenFileDialog openFileDialogSelectRpd;
         private OpenFileDialog openFileDialog4;
-        private Button buttonRpdCheck;
         private TabPage tabPageReports;
         private Button buttonSaveRpdReport;
         private TabPage tabPageRpdGeneration;
@@ -1549,7 +1580,6 @@
         private Label label11;
         private TextBox textBoxRpdGenFSES;
         private Label label12;
-        private Button buttonRpdShowFixMode;
         private SplitContainer splitContainer1;
         private GroupBox groupBox4;
         private CheckBox checkBoxRpdFixTableOfCompetences;
@@ -1563,13 +1593,11 @@
         private Button buttonCurriculumClearList;
         private CheckBox checkBoxStoreCurriculumList;
         private CheckBox checkBoxCompetenceMatrixAutoload;
-        private CheckBox checkBoxStoreRpdList;
         private TabControl tabControlReports;
         private LinkLabel linkLabelRpdFixSelectFilesToFix;
         private Button buttonRpdFixSelectTargetDir;
         private TextBox textBoxRpdFixTargetDir;
         private Label label13;
-        private Button buttonRpdListClear;
         private CheckBox checkBoxRpdFixByTemplate;
         private TextBox textBoxRpdFixFileTemplate;
         private CheckBox checkBoxApplyLoadedRpd;
@@ -1594,11 +1622,22 @@
         private Label label18;
         private TextBox textBoxYaGptTemp;
         private CheckBox checkBoxRpdFixSetPrevAndNextDisciplines;
-        private Button buttonRpdSaveToDb;
-        private Button buttonRpdLoadFromDb;
         private LinkLabel linkLabelRpdFixGenerateNextDisciplines;
         private LinkLabel linkLabelRpdFixGeneratePrevDisciplines;
         private CheckBox checkBoxRpdFixRemoveColorSelection;
-        private FontAwesome.Sharp.IconButton iconButtonRpdRefresh;
+        private ToolStrip toolStripRpd;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdOpen;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdReload;
+        private ToolStripSeparator toolStripSeparator1;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdClear;
+        private ToolStripSeparator toolStripSeparator2;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdFromDb;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdToDb;
+        private ToolStripSeparator toolStripSeparator3;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdCheck;
+        private ToolStripSeparator toolStripSeparator4;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdFixMode;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdRememberList;
+        private ToolStripSeparator toolStripSeparator5;
     }
 }
