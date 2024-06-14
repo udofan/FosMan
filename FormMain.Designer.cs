@@ -38,13 +38,19 @@
             iconToolStripButtonCompetenceMatrixAutoload = new FontAwesome.Sharp.IconToolStripButton();
             webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             tabPageСurriculum = new TabPage();
-            checkBoxStoreCurriculumList = new CheckBox();
-            buttonCurriculumClearList = new Button();
+            toolStrip1 = new ToolStrip();
+            iconToolStripButtonCurriculaOpen = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButton2 = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator6 = new ToolStripSeparator();
+            iconToolStripButtonCurriculaClear = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator7 = new ToolStripSeparator();
+            iconToolStripButtonCurriculaFromDb = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButtonCurriculaToDb = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator9 = new ToolStripSeparator();
+            iconToolStripButtonCurriculaRememberList = new FontAwesome.Sharp.IconToolStripButton();
             groupBoxDisciplines = new GroupBox();
             fastObjectListViewDisciplines = new BrightIdeasSoftware.FastObjectListView();
-            labelExcelFileLoading = new Label();
             fastObjectListViewCurricula = new BrightIdeasSoftware.FastObjectListView();
-            buttonSelectExcelFiles = new Button();
             tabPageRpd = new TabPage();
             toolStripRpd = new ToolStrip();
             iconToolStripButtonRpdOpen = new FontAwesome.Sharp.IconToolStripButton();
@@ -141,12 +147,27 @@
             toolTip1 = new ToolTip(components);
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
+            toolStrip2 = new ToolStrip();
+            iconToolStripButtonFosOpen = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButtonFosReload = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator10 = new ToolStripSeparator();
+            iconToolStripButtonFosClear = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator11 = new ToolStripSeparator();
+            iconToolStripButtonFosFromDb = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButtonFosToDb = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator12 = new ToolStripSeparator();
+            iconToolStripButtonForRememberList = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator13 = new ToolStripSeparator();
+            iconToolStripButtonFosCheck = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator14 = new ToolStripSeparator();
+            iconToolStripButtonFosFixMode = new FontAwesome.Sharp.IconToolStripButton();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
             toolStripCompetenceMatrix.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
             tabPageСurriculum.SuspendLayout();
+            toolStrip1.SuspendLayout();
             groupBoxDisciplines.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplines).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).BeginInit();
@@ -171,11 +192,12 @@
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplineListForGeneration).BeginInit();
             tabPageYaGPT.SuspendLayout();
             statusStrip1.SuspendLayout();
+            toolStrip2.SuspendLayout();
             SuspendLayout();
             // 
             // buttonSelectFosDir
             // 
-            buttonSelectFosDir.Location = new Point(434, 20);
+            buttonSelectFosDir.Location = new Point(443, 46);
             buttonSelectFosDir.Name = "buttonSelectFosDir";
             buttonSelectFosDir.Size = new Size(75, 23);
             buttonSelectFosDir.TabIndex = 0;
@@ -184,7 +206,7 @@
             // 
             // textBoxFosDir
             // 
-            textBoxFosDir.Location = new Point(123, 21);
+            textBoxFosDir.Location = new Point(132, 47);
             textBoxFosDir.Name = "textBoxFosDir";
             textBoxFosDir.Size = new Size(305, 22);
             textBoxFosDir.TabIndex = 1;
@@ -192,7 +214,7 @@
             // fastObjectListViewFosList
             // 
             fastObjectListViewFosList.GridLines = true;
-            fastObjectListViewFosList.Location = new Point(21, 60);
+            fastObjectListViewFosList.Location = new Point(30, 86);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
             fastObjectListViewFosList.Size = new Size(496, 404);
@@ -213,7 +235,7 @@
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1009, 705);
+            tabControl1.Size = new Size(1009, 704);
             tabControl1.TabIndex = 1;
             tabControl1.SelectedIndexChanged += tabControl1_SelectedIndexChanged;
             // 
@@ -299,13 +321,10 @@
             // 
             // tabPageСurriculum
             // 
-            tabPageСurriculum.Controls.Add(checkBoxStoreCurriculumList);
-            tabPageСurriculum.Controls.Add(buttonCurriculumClearList);
+            tabPageСurriculum.Controls.Add(toolStrip1);
             tabPageСurriculum.Controls.Add(groupBoxDisciplines);
-            tabPageСurriculum.Controls.Add(labelExcelFileLoading);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
-            tabPageСurriculum.Controls.Add(buttonSelectExcelFiles);
-            tabPageСurriculum.Location = new Point(4, 24);
+            tabPageСurriculum.Location = new Point(4, 23);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
             tabPageСurriculum.Size = new Size(1001, 677);
@@ -313,38 +332,115 @@
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
             // 
-            // checkBoxStoreCurriculumList
+            // toolStrip1
             // 
-            checkBoxStoreCurriculumList.AutoSize = true;
-            checkBoxStoreCurriculumList.Checked = true;
-            checkBoxStoreCurriculumList.CheckState = CheckState.Checked;
-            checkBoxStoreCurriculumList.Location = new Point(699, 22);
-            checkBoxStoreCurriculumList.Name = "checkBoxStoreCurriculumList";
-            checkBoxStoreCurriculumList.Size = new Size(135, 18);
-            checkBoxStoreCurriculumList.TabIndex = 6;
-            checkBoxStoreCurriculumList.Text = "Запоминать список";
-            toolTip1.SetToolTip(checkBoxStoreCurriculumList, "Запоминать список файлов для восстановления \r\nпри следующем запуске приложения\r\n");
-            checkBoxStoreCurriculumList.UseVisualStyleBackColor = true;
-            checkBoxStoreCurriculumList.CheckedChanged += checkBoxStoreCurriculumList_CheckedChanged;
+            toolStrip1.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            toolStrip1.ImageScalingSize = new Size(24, 24);
+            toolStrip1.Items.AddRange(new ToolStripItem[] { iconToolStripButtonCurriculaOpen, iconToolStripButton2, toolStripSeparator6, iconToolStripButtonCurriculaClear, toolStripSeparator7, iconToolStripButtonCurriculaFromDb, iconToolStripButtonCurriculaToDb, toolStripSeparator9, iconToolStripButtonCurriculaRememberList });
+            toolStrip1.Location = new Point(3, 3);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.Size = new Size(995, 31);
+            toolStrip1.TabIndex = 15;
+            toolStrip1.Text = "toolStrip1";
             // 
-            // buttonCurriculumClearList
+            // iconToolStripButtonCurriculaOpen
             // 
-            buttonCurriculumClearList.Location = new Point(865, 19);
-            buttonCurriculumClearList.Name = "buttonCurriculumClearList";
-            buttonCurriculumClearList.Size = new Size(124, 23);
-            buttonCurriculumClearList.TabIndex = 4;
-            buttonCurriculumClearList.Text = "Очистить список";
-            toolTip1.SetToolTip(buttonCurriculumClearList, "Очистить список файлов");
-            buttonCurriculumClearList.UseVisualStyleBackColor = true;
-            buttonCurriculumClearList.Click += buttonCurriculumClearList_Click;
+            iconToolStripButtonCurriculaOpen.IconChar = FontAwesome.Sharp.IconChar.FolderOpen;
+            iconToolStripButtonCurriculaOpen.IconColor = Color.DarkBlue;
+            iconToolStripButtonCurriculaOpen.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonCurriculaOpen.IconSize = 24;
+            iconToolStripButtonCurriculaOpen.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonCurriculaOpen.Name = "iconToolStripButtonCurriculaOpen";
+            iconToolStripButtonCurriculaOpen.Size = new Size(95, 28);
+            iconToolStripButtonCurriculaOpen.Text = "Открыть...";
+            iconToolStripButtonCurriculaOpen.ToolTipText = "Открыть РПД-файлы и добавить в список";
+            iconToolStripButtonCurriculaOpen.Click += iconToolStripButtonCurriculaOpen_Click;
+            // 
+            // iconToolStripButton2
+            // 
+            iconToolStripButton2.Enabled = false;
+            iconToolStripButton2.IconChar = FontAwesome.Sharp.IconChar.Refresh;
+            iconToolStripButton2.IconColor = Color.DarkBlue;
+            iconToolStripButton2.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButton2.ImageTransparentColor = Color.Magenta;
+            iconToolStripButton2.Name = "iconToolStripButton2";
+            iconToolStripButton2.Size = new Size(102, 28);
+            iconToolStripButton2.Text = "Перечитать";
+            iconToolStripButton2.ToolTipText = "Перечитать выделенные РПД";
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonCurriculaClear
+            // 
+            iconToolStripButtonCurriculaClear.IconChar = FontAwesome.Sharp.IconChar.TrashCan;
+            iconToolStripButtonCurriculaClear.IconColor = Color.DarkBlue;
+            iconToolStripButtonCurriculaClear.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonCurriculaClear.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonCurriculaClear.Name = "iconToolStripButtonCurriculaClear";
+            iconToolStripButtonCurriculaClear.Size = new Size(101, 28);
+            iconToolStripButtonCurriculaClear.Text = "Очистить...";
+            iconToolStripButtonCurriculaClear.ToolTipText = "Очистить список";
+            iconToolStripButtonCurriculaClear.Click += iconToolStripButtonCurriculaClear_Click;
+            // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonCurriculaFromDb
+            // 
+            iconToolStripButtonCurriculaFromDb.Enabled = false;
+            iconToolStripButtonCurriculaFromDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightFromFile;
+            iconToolStripButtonCurriculaFromDb.IconColor = Color.DarkBlue;
+            iconToolStripButtonCurriculaFromDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonCurriculaFromDb.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonCurriculaFromDb.Name = "iconToolStripButtonCurriculaFromDb";
+            iconToolStripButtonCurriculaFromDb.Size = new Size(89, 28);
+            iconToolStripButtonCurriculaFromDb.Text = "Загрузить";
+            iconToolStripButtonCurriculaFromDb.ToolTipText = "Загрузить РПД из БД";
+            // 
+            // iconToolStripButtonCurriculaToDb
+            // 
+            iconToolStripButtonCurriculaToDb.Enabled = false;
+            iconToolStripButtonCurriculaToDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightToFile;
+            iconToolStripButtonCurriculaToDb.IconColor = Color.DarkBlue;
+            iconToolStripButtonCurriculaToDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonCurriculaToDb.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonCurriculaToDb.Name = "iconToolStripButtonCurriculaToDb";
+            iconToolStripButtonCurriculaToDb.Size = new Size(94, 28);
+            iconToolStripButtonCurriculaToDb.Text = "Сохранить";
+            iconToolStripButtonCurriculaToDb.ToolTipText = "Сохранить РПД из списка в БД";
+            // 
+            // toolStripSeparator9
+            // 
+            toolStripSeparator9.Name = "toolStripSeparator9";
+            toolStripSeparator9.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonCurriculaRememberList
+            // 
+            iconToolStripButtonCurriculaRememberList.Checked = true;
+            iconToolStripButtonCurriculaRememberList.CheckOnClick = true;
+            iconToolStripButtonCurriculaRememberList.CheckState = CheckState.Checked;
+            iconToolStripButtonCurriculaRememberList.IconChar = FontAwesome.Sharp.IconChar.Brain;
+            iconToolStripButtonCurriculaRememberList.IconColor = Color.DarkBlue;
+            iconToolStripButtonCurriculaRememberList.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonCurriculaRememberList.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonCurriculaRememberList.Name = "iconToolStripButtonCurriculaRememberList";
+            iconToolStripButtonCurriculaRememberList.Size = new Size(101, 28);
+            iconToolStripButtonCurriculaRememberList.Text = "Запоминать";
+            iconToolStripButtonCurriculaRememberList.ToolTipText = "Запоминать список при выходе из приложения";
+            iconToolStripButtonCurriculaRememberList.Click += iconToolStripButtonCurriculaRememberList_Click;
             // 
             // groupBoxDisciplines
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(8, 403);
+            groupBoxDisciplines.Location = new Point(6, 363);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
-            groupBoxDisciplines.Size = new Size(985, 279);
+            groupBoxDisciplines.Size = new Size(985, 308);
             groupBoxDisciplines.TabIndex = 3;
             groupBoxDisciplines.TabStop = false;
             groupBoxDisciplines.Text = "Дисциплины программы";
@@ -358,7 +454,7 @@
             fastObjectListViewDisciplines.Location = new Point(3, 18);
             fastObjectListViewDisciplines.Name = "fastObjectListViewDisciplines";
             fastObjectListViewDisciplines.ShowGroups = false;
-            fastObjectListViewDisciplines.Size = new Size(979, 258);
+            fastObjectListViewDisciplines.Size = new Size(979, 287);
             fastObjectListViewDisciplines.TabIndex = 4;
             fastObjectListViewDisciplines.UseFilterIndicator = true;
             fastObjectListViewDisciplines.UseFiltering = true;
@@ -370,25 +466,15 @@
             fastObjectListViewDisciplines.CellToolTipShowing += fastObjectListViewDisciplines_CellToolTipShowing;
             fastObjectListViewDisciplines.FormatRow += fastObjectListViewDisciplines_FormatRow;
             // 
-            // labelExcelFileLoading
-            // 
-            labelExcelFileLoading.AutoSize = true;
-            labelExcelFileLoading.Location = new Point(200, 23);
-            labelExcelFileLoading.Name = "labelExcelFileLoading";
-            labelExcelFileLoading.Size = new Size(66, 14);
-            labelExcelFileLoading.TabIndex = 2;
-            labelExcelFileLoading.Text = "Загрузка...";
-            labelExcelFileLoading.Visible = false;
-            // 
             // fastObjectListViewCurricula
             // 
             fastObjectListViewCurricula.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             fastObjectListViewCurricula.FullRowSelect = true;
             fastObjectListViewCurricula.GridLines = true;
-            fastObjectListViewCurricula.Location = new Point(8, 57);
+            fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(985, 340);
+            fastObjectListViewCurricula.Size = new Size(989, 320);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -402,22 +488,11 @@
             fastObjectListViewCurricula.ItemActivate += fastObjectListViewCurricula_ItemActivate;
             fastObjectListViewCurricula.KeyDown += fastObjectListViewCurricula_KeyDown;
             // 
-            // buttonSelectExcelFiles
-            // 
-            buttonSelectExcelFiles.Location = new Point(23, 19);
-            buttonSelectExcelFiles.Name = "buttonSelectExcelFiles";
-            buttonSelectExcelFiles.Size = new Size(143, 23);
-            buttonSelectExcelFiles.TabIndex = 0;
-            buttonSelectExcelFiles.Text = "Выбор файлов...";
-            toolTip1.SetToolTip(buttonSelectExcelFiles, "Открыть диалог выбора файлов Учебных планов");
-            buttonSelectExcelFiles.UseVisualStyleBackColor = true;
-            buttonSelectExcelFiles.Click += buttonSelectExcelFiles_Click;
-            // 
             // tabPageRpd
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainer1);
-            tabPageRpd.Location = new Point(4, 24);
+            tabPageRpd.Location = new Point(4, 23);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
             tabPageRpd.Size = new Size(1001, 677);
@@ -579,7 +654,7 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainer1.Size = new Size(985, 635);
+            splitContainer1.Size = new Size(985, 636);
             splitContainer1.SplitterDistance = 280;
             splitContainer1.TabIndex = 7;
             // 
@@ -862,7 +937,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(985, 351);
+            fastObjectListViewRpdList.Size = new Size(985, 352);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -877,14 +952,15 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(toolStrip2);
             tabPage2.Controls.Add(label1);
             tabPage2.Controls.Add(fastObjectListViewFosList);
             tabPage2.Controls.Add(textBoxFosDir);
             tabPage2.Controls.Add(buttonSelectFosDir);
-            tabPage2.Location = new Point(4, 24);
+            tabPage2.Location = new Point(4, 23);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1001, 677);
+            tabPage2.Size = new Size(1001, 678);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "ФОС";
             tabPage2.UseVisualStyleBackColor = true;
@@ -892,7 +968,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(21, 24);
+            label1.Location = new Point(30, 50);
             label1.Name = "label1";
             label1.Size = new Size(96, 14);
             label1.TabIndex = 2;
@@ -902,10 +978,10 @@
             // 
             tabPageReports.Controls.Add(buttonSaveRpdReport);
             tabPageReports.Controls.Add(tabControlReports);
-            tabPageReports.Location = new Point(4, 24);
+            tabPageReports.Location = new Point(4, 23);
             tabPageReports.Name = "tabPageReports";
             tabPageReports.Padding = new Padding(3);
-            tabPageReports.Size = new Size(1001, 677);
+            tabPageReports.Size = new Size(1001, 678);
             tabPageReports.TabIndex = 4;
             tabPageReports.Text = "Отчёты";
             tabPageReports.UseVisualStyleBackColor = true;
@@ -928,7 +1004,7 @@
             tabControlReports.Location = new Point(3, 3);
             tabControlReports.Name = "tabControlReports";
             tabControlReports.SelectedIndex = 0;
-            tabControlReports.Size = new Size(995, 671);
+            tabControlReports.Size = new Size(995, 672);
             tabControlReports.TabIndex = 9;
             tabControlReports.DrawItem += tabControlReports_DrawItem;
             tabControlReports.MouseDown += tabControlReports_MouseDown;
@@ -945,10 +1021,10 @@
             tabPageRpdGeneration.Controls.Add(groupBoxRpdGenDisciplineList);
             tabPageRpdGeneration.Controls.Add(label3);
             tabPageRpdGeneration.Controls.Add(comboBoxRpdGenCurriculumGroups);
-            tabPageRpdGeneration.Location = new Point(4, 24);
+            tabPageRpdGeneration.Location = new Point(4, 23);
             tabPageRpdGeneration.Name = "tabPageRpdGeneration";
             tabPageRpdGeneration.Padding = new Padding(3);
-            tabPageRpdGeneration.Size = new Size(1001, 677);
+            tabPageRpdGeneration.Size = new Size(1001, 678);
             tabPageRpdGeneration.TabIndex = 5;
             tabPageRpdGeneration.Text = "Генерация РПД";
             tabPageRpdGeneration.UseVisualStyleBackColor = true;
@@ -1099,7 +1175,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 579);
+            labelRpdGenStatus.Location = new Point(652, 580);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -1119,7 +1195,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(6, 537);
+            groupBox2.Location = new Point(6, 538);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 138);
             groupBox2.TabIndex = 14;
@@ -1224,7 +1300,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 537);
+            buttonGenerate.Location = new Point(652, 538);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -1239,7 +1315,7 @@
             groupBoxRpdGenDisciplineList.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxRpdGenDisciplineList.Location = new Point(8, 237);
             groupBoxRpdGenDisciplineList.Name = "groupBoxRpdGenDisciplineList";
-            groupBoxRpdGenDisciplineList.Size = new Size(984, 289);
+            groupBoxRpdGenDisciplineList.Size = new Size(984, 290);
             groupBoxRpdGenDisciplineList.TabIndex = 4;
             groupBoxRpdGenDisciplineList.TabStop = false;
             groupBoxRpdGenDisciplineList.Text = "3. Выбор дисциплин";
@@ -1256,7 +1332,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 268);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 269);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -1304,10 +1380,10 @@
             tabPageYaGPT.Controls.Add(label14);
             tabPageYaGPT.Controls.Add(textBoxYaGptAnswer);
             tabPageYaGPT.Controls.Add(textBoxYaGptUserText);
-            tabPageYaGPT.Location = new Point(4, 24);
+            tabPageYaGPT.Location = new Point(4, 23);
             tabPageYaGPT.Name = "tabPageYaGPT";
             tabPageYaGPT.Padding = new Padding(3);
-            tabPageYaGPT.Size = new Size(1001, 677);
+            tabPageYaGPT.Size = new Size(1001, 678);
             tabPageYaGPT.TabIndex = 6;
             tabPageYaGPT.Text = "YandexGPT";
             tabPageYaGPT.UseVisualStyleBackColor = true;
@@ -1461,6 +1537,140 @@
             toolStripStatusLabel1.Text = "Готов к работе";
             toolStripStatusLabel1.TextAlign = ContentAlignment.MiddleLeft;
             // 
+            // toolStrip2
+            // 
+            toolStrip2.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            toolStrip2.ImageScalingSize = new Size(24, 24);
+            toolStrip2.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFosOpen, iconToolStripButtonFosReload, toolStripSeparator10, iconToolStripButtonFosClear, toolStripSeparator11, iconToolStripButtonFosFromDb, iconToolStripButtonFosToDb, toolStripSeparator12, iconToolStripButtonForRememberList, toolStripSeparator13, iconToolStripButtonFosCheck, toolStripSeparator14, iconToolStripButtonFosFixMode });
+            toolStrip2.Location = new Point(3, 3);
+            toolStrip2.Name = "toolStrip2";
+            toolStrip2.Size = new Size(995, 31);
+            toolStrip2.TabIndex = 15;
+            toolStrip2.Text = "toolStrip1";
+            // 
+            // iconToolStripButtonFosOpen
+            // 
+            iconToolStripButtonFosOpen.IconChar = FontAwesome.Sharp.IconChar.FolderOpen;
+            iconToolStripButtonFosOpen.IconColor = Color.DarkBlue;
+            iconToolStripButtonFosOpen.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFosOpen.IconSize = 24;
+            iconToolStripButtonFosOpen.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFosOpen.Name = "iconToolStripButtonFosOpen";
+            iconToolStripButtonFosOpen.Size = new Size(95, 28);
+            iconToolStripButtonFosOpen.Text = "Открыть...";
+            iconToolStripButtonFosOpen.ToolTipText = "Открыть РПД-файлы и добавить в список";
+            // 
+            // iconToolStripButtonFosReload
+            // 
+            iconToolStripButtonFosReload.Enabled = false;
+            iconToolStripButtonFosReload.IconChar = FontAwesome.Sharp.IconChar.Refresh;
+            iconToolStripButtonFosReload.IconColor = Color.DarkBlue;
+            iconToolStripButtonFosReload.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFosReload.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFosReload.Name = "iconToolStripButtonFosReload";
+            iconToolStripButtonFosReload.Size = new Size(102, 28);
+            iconToolStripButtonFosReload.Text = "Перечитать";
+            iconToolStripButtonFosReload.ToolTipText = "Перечитать выделенные РПД";
+            // 
+            // toolStripSeparator10
+            // 
+            toolStripSeparator10.Name = "toolStripSeparator10";
+            toolStripSeparator10.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonFosClear
+            // 
+            iconToolStripButtonFosClear.IconChar = FontAwesome.Sharp.IconChar.TrashCan;
+            iconToolStripButtonFosClear.IconColor = Color.DarkBlue;
+            iconToolStripButtonFosClear.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFosClear.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFosClear.Name = "iconToolStripButtonFosClear";
+            iconToolStripButtonFosClear.Size = new Size(101, 28);
+            iconToolStripButtonFosClear.Text = "Очистить...";
+            iconToolStripButtonFosClear.ToolTipText = "Очистить список";
+            // 
+            // toolStripSeparator11
+            // 
+            toolStripSeparator11.Name = "toolStripSeparator11";
+            toolStripSeparator11.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonFosFromDb
+            // 
+            iconToolStripButtonFosFromDb.Enabled = false;
+            iconToolStripButtonFosFromDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightFromFile;
+            iconToolStripButtonFosFromDb.IconColor = Color.DarkBlue;
+            iconToolStripButtonFosFromDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFosFromDb.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFosFromDb.Name = "iconToolStripButtonFosFromDb";
+            iconToolStripButtonFosFromDb.Size = new Size(89, 28);
+            iconToolStripButtonFosFromDb.Text = "Загрузить";
+            iconToolStripButtonFosFromDb.ToolTipText = "Загрузить РПД из БД";
+            // 
+            // iconToolStripButtonFosToDb
+            // 
+            iconToolStripButtonFosToDb.Enabled = false;
+            iconToolStripButtonFosToDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightToFile;
+            iconToolStripButtonFosToDb.IconColor = Color.DarkBlue;
+            iconToolStripButtonFosToDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFosToDb.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFosToDb.Name = "iconToolStripButtonFosToDb";
+            iconToolStripButtonFosToDb.Size = new Size(94, 28);
+            iconToolStripButtonFosToDb.Text = "Сохранить";
+            iconToolStripButtonFosToDb.ToolTipText = "Сохранить РПД из списка в БД";
+            // 
+            // toolStripSeparator12
+            // 
+            toolStripSeparator12.Name = "toolStripSeparator12";
+            toolStripSeparator12.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonForRememberList
+            // 
+            iconToolStripButtonForRememberList.Checked = true;
+            iconToolStripButtonForRememberList.CheckOnClick = true;
+            iconToolStripButtonForRememberList.CheckState = CheckState.Checked;
+            iconToolStripButtonForRememberList.IconChar = FontAwesome.Sharp.IconChar.Brain;
+            iconToolStripButtonForRememberList.IconColor = Color.DarkBlue;
+            iconToolStripButtonForRememberList.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonForRememberList.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonForRememberList.Name = "iconToolStripButtonForRememberList";
+            iconToolStripButtonForRememberList.Size = new Size(101, 28);
+            iconToolStripButtonForRememberList.Text = "Запоминать";
+            iconToolStripButtonForRememberList.ToolTipText = "Запоминать список при выходе из приложения";
+            // 
+            // toolStripSeparator13
+            // 
+            toolStripSeparator13.Name = "toolStripSeparator13";
+            toolStripSeparator13.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonFosCheck
+            // 
+            iconToolStripButtonFosCheck.Enabled = false;
+            iconToolStripButtonFosCheck.IconChar = FontAwesome.Sharp.IconChar.ListCheck;
+            iconToolStripButtonFosCheck.IconColor = Color.DarkBlue;
+            iconToolStripButtonFosCheck.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFosCheck.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFosCheck.Name = "iconToolStripButtonFosCheck";
+            iconToolStripButtonFosCheck.Size = new Size(96, 28);
+            iconToolStripButtonFosCheck.Text = "Проверить";
+            iconToolStripButtonFosCheck.ToolTipText = "Проверить загруженные РПД и сформировать отчёт";
+            // 
+            // toolStripSeparator14
+            // 
+            toolStripSeparator14.Name = "toolStripSeparator14";
+            toolStripSeparator14.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonFosFixMode
+            // 
+            iconToolStripButtonFosFixMode.CheckOnClick = true;
+            iconToolStripButtonFosFixMode.Enabled = false;
+            iconToolStripButtonFosFixMode.IconChar = FontAwesome.Sharp.IconChar.ScrewdriverWrench;
+            iconToolStripButtonFosFixMode.IconColor = Color.DarkBlue;
+            iconToolStripButtonFosFixMode.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFosFixMode.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFosFixMode.Name = "iconToolStripButtonFosFixMode";
+            iconToolStripButtonFosFixMode.Size = new Size(152, 28);
+            iconToolStripButtonFosFixMode.Text = "Режим исправлений";
+            iconToolStripButtonFosFixMode.ToolTipText = "Показать/Скрыть режим исправлений";
+            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
@@ -1483,6 +1693,8 @@
             ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             tabPageСurriculum.ResumeLayout(false);
             tabPageСurriculum.PerformLayout();
+            toolStrip1.ResumeLayout(false);
+            toolStrip1.PerformLayout();
             groupBoxDisciplines.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewDisciplines).EndInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewCurricula).EndInit();
@@ -1516,6 +1728,8 @@
             tabPageYaGPT.PerformLayout();
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            toolStrip2.ResumeLayout(false);
+            toolStrip2.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1536,7 +1750,6 @@
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewCurricula;
         private Button buttonSelectExcelFiles;
         private OpenFileDialog openFileDialogSelectCurriculumFiles;
-        private Label labelExcelFileLoading;
         private GroupBox groupBoxDisciplines;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewDisciplines;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewRpdList;
@@ -1588,7 +1801,6 @@
         private Button buttonRemoveFindAndReplaceItems;
         private ToolTip toolTip1;
         private Button buttonCurriculumClearList;
-        private CheckBox checkBoxStoreCurriculumList;
         private TabControl tabControlReports;
         private LinkLabel linkLabelRpdFixSelectFilesToFix;
         private Button buttonRpdFixSelectTargetDir;
@@ -1640,5 +1852,29 @@
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonComptenceMatrixReload;
         private ToolStripSeparator toolStripSeparator8;
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonCompetenceMatrixAutoload;
+        private ToolStrip toolStrip1;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonCurriculaOpen;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButton2;
+        private ToolStripSeparator toolStripSeparator6;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonCurriculaClear;
+        private ToolStripSeparator toolStripSeparator7;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonCurriculaFromDb;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonCurriculaToDb;
+        private ToolStripSeparator toolStripSeparator9;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonCurriculaRememberList;
+        private ToolStrip toolStrip2;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosOpen;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosReload;
+        private ToolStripSeparator toolStripSeparator10;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosClear;
+        private ToolStripSeparator toolStripSeparator11;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosFromDb;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosToDb;
+        private ToolStripSeparator toolStripSeparator12;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonForRememberList;
+        private ToolStripSeparator toolStripSeparator13;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosCheck;
+        private ToolStripSeparator toolStripSeparator14;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosFixMode;
     }
 }

@@ -459,7 +459,7 @@ namespace FosMan {
             fastObjectListViewDocProperties.AddObjects(App.Config.RpdFixDocPropertyList);
             m_matrixFileName = App.Config.CompetenceMatrixFileName ?? "";
             ShowHideRpdFixMode(false);
-            checkBoxStoreCurriculumList.Checked = App.Config.StoreCurriculumList;
+            iconToolStripButtonCurriculaRememberList.Checked = App.Config.StoreCurriculumList;
             iconToolStripButtonCompetenceMatrixAutoload.Checked = App.Config.CompetenceMatrixAutoload;
             iconToolStripButtonRpdRememberList.Checked = App.Config.StoreRpdList;
             checkBoxRpdFixTableOfCompetences.Checked = App.Config.RpdFixTableOfCompetences;
@@ -582,15 +582,15 @@ namespace FosMan {
         /// </summary>
         /// <param name="files"></param>
         void LoadCurriculumFiles(string[] files) {
-            labelExcelFileLoading.Visible = true;
+            //labelExcelFileLoading.Visible = true;
             Application.UseWaitCursor = true;
-            labelExcelFileLoading.Text = "";
+            //labelExcelFileLoading.Text = "";
 
             //var report = new List<string>();
             var errLog = new ConcurrentDictionary<string, List<string>>();
             var idx = 1;
             foreach (var file in files) {
-                labelExcelFileLoading.Text = $"Загрузка файлов ({idx} из {files.Length})...";
+                StatusMessage($"Загрузка файлов ({idx} из {files.Length})...");
                 if (File.Exists(file)) {
                     var curriculum = Curriculum.LoadFromFile(file);
                     App.AddCurriculum(curriculum);
@@ -608,7 +608,7 @@ namespace FosMan {
                 }
             }
             if (idx > 1) {
-                labelExcelFileLoading.Text += " завершено.";
+                //labelExcelFileLoading.Text += " завершено.";
             }
             if (errLog.Any()) {
                 var logFile = WriteErrorLog(errLog, "УП");
@@ -825,6 +825,7 @@ namespace FosMan {
             }
 
             Application.UseWaitCursor = false;
+            Application.DoEvents();
         }
 
         private void fastObjectListViewRpdList_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
@@ -1114,11 +1115,6 @@ namespace FosMan {
                     fastObjectListViewRpdFixFindAndReplaceItems.RemoveObjects(fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects);
                 }
             }
-        }
-
-        private void checkBoxStoreCurriculumList_CheckedChanged(object sender, EventArgs e) {
-            App.Config.StoreCurriculumList = checkBoxStoreCurriculumList.Checked;
-            App.SaveConfig();
         }
 
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e) {
@@ -1634,6 +1630,34 @@ namespace FosMan {
 
         private void iconToolStripButtonCompetenceMatrixAutoload_Click(object sender, EventArgs e) {
             App.Config.CompetenceMatrixAutoload = iconToolStripButtonCompetenceMatrixAutoload.Checked;
+            App.SaveConfig();
+        }
+
+        private void iconToolStripButtonCurriculaOpen_Click(object sender, EventArgs e) {
+            openFileDialogSelectCurriculumFiles.InitialDirectory = App.Config.CurriculumLastLocation ?? Environment.CurrentDirectory;
+
+            if (openFileDialogSelectCurriculumFiles.ShowDialog(this) == DialogResult.OK) {
+                if (openFileDialogSelectCurriculumFiles.FileNames.Length > 0) {
+                    App.Config.CurriculumLastLocation = Path.GetDirectoryName(openFileDialogSelectCurriculumFiles.FileNames[0]);
+                    App.SaveConfig();
+                }
+
+                var files = openFileDialogSelectCurriculumFiles.FileNames.Where(x => !App.HasCurriculumFile(x)).ToArray();
+
+                LoadCurriculumFiles(files);
+            }
+        }
+
+        private void iconToolStripButtonCurriculaClear_Click(object sender, EventArgs e) {
+            if (MessageBox.Show("Вы уверены, что хотите очистить список загруженных учебных планов?",
+                "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                App.Curricula.Clear();
+                fastObjectListViewCurricula.ClearObjects();
+            }
+        }
+
+        private void iconToolStripButtonCurriculaRememberList_Click(object sender, EventArgs e) {
+            App.Config.StoreCurriculumList = iconToolStripButtonCurriculaRememberList.Checked;
             App.SaveConfig();
         }
     }
