@@ -5,8 +5,10 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace FosMan {
-    internal class YaGptCompletionRequest {
+namespace FosMan
+{
+    internal class YaGptCompletionRequest
+    {
         [JsonInclude]
         public string modelUri;
         [JsonInclude]

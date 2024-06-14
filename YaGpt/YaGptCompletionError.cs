@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FosMan {
-    internal class YaGptCompletionError {
+namespace FosMan
+{
+    internal class YaGptCompletionError
+    {
         //{"error": {
         //  "grpcCode":8,
         //  "httpCode":429,

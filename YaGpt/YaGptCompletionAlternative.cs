@@ -1,7 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace FosMan {
-    internal class YaGptCompletionAlternative {
+namespace FosMan
+{
+    internal class YaGptCompletionAlternative
+    {
         [JsonInclude]
         public YaGptCompletionMessage message;
         [JsonInclude]

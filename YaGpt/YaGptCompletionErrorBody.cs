@@ -5,8 +5,10 @@ using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FosMan {
-    internal class YaGptCompletionErrorBody {
+namespace FosMan
+{
+    internal class YaGptCompletionErrorBody
+    {
         //{"error": {
         //  "grpcCode":8,
         //  "httpCode":429,

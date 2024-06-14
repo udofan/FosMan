@@ -1,7 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace FosMan {
-    public class YaGptCompletionOptions {
+namespace FosMan
+{
+    public class YaGptCompletionOptions
+    {
         [JsonInclude]
         public bool stream;
         [JsonInclude]

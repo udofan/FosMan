@@ -61,7 +61,7 @@ namespace FosMan {
                     //var response = await Request()
 
                     var result = await response.Content.ReadAsStreamAsync();
-                    
+
                     var json = JsonDocument.Parse(result);
                     if (json.RootElement.TryGetProperty("iamToken", out var tokenValue)) {
                         App.Config.YaGptIamToken = tokenValue.ToString();
@@ -72,7 +72,7 @@ namespace FosMan {
                             App.Config.YaGptIamTokenExpiresAt = dtOffset;
                         }
                     }
- 
+
                     App.SaveConfig();
                 }
             }
@@ -109,7 +109,7 @@ namespace FosMan {
 
                 var responseResult = await response.Content.ReadAsStringAsync();
                 //{"error":{"grpcCode":8,"httpCode":429,"message":"ai.textGenerationCompletionSessionsCount.count gauge quota limit exceed: allowed 1 requests","httpStatus":"Too Many Requests","details":[]}}
-                if (!App.TryDeserialize<YaGptCompletionResult>(responseResult, out result)) {
+                if (!App.TryDeserialize(responseResult, out result)) {
                     //if (App.TryDeserialize<YaGptCompletionError>(responseResult, out var error)) {
                     var tt = 0;
                     //}
@@ -198,7 +198,7 @@ namespace FosMan {
 
         internal static async Task<(bool success, string text, YaGptCompletionErrorBody error)> TextGenerationAsync(string systemText, string userText, double temp) {
             (bool success, string text, YaGptCompletionErrorBody error) result = (false, null, null);
-            
+
             try {
 
                 var request = new YaGptCompletionRequest() {
