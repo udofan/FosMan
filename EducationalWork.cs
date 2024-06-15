@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xceed.Document.NET;
+using static FosMan.Enums;
 
 namespace FosMan {
     /// <summary>

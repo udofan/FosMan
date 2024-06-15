@@ -80,7 +80,9 @@ namespace FosMan {
         static CompetenceMatrix m_competenceMatrix = null;
         static ConcurrentDictionary<string, Curriculum> m_curriculumDic = [];
         static ConcurrentDictionary<string, Rpd> m_rpdDic = [];
+        static ConcurrentDictionary<string, Fos> m_fosDic = [];
         static Dictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
+
         //static Dictionary<string, Department> m_departments = [];
         static Config m_config = new();
         static JsonSerializerOptions m_jsonOptions = new() {
@@ -98,6 +100,7 @@ namespace FosMan {
         public static CompetenceMatrix CompetenceMatrix { get => m_competenceMatrix; }
 
         public static ConcurrentDictionary<string, Rpd> RpdList { get => m_rpdDic; }
+        public static ConcurrentDictionary<string, Fos> FosList { get => m_fosDic; }
 
         /// <summary>
         /// Конфигурация
@@ -131,6 +134,7 @@ namespace FosMan {
         public static bool HasCurriculumFile(string fileName) => m_curriculumDic.ContainsKey(fileName);
 
         public static bool HasRpdFile(string fileName) => m_rpdDic.ContainsKey(fileName);
+        public static bool HasFosFile(string fileName) => m_fosDic.ContainsKey(fileName);
 
         /// <summary>
         /// Добавить УП в общий стор
@@ -157,10 +161,26 @@ namespace FosMan {
             return result;
         }
 
-        static public bool AddRpd(Rpd rpd) {
-            m_rpdDic[rpd.SourceFileName] = rpd;
-            RpdAdd?.Invoke(rpd);
+        /// <summary>
+        /// Добавить в список новый РПД
+        /// </summary>
+        /// <param name="fos"></param>
+        /// <returns></returns>
+        static public bool AddRpd(Rpd fos) {
+            m_rpdDic[fos.SourceFileName] = fos;
+            RpdAdd?.Invoke(fos);
             
+            return true;
+        }
+
+        /// <summary>
+        /// Добавить в список новый ФОС
+        /// </summary>
+        /// <param name="fos"></param>
+        /// <returns></returns>
+        static public bool AddFos(Fos fos) {
+            m_fosDic[fos.SourceFileName] = fos;
+
             return true;
         }
 

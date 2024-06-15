@@ -51,5 +51,37 @@ namespace FosMan {
             Presentation
             //PracticalWork   //практическая работа
         }
+
+        /// <summary>
+        /// Форма контроля
+        /// </summary>
+        public enum EControlForm {
+            [Description("Экзамен")]
+            Exam,           //экзамен
+            [Description("Зачет")]
+            Test,           //зачет
+            [Description("Зачет с оценкой")]
+            TestWithAGrade, //зачет с оценкой
+            [Description("Контрольная работа")]
+            CourseWork,     //курсовая работа
+            [Description("НЕИЗВЕСТНО")]
+            Unknown         //определить НЕ УДАЛОСЬ
+        }
+
+        /// <summary>
+        /// Тип дисциплины
+        /// </summary>
+        public enum EDisciplineType {
+            [Description("Обязательная")]
+            Required,       //обязательная
+            [Description("Вариативная")]
+            Variable,
+            [Description("По выбору")]
+            ByChoice,       //по выбору
+            [Description("Факультативная")]
+            Optional,       //факультативная
+            [Description("НЕИЗВЕСТНО")]
+            Unknown         //опередить НЕ УДАЛОСЬ
+        }
     }
 }

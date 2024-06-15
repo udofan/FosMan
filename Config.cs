@@ -115,6 +115,21 @@ namespace FosMan {
 
         public string RpdGenTargetDir { get; set; }
         /// <summary>
+        /// Последняя выбранная локация ФОС-файлов
+        /// </summary>
+        [JsonInclude]
+        public string FosLastLocation { get; set; }
+        /// <summary>
+        /// Флаг сохранения списка загруженных ФОС
+        /// </summary>
+        [JsonInclude]
+        public bool StoreFosList { get; set; } = true;
+        /// <summary>
+        /// Сохраненный список файлов ФОС
+        /// </summary>
+        [JsonInclude]
+        public List<string> FosList { get; set; } = [];
+        /// <summary>
         /// Список описаний кафедр
         /// </summary>
         [JsonInclude]

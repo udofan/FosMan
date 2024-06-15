@@ -20,7 +20,6 @@ namespace FosMan {
         const string DIR_LOGS = "Logs";
 
         string m_matrixFileName = null;
-        //string m_rpdHtmlReport = null;
 
         public FormMain() {
             InitializeComponent();
@@ -287,38 +286,42 @@ namespace FosMan {
             list.PrimarySortColumn = olvColumnName;
         }
 
+        /// <summary>
+        /// Настройка списка РПД
+        /// </summary>
+        /// <param name="list"></param>
         void TuneRpdList(FastObjectListView list) {
-            var olvColumnDisciplineName = new OLVColumn("Дисциплина", "DisciplineName") {
+            var olvColumnDisciplineName = new OLVColumn("Дисциплина", nameof(Rpd.DisciplineName)) {
                 Width = 200,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnDisciplineName);
-            var olvColumnDirectionCode = new OLVColumn("Код", "DirectionCode") {
+            var olvColumnDirectionCode = new OLVColumn("Код", nameof(Rpd.DirectionCode)) {
                 Width = 80,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnDirectionCode);
-            var olvColumnDirectionName = new OLVColumn("Направление подготовки", "DirectionName") {
+            var olvColumnDirectionName = new OLVColumn("Направление подготовки", nameof(Rpd.DirectionName)) {
                 Width = 200,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnDirectionName);
-            var olvColumnProfile = new OLVColumn("Профиль", "Profile") {
+            var olvColumnProfile = new OLVColumn("Профиль", nameof(Rpd.Profile)) {
                 Width = 100,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnProfile);
-            var olvColumnDepartment = new OLVColumn("Кафедра", "Department") {
+            var olvColumnDepartment = new OLVColumn("Кафедра", nameof(Rpd.Department)) {
                 Width = 100,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnDepartment);
-            var olvColumnYear = new OLVColumn("Год", "Year") {
+            var olvColumnYear = new OLVColumn("Год", nameof(Rpd.Year)) {
                 Width = 50,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnYear);
-            var olvColumnFormsOfStudy = new OLVColumn("Формы обучения", "FormOfStudy") {
+            var olvColumnFormsOfStudy = new OLVColumn("Формы обучения", nameof(Rpd.FormsOfStudy)) {
                 Width = 190,
                 IsEditable = false,
                 AspectGetter = (x) => {
@@ -333,25 +336,21 @@ namespace FosMan {
             };
             list.Columns.Add(olvColumnFormsOfStudy);
             //составитель
-            var olvColumnCompiler = new OLVColumn("Составитель", "Compiler") {
+            var olvColumnCompiler = new OLVColumn("Составитель", nameof(Rpd.Compiler)) {
                 Width = 200,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnCompiler);
             //матрица компетенций
-            var olvColumnCompetenceMatrix = new OLVColumn("Компетенции", "CompetenceMatrix") {
+            var olvColumnCompetenceMatrix = new OLVColumn("Компетенции", nameof(Rpd.CompetenceMatrix)) {
                 Width = 60,
                 CheckBoxes = true,
                 IsEditable = false,
-                AspectGetter = (x) => {
-                    var rpd = x as Rpd;
-                    bool value = rpd?.CompetenceMatrix?.Items?.Any() ?? false;
-                    return value;
-                }
+                AspectGetter = (x) => (x as Rpd)?.CompetenceMatrix?.Items?.Any() ?? false
             };
             list.Columns.Add(olvColumnCompetenceMatrix);
             //объем дисциплины (часы по формам обучения)
-            var olvColumnEducationWork = new OLVColumn("Объем", "EducationalWorks") {
+            var olvColumnEducationWork = new OLVColumn("Объем", nameof(Rpd.EducationalWorks)) {
                 Width = 60,
                 CheckBoxes = true,
                 IsEditable = false,
@@ -366,19 +365,19 @@ namespace FosMan {
             };
             list.Columns.Add(olvColumnEducationWork);
             //предшествующие дисциплины
-            var olvColumnPrevDisciplines = new OLVColumn("Предшествующие дисциплины", "PrevDisciplines") {
+            var olvColumnPrevDisciplines = new OLVColumn("Предшествующие дисциплины", nameof(Rpd.PrevDisciplines)) {
                 Width = 200,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnPrevDisciplines);
             //последующие дисциплины
-            var olvColumnNextDisciplines = new OLVColumn("Последующие дисциплины", "NextDisciplines") {
+            var olvColumnNextDisciplines = new OLVColumn("Последующие дисциплины", nameof(Rpd.NextDisciplines)) {
                 Width = 200,
                 IsEditable = false
             };
             list.Columns.Add(olvColumnNextDisciplines);
             //ошибки
-            var olvColumnErrors = new OLVColumn("Ошибки", "Errors") {
+            var olvColumnErrors = new OLVColumn("Ошибки", nameof(Rpd.Errors)) {
                 Width = 50,
                 IsEditable = false,
                 AspectGetter = (x) => {
@@ -396,7 +395,100 @@ namespace FosMan {
                 }
             };
             list.Columns.Add(olvColumnErrors);
-            var olvColumnFileName = new OLVColumn("Файл", "SourceFileName") {
+            var olvColumnFileName = new OLVColumn("Файл", nameof(Rpd.SourceFileName)) {
+                Width = 200,
+                IsEditable = false,
+                FillsFreeSpace = true
+            };
+            list.Columns.Add(olvColumnFileName);
+
+            list.PrimarySortColumn = olvColumnDisciplineName;
+        }
+
+        /// <summary>
+        /// Настройка списка ФОСов
+        /// </summary>
+        /// <param name="list"></param>
+        void TuneFosList(FastObjectListView list) {
+            var olvColumnDisciplineName = new OLVColumn("Дисциплина", nameof(Fos.DisciplineName)) {
+                Width = 200,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnDisciplineName);
+            var olvColumnDirectionCode = new OLVColumn("Код", nameof(Fos.DirectionCode)) {
+                Width = 80,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnDirectionCode);
+            var olvColumnDirectionName = new OLVColumn("Направление подготовки", nameof(Fos.DirectionName)) {
+                Width = 200,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnDirectionName);
+            var olvColumnProfile = new OLVColumn("Профиль", nameof(Fos.Profile)) {
+                Width = 100,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnProfile);
+            var olvColumnDepartment = new OLVColumn("Кафедра", nameof(Fos.Department)) {
+                Width = 100,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnDepartment);
+            var olvColumnYear = new OLVColumn("Год", nameof(Fos.Year)) {
+                Width = 50,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnYear);
+            var olvColumnFormsOfStudy = new OLVColumn("Формы обучения", nameof(Fos.FormsOfStudy)) {
+                Width = 190,
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    var value = x?.ToString();
+                    var fos = x as Fos;
+                    if (fos?.FormsOfStudy?.Any() ?? false) {
+                        var items = fos.FormsOfStudy.Select(x => x.GetDescription()).ToList();
+                        value = string.Join(", ", items);
+                    }
+                    return value;
+                }
+            };
+            list.Columns.Add(olvColumnFormsOfStudy);
+            //составитель
+            var olvColumnCompiler = new OLVColumn("Составитель", nameof(Fos.Compiler)) {
+                Width = 200,
+                IsEditable = false
+            };
+            list.Columns.Add(olvColumnCompiler);
+            //матрица компетенций
+            var olvColumnCompetenceMatrix = new OLVColumn("Компетенции", nameof(Fos.CompetenceMatrix)) {
+                Width = 60,
+                CheckBoxes = true,
+                IsEditable = false,
+                AspectGetter = (x) => (x as Fos)?.CompetenceMatrix?.Items?.Any() ?? false
+            };
+            list.Columns.Add(olvColumnCompetenceMatrix);
+
+            //ошибки
+            var olvColumnErrors = new OLVColumn("Ошибки", "Errors") {
+                Width = 50,
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    var value = x?.ToString();
+                    var fos = x as Fos;
+                    if (fos != null) {
+                        if (fos.Errors?.Any() ?? false) {
+                            value = "есть";
+                        }
+                        else {
+                            value = "нет";
+                        }
+                    }
+                    return value;
+                }
+            };
+            list.Columns.Add(olvColumnErrors);
+            var olvColumnFileName = new OLVColumn("Файл", nameof(Fos.SourceFileName)) {
                 Width = 200,
                 IsEditable = false,
                 FillsFreeSpace = true
@@ -445,6 +537,7 @@ namespace FosMan {
 
             TuneCurriculumList();
             TuneRpdList(fastObjectListViewRpdList);
+            TuneFosList(fastObjectListViewFosList);
             TuneDisciplineList(fastObjectListViewDisciplines, true);
             TuneDisciplineList(fastObjectListViewDisciplineListForGeneration, false);
             TuneRpdFindAndReplaceList();
@@ -759,21 +852,6 @@ namespace FosMan {
             }
         }
 
-        private void buttonSelectRpdFiles_Click(object sender, EventArgs e) {
-            openFileDialogSelectRpd.InitialDirectory = App.Config.RpdLastLocation ?? Environment.CurrentDirectory;
-
-            if (openFileDialogSelectRpd.ShowDialog(this) == DialogResult.OK) {
-                var files = openFileDialogSelectRpd.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
-
-                if (openFileDialogSelectRpd.FileNames.Length > 0) {
-                    App.Config.RpdLastLocation = Path.GetDirectoryName(openFileDialogSelectRpd.FileNames[0]);
-                    App.SaveConfig();
-                }
-
-                LoadRpdFilesAsync(files);
-            }
-        }
-
         /// <summary>
         /// Сброс журнала ошибок
         /// </summary>
@@ -871,6 +949,79 @@ namespace FosMan {
 
             if (errLog.Any()) {
                 var logFile = WriteErrorLog(errLog, "РПД");
+            }
+            else {
+                StatusMessage($"Успешно загружено {files.Length} файл(а,ов)");
+            }
+
+            Application.UseWaitCursor = false;
+            Application.DoEvents();
+        }
+
+        /// <summary>
+        /// Загрузка ФОС-файлов
+        /// </summary>
+        /// <param name="files"></param>
+        private async Task LoadFosFilesAsync(string[] files) {
+            Application.UseWaitCursor = true;
+
+            var errLog = new ConcurrentDictionary<string, List<string>>();
+            var idx = 0;
+
+            StatusMessage("Загружаем файлы...");
+
+            var tasks = new List<Task>();
+
+            foreach (var file in files) {
+                tasks.Add(Task.Run(() => {
+                    Interlocked.Increment(ref idx);
+
+                    if (File.Exists(file)) {
+                        //проверяем: не загружен ли еще файл?
+                        var fos = App.FosList.Values.FirstOrDefault(r => r.SourceFileName.Equals(file));
+                        if (fos != null) {
+                            Fos.LoadFromFile(file, fos);
+                        }
+                        else {
+                            fos = Fos.LoadFromFile(file);
+                            AddFos(fos);
+                        }
+                        this.Invoke(new MethodInvoker(() => {
+                            fastObjectListViewFosList.BeginUpdate();
+                            var selectedObjects = fastObjectListViewFosList.SelectedObjects;
+                            if (fastObjectListViewFosList.IndexOf(fos) >= 0) {
+                                fastObjectListViewFosList.UpdateObject(fos);
+                            }
+                            else {
+                                fastObjectListViewFosList.AddObject(fos);
+                            }
+                            fastObjectListViewFosList.EnsureModelVisible(fos);
+                            selectedObjects.Add(fos);
+                            fastObjectListViewFosList.SelectedObjects = selectedObjects;
+                            fastObjectListViewFosList.EndUpdate();
+
+                            var msg = $"Загрузка файлов ({idx} из {files.Length})...";
+                            //labelLoadRpd.Text = msg;
+                            StatusMessage(msg);
+                            //if (idx == files.Length) {
+                            //    labelLoadRpd.Text += " завершено.";
+                            //}
+                            Application.DoEvents();
+                        }));
+
+                        if (fos.Errors.Any()) {
+                            errLog.TryAdd(file, fos.Errors);
+                        }
+                    }
+                }));
+            }
+
+            await Task.WhenAll(tasks.ToArray());
+
+            //labelLoadRpd.Text += " завершено.";
+
+            if (errLog.Any()) {
+                var logFile = WriteErrorLog(errLog, "ФОС");
             }
             else {
                 StatusMessage($"Успешно загружено {files.Length} файл(а,ов)");
@@ -1117,17 +1268,17 @@ namespace FosMan {
             fastObjectListViewRpdList.BeginUpdate();
 
             if (show) {
-                while (splitContainer1.SplitterDistance < maxDist) {
-                    var newDist = Math.Min(splitContainer1.SplitterDistance + delta, maxDist);
-                    splitContainer1.SplitterDistance = newDist;
+                while (splitContainerRpd.SplitterDistance < maxDist) {
+                    var newDist = Math.Min(splitContainerRpd.SplitterDistance + delta, maxDist);
+                    splitContainerRpd.SplitterDistance = newDist;
                     //Thread.Sleep(10);
                     Application.DoEvents();
                 }
             }
             else {
-                while (splitContainer1.SplitterDistance > 0) {
-                    var newDist = Math.Max(splitContainer1.SplitterDistance - delta, 0);
-                    splitContainer1.SplitterDistance = newDist;
+                while (splitContainerRpd.SplitterDistance > 0) {
+                    var newDist = Math.Max(splitContainerRpd.SplitterDistance - delta, 0);
+                    splitContainerRpd.SplitterDistance = newDist;
                     //Thread.Sleep(10);
                     Application.DoEvents();
                 }
@@ -1136,7 +1287,7 @@ namespace FosMan {
         }
 
         private void buttonRpdShowFixMode_Click(object sender, EventArgs e) {
-            ShowHideRpdFixMode(splitContainer1.SplitterDistance == 0);
+            ShowHideRpdFixMode(splitContainerRpd.SplitterDistance == 0);
         }
 
         private void buttonAddFindAndReplaceItem_Click(object sender, EventArgs e) {
@@ -1650,7 +1801,7 @@ namespace FosMan {
         }
 
         private void iconToolStripButtonRpdFixMode_Click(object sender, EventArgs e) {
-            ShowHideRpdFixMode(splitContainer1.SplitterDistance == 0);
+            ShowHideRpdFixMode(splitContainerRpd.SplitterDistance == 0);
         }
 
         private void iconToolStripButtonRpdRememberList_Click(object sender, EventArgs e) {
@@ -1718,6 +1869,47 @@ namespace FosMan {
             if (curriculaList.Any()) {
                 var files = curriculaList.Select(curr => curr.SourceFileName);
                 LoadCurriculumFilesAsync(files.ToArray());
+            }
+        }
+
+        private void iconToolStripButtonFosOpen_Click(object sender, EventArgs e) {
+            openFileDialogFosSelect.InitialDirectory = App.Config.RpdLastLocation ?? Environment.CurrentDirectory;
+
+            if (openFileDialogFosSelect.ShowDialog(this) == DialogResult.OK) {
+                var files = openFileDialogFosSelect.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
+
+                if (openFileDialogFosSelect.FileNames.Length > 0) {
+                    App.Config.RpdLastLocation = Path.GetDirectoryName(openFileDialogFosSelect.FileNames[0]);
+                    App.SaveConfig();
+                }
+
+                LoadFosFilesAsync(files);
+            }
+        }
+
+        private void fastObjectListViewFosList_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
+            if (e.Model is Fos fos) {
+                if (e.Column.AspectName.Equals("Errors")) {
+                    e.Text = string.Join("\r\n", fos.Errors);
+                    e.StandardIcon = ToolTipControl.StandardIcons.Error;
+                    e.IsBalloon = true;
+                }
+            }
+        }
+
+        private void fastObjectListViewFosList_FormatRow(object sender, FormatRowEventArgs e) {
+            if (e.Model is Fos fos) {
+                if (fos.Errors?.Any() ?? false) {
+                    e.Item.BackColor = Color.Pink;
+                }
+            }
+        }
+
+        private void iconToolStripButtonFosReload_Click(object sender, EventArgs e) {
+            var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
+            if (fosList.Any()) {
+                var files = fosList.Select(fos => fos.SourceFileName);
+                LoadFosFilesAsync(files.ToArray());
             }
         }
     }

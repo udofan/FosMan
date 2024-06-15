@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace FosMan {
+    /// <summary>
+    /// Базовый объект с фичами аксессора к свойствам
+    /// </summary>
     internal class BaseObj {
         static Dictionary<Type, TypeAccessor> m_typeAccessors = []; // TypeAccessor.Create(typeof(CurriculumDiscipline));
         static Dictionary<Type, TypeAccessor> m_extraTypeAccessors = [];
@@ -53,21 +56,25 @@ namespace FosMan {
         /// </summary>
         /// <param name="targetProperty">целевое свойство</param>
         /// <param name="targetType">тип целевого свойства</param>
-        /// <param name="cellValue">значение (будет приведено к типу targetType)</param>
+        /// <param name="propValue">значение (будет приведено к типу targetType)</param>
         /// <param name="index">индекс списка, если целевое свойство List(object)</param>
         /// <param name="subProperty">свойство object'а из списка</param>
-        internal void SetProperty(string targetProperty, Type targetType, string cellValue, int index = -1, string subProperty = null) {
+        internal void SetProperty(string targetProperty, Type targetType, string propValue, int index = -1, string subProperty = null) {
             object value = null;
 
-            cellValue = cellValue?.Trim();
+            propValue = propValue?.Trim();
+            //value = propValue;
 
             if (targetType == typeof(int)) {
-                if (int.TryParse(cellValue, out var intValue)) {
+                if (int.TryParse(propValue, out var intValue)) {
                     value = intValue;
                 }
             }
             else if (targetType == typeof(string)) {
-                value = cellValue;
+                value = propValue;
+            }
+            else {
+                value = propValue;
             }
 
             if (index >= 0 && !string.IsNullOrEmpty(subProperty)) {

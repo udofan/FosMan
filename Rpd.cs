@@ -12,9 +12,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
+using static FosMan.Enums;
 
 namespace FosMan {
-    internal class Rpd : BaseObj{
+    internal class Rpd : BaseObj {
         //Кафедра
         static Regex m_regexDepartment = new(@"Кафедра\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //Маркер конца титульной странцы "Москва 20xx"
@@ -198,7 +199,7 @@ namespace FosMan {
         /// Формы обучения
         /// </summary>
         [JsonInclude]
-        public List<Enums.EFormOfStudy> FormsOfStudy { get; set; }
+        public List<EFormOfStudy> FormsOfStudy { get; set; }
         /// <summary>
         /// Матрица компетенций (п. 1 в РПД)
         /// </summary>
@@ -210,15 +211,15 @@ namespace FosMan {
         [JsonInclude]
         public string SourceFileName { get; set; }
         /// <summary>
+        /// Учебная работа по формам обучения
+        /// </summary>
+        [JsonInclude]
+        public Dictionary<EFormOfStudy, EducationalWork> EducationalWorks { get; set; }
+        /// <summary>
         /// Выявленные ошибки
         /// </summary>
         [JsonIgnore]
         public List<string> Errors { get; set; }
-        /// <summary>
-        /// Учебная работа по формам обучения
-        /// </summary>
-        [JsonInclude]
-        public Dictionary<Enums.EFormOfStudy, EducationalWork> EducationalWorks { get; set; }
         /// <summary>
         /// Список доп. ошибок, выявленных при проверке
         /// </summary>
@@ -534,16 +535,16 @@ namespace FosMan {
                                 foreach (var item in items) {
                                     switch (item.Trim().ToLower()) {
                                         case "очная":
-                                            rpd.FormsOfStudy.Add(Enums.EFormOfStudy.FullTime);
+                                            rpd.FormsOfStudy.Add(EFormOfStudy.FullTime);
                                             break;
                                         case "заочная":
-                                            rpd.FormsOfStudy.Add(Enums.EFormOfStudy.PartTime);
+                                            rpd.FormsOfStudy.Add(EFormOfStudy.PartTime);
                                             break;
                                         case "очно-заочная":
-                                            rpd.FormsOfStudy.Add(Enums.EFormOfStudy.MixedTime);
+                                            rpd.FormsOfStudy.Add(EFormOfStudy.MixedTime);
                                             break;
                                         default:
-                                            rpd.FormsOfStudy.Add(Enums.EFormOfStudy.Unknown);
+                                            rpd.FormsOfStudy.Add(EFormOfStudy.Unknown);
                                             break;
 
                                     }
@@ -577,7 +578,7 @@ namespace FosMan {
                             testTable = !TestForTableOfCompetenceMatrix(table, rpd);
                         }
                         if (testTable) {
-                            Enums.EEvaluationTool[] evalTools = null;
+                            EEvaluationTool[] evalTools = null;
                             string[][] studyResults = null;
                             testTable = !App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, ref evalTools, ref studyResults, out _);
                         }

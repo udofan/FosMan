@@ -21,16 +21,18 @@ namespace FosMan {
         /// Наименование
         /// </summary>
         public string Title { get; set; }
-
         /// <summary>
         /// Исходный текст
         /// </summary>
         public string SourceText { get; set; }
-
         /// <summary>
         /// Достижения компетенций
         /// </summary>
         public List<CompetenceAchievement> Achievements { get; set; }
+        /// <summary>
+        /// Этап формирования компетенций (семестр) [исп. в ФОС п. 2.1]
+        /// </summary>
+        public int Semester { get; set; }
 
         /// <summary>
         /// Попытка отпарсить текст с кодом компетенции и описанием
