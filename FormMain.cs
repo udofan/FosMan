@@ -380,19 +380,7 @@ namespace FosMan {
             var olvColumnErrors = new OLVColumn("Ошибки", nameof(Rpd.Errors)) {
                 Width = 50,
                 IsEditable = false,
-                AspectGetter = (x) => {
-                    var value = x?.ToString();
-                    var rpd = x as Rpd;
-                    if (rpd != null) {
-                        if (rpd.Errors?.Any() ?? false) {
-                            value = "есть";
-                        }
-                        else {
-                            value = "нет";
-                        }
-                    }
-                    return value;
-                }
+                AspectGetter = (x) => ((x as Rpd)?.Errors?.Any() ?? false) ? "есть" : "нет"
             };
             list.Columns.Add(olvColumnErrors);
             var olvColumnFileName = new OLVColumn("Файл", nameof(Rpd.SourceFileName)) {
@@ -415,32 +403,33 @@ namespace FosMan {
                 IsEditable = false
             };
             list.Columns.Add(olvColumnDisciplineName);
-            var olvColumnDirectionCode = new OLVColumn("Код", nameof(Fos.DirectionCode)) {
+
+            list.Columns.Add(new OLVColumn("Код", nameof(Fos.DirectionCode)) {
                 Width = 80,
                 IsEditable = false
-            };
-            list.Columns.Add(olvColumnDirectionCode);
-            var olvColumnDirectionName = new OLVColumn("Направление подготовки", nameof(Fos.DirectionName)) {
+            });
+
+            list.Columns.Add(new OLVColumn("Направление подготовки", nameof(Fos.DirectionName)) {
                 Width = 200,
                 IsEditable = false
-            };
-            list.Columns.Add(olvColumnDirectionName);
-            var olvColumnProfile = new OLVColumn("Профиль", nameof(Fos.Profile)) {
+            });
+
+            list.Columns.Add(new OLVColumn("Профиль", nameof(Fos.Profile)) {
                 Width = 100,
                 IsEditable = false
-            };
-            list.Columns.Add(olvColumnProfile);
-            var olvColumnDepartment = new OLVColumn("Кафедра", nameof(Fos.Department)) {
+            });
+
+            list.Columns.Add(new OLVColumn("Кафедра", nameof(Fos.Department)) {
                 Width = 100,
                 IsEditable = false
-            };
-            list.Columns.Add(olvColumnDepartment);
-            var olvColumnYear = new OLVColumn("Год", nameof(Fos.Year)) {
+            });
+
+            list.Columns.Add(new OLVColumn("Год", nameof(Fos.Year)) {
                 Width = 50,
                 IsEditable = false
-            };
-            list.Columns.Add(olvColumnYear);
-            var olvColumnFormsOfStudy = new OLVColumn("Формы обучения", nameof(Fos.FormsOfStudy)) {
+            });
+
+            list.Columns.Add(new OLVColumn("Формы обучения", nameof(Fos.FormsOfStudy)) {
                 Width = 190,
                 IsEditable = false,
                 AspectGetter = (x) => {
@@ -452,48 +441,39 @@ namespace FosMan {
                     }
                     return value;
                 }
-            };
-            list.Columns.Add(olvColumnFormsOfStudy);
+            });
             //составитель
-            var olvColumnCompiler = new OLVColumn("Составитель", nameof(Fos.Compiler)) {
+            list.Columns.Add(new OLVColumn("Составитель", nameof(Fos.Compiler)) {
                 Width = 200,
                 IsEditable = false
-            };
-            list.Columns.Add(olvColumnCompiler);
+            });
             //матрица компетенций
-            var olvColumnCompetenceMatrix = new OLVColumn("Компетенции", nameof(Fos.CompetenceMatrix)) {
+            list.Columns.Add(new OLVColumn("Компетенции", nameof(Fos.CompetenceMatrix)) {
                 Width = 60,
                 CheckBoxes = true,
                 IsEditable = false,
                 AspectGetter = (x) => (x as Fos)?.CompetenceMatrix?.Items?.Any() ?? false
-            };
-            list.Columns.Add(olvColumnCompetenceMatrix);
+            });
+            //паспорт
+            list.Columns.Add(new OLVColumn("Паспорт", nameof(Fos.Passport)) {
+                Width = 40,
+                CheckBoxes = true,
+                IsEditable = false,
+                AspectGetter = (x) => (x as Fos)?.Passport?.Items?.Any() ?? false
+            });
 
             //ошибки
-            var olvColumnErrors = new OLVColumn("Ошибки", "Errors") {
+            list.Columns.Add(new OLVColumn("Ошибки", "Errors") {
                 Width = 50,
                 IsEditable = false,
-                AspectGetter = (x) => {
-                    var value = x?.ToString();
-                    var fos = x as Fos;
-                    if (fos != null) {
-                        if (fos.Errors?.Any() ?? false) {
-                            value = "есть";
-                        }
-                        else {
-                            value = "нет";
-                        }
-                    }
-                    return value;
-                }
-            };
-            list.Columns.Add(olvColumnErrors);
-            var olvColumnFileName = new OLVColumn("Файл", nameof(Fos.SourceFileName)) {
+                AspectGetter = (x) => ((x as Fos)?.Errors?.Any() ?? false) ? "есть" : "нет"
+            });
+            //исх. файл
+            list.Columns.Add(new OLVColumn("Файл", nameof(Fos.SourceFileName)) {
                 Width = 200,
                 IsEditable = false,
                 FillsFreeSpace = true
-            };
-            list.Columns.Add(olvColumnFileName);
+            });
 
             list.PrimarySortColumn = olvColumnDisciplineName;
         }

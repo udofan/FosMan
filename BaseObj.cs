@@ -1,5 +1,6 @@
 ﻿using FastMember;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,18 +11,10 @@ namespace FosMan {
     /// Базовый объект с фичами аксессора к свойствам
     /// </summary>
     internal class BaseObj {
-        static Dictionary<Type, TypeAccessor> m_typeAccessors = []; // TypeAccessor.Create(typeof(CurriculumDiscipline));
-        static Dictionary<Type, TypeAccessor> m_extraTypeAccessors = [];
+        static ConcurrentDictionary<Type, TypeAccessor> m_typeAccessors = []; // TypeAccessor.Create(typeof(CurriculumDiscipline));
+        static ConcurrentDictionary<Type, TypeAccessor> m_extraTypeAccessors = [];
 
-        TypeAccessor TypeAccessor { 
-            get {
-                if (!m_typeAccessors.TryGetValue(this.GetType(), out var typeAccessor)) {
-                    typeAccessor ??= TypeAccessor.Create(this.GetType());
-                    m_typeAccessors[this.GetType()] = typeAccessor;
-                }
-                return typeAccessor;
-            } 
-        }
+        TypeAccessor TypeAccessor { get => m_typeAccessors.GetOrAdd(this.GetType(), TypeAccessor.Create(this.GetType())); }
 
         /// <summary>
         /// Получить значение свойства по имени
@@ -82,10 +75,7 @@ namespace FosMan {
                 if (arrayObj != null) {
                     var extraType = arrayObj.FirstOrDefault()?.GetType();
                     if (extraType != null) {
-                        if (!m_extraTypeAccessors.TryGetValue(extraType, out var extraTypeAccessor)) {
-                            extraTypeAccessor = TypeAccessor.Create(extraType);
-                            m_extraTypeAccessors[extraType] = extraTypeAccessor;
-                        }
+                        var extraTypeAccessor = m_extraTypeAccessors.GetOrAdd(extraType, TypeAccessor.Create(extraType));
                         extraTypeAccessor[arrayObj[index], subProperty] = value;
                     }
                 }

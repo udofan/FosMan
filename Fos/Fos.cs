@@ -73,7 +73,7 @@ namespace FosMan {
         /// Паспорт фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций (п.3)
         /// </summary>
         [JsonInclude]
-        public List<FosPassport> Passport { get; set; }
+        public FosPassport Passport { get; set; }
         /// <summary>
         /// Выявленные ошибки
         /// </summary>
@@ -100,6 +100,7 @@ namespace FosMan {
             //fos.ReferencesBase = [];
             //fos.ReferencesExtra = [];
             fos.CompetenceMatrix = null;
+            fos.Passport = null;
             fos.Compiler = "";
             fos.Department = "";
             fos.DirectionCode = "";
@@ -117,19 +118,21 @@ namespace FosMan {
                     using (var docx = DocX.Load(fileName)) {
                         //цикл по таблицам
                         foreach (var table in docx.Tables) {
-                            var testTable = true;
+                            var keepTestTable = true;
 
-                            if (testTable &&
+                            //проверка на таблиц 2.1
+                            if (keepTestTable &&
                                 fos.CompetenceMatrix == null &&
                                 CompetenceMatrix.TestTable(table, out var format) &&
                                 format == ECompetenceMatrixFormat.Fos21) {
                                 if (App.TestForTableOfCompetenceMatrix(table, format, out var matrix, out errors)) {
                                     fos.CompetenceMatrix = matrix;
-                                    testTable = false;
+                                    keepTestTable = false;
                                 }
-                                if (errors.Any()) fos.Errors.AddRange(errors);
+                                if (errors.Any()) fos.Errors.AddRange(errors.Select(e => $"Матрица компетенций: {e}"));
                             }
-                            if (testTable &&
+                            //проверка на таблицу 2.2
+                            if (keepTestTable &&
                                 fos.CompetenceMatrix != null &&
                                 !fos.CompetenceMatrix.IsComplete &&
                                 CompetenceMatrix.TestTable(table, out format) &&
@@ -138,15 +141,19 @@ namespace FosMan {
                                 if (CompetenceMatrix.TryParseTable(table, format, fos.CompetenceMatrix)) {
                                     fos.CompetenceMatrix.Check();
                                     if (fos.CompetenceMatrix.Errors.Any()) {
-                                        fos.Errors.AddRange(fos.CompetenceMatrix.Errors.Select(m => $"Матрица компетенций: {m}"));
+                                        fos.Errors.AddRange(fos.CompetenceMatrix.Errors.Select(e => $"Матрица компетенций: {e}"));
                                     }
+                                    keepTestTable = false;
                                 }
                             }
-                            //if (testTable) {
-                            //    EEvaluationTool[] evalTools = null;
-                            //    string[][] studyResults = null;
-                            //    testTable = !App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, ref evalTools, ref studyResults, out _);
-                            //}
+                            //проверка на таблицу "3. Паспорт фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций"
+                            if (keepTestTable && fos.Passport == null) {
+                                if (App.TestForFosPassport(table, out var passport, out errors)) {
+                                    fos.Passport = passport;
+                                    keepTestTable = false;
+                                    if (errors.Any()) fos.Errors.AddRange(errors.Select(e => $"Паспорт: {e}"));
+                                }
+                            }
                         }
                     }
                 }
@@ -157,5 +164,6 @@ namespace FosMan {
 
             return fos;
         }
+
     }
 }

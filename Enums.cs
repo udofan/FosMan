@@ -38,18 +38,23 @@ namespace FosMan {
         /// </summary>
         public enum EEvaluationTool {
             [Description("Опрос")]
-            Survey,         //опрос
+            Survey,
             [Description("Эссе")]
-            Essay,          //реферат
+            Essay,
             [Description("Реферат")]
             Paper,
             [Description("Тестирование")]
-            Testing,        //тестирование
+            Testing,
             [Description("Контрольная работа")]
-            ControlWork,    //контрольная работа
+            ControlWork,
             [Description("Доклад")]
-            Presentation
-            //PracticalWork   //практическая работа
+            Presentation,
+            [Description("Практическая работа")]
+            PracticalWork,
+            [Description("Мини-кейсы")]
+            MiniCases,
+            [Description("Деловая игра")]
+            BusinessGame
         }
 
         /// <summary>

@@ -76,6 +76,10 @@ namespace FosMan {
             [EFormOfStudy.MixedTime] = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
             [EFormOfStudy.PartTime] = new(@"^заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled)
         };
+        //тест таблицы паспорта ФОСа
+        static Regex m_regexFosPassportHeaderTopic = new(@"(модул|раздел|тем)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexFosPassportHeaderIndicator = new(@"индикатор", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexFosPassportHeaderEvalTool = new(@"оценоч", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         static CompetenceMatrix m_competenceMatrix = null;
         static ConcurrentDictionary<string, Curriculum> m_curriculumDic = [];
@@ -1868,7 +1872,7 @@ namespace FosMan {
                 tools[i + firstTools.Length] = secondTools[num];
             }
             //третья и последующая порция
-            var thirdTools = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToArray();
+            var thirdTools = firstTools.Concat(secondTools).ToArray(); //Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToArray();
             var topicIdx = firstTools.Length + secondTools.Length;
             usedNumbers.Clear();
 
@@ -2094,6 +2098,68 @@ namespace FosMan {
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Проверка таблицы на паспорт ФОСа (3. Паспорт фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций)
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="passport"></param>
+        /// <returns></returns>
+        public static bool TestForFosPassport(Table table, out FosPassport passport, out List<string> errors) {
+            errors = [];
+            passport = null;
+
+            try {
+                //ожидаем колонки
+                //№ п/п	- Контролируемые модули, разделы (темы) дисциплины - Код контролируемого индикатора достижения компетенции - Наименование оценочного средства
+                if (table.RowCount > 2 && table.ColumnCount >= 4) {
+                    var headerRow = table.Rows[0];
+                    var header1 = headerRow.Cells[1].GetText(); //Контролируемые модули, разделы (темы) дисциплины?
+                    var header2 = headerRow.Cells[2].GetText(); //Код контролируемого индикатора достижения компетенции?
+                    var header3 = headerRow.Cells[3].GetText(); //Наименование оценочного средства?
+                    //проверка заголовков
+                    if (m_regexFosPassportHeaderTopic.IsMatch(header1) &&
+                        m_regexFosPassportHeaderIndicator.IsMatch(header2) &&
+                        m_regexFosPassportHeaderEvalTool.IsMatch(header3)) {
+                        passport = new() {
+                            Items = []
+                        };
+                        //функция для нормализации текста: убираем лишние пробелы и приведение к UpperCase
+                        Func<string, string> normalizeText = t => string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
+
+                        //нормализуем список оценочных средств
+                        var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
+
+                        for (var row = 1; row < table.RowCount; row++) {
+                            //var evalTools = table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';');
+                            HashSet<EEvaluationTool> tools = [];
+                            foreach (var t in table.Rows[row].Cells[3].GetText().Split(',', '\n', ';')) {
+                                //убираем лишние пробелы
+                                if (evalToolDic.TryGetValue(normalizeText(t), out var tool)) {
+                                 //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
+                                //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
+                                    tools.Add(tool);
+                                }
+                                else {
+                                    errors.Add($"Не удалось определить тип оценочного средства - {t}");
+                                }
+                            }
+
+                            passport.Items.Add(new() {
+                                Topic = table.Rows[row].Cells[1].GetText(),
+                                CompetenceIndicators = [.. table.Rows[row].Cells[2].GetText(",").Split(',', '\n', ';')],
+                                EvaluationTools = tools
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) {
+                errors.Add($"{ex.Message}\r\n{ex.StackTrace}");
+            }
+
+            return passport != null;
         }
     }
 }
