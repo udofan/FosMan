@@ -250,7 +250,15 @@ namespace FosMan {
             toc.Append($"<li><a href='#{anchor}'><span style='color:{color};'>{element} (ошибок: {errorCount})</span></a></li>");
         }
 
-        static void AddDisciplineCheckTableRow(this StringBuilder table, int rowNum, string description, bool result, string comment) {
+        /// <summary>
+        /// Добавить в Html-отчет строку в таблицу проверок
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="rowNum"></param>
+        /// <param name="description"></param>
+        /// <param name="result"></param>
+        /// <param name="comment"></param>
+        static void AddReportTableRow(this StringBuilder table, int rowNum, string description, bool result, string comment) {
             var tdStyle = " style='border: 1px solid;'";
             var style = $" style='color:{(result ? "green" : "red")}'";
             var resultMark = result ? "&check;" : "&times;";
@@ -280,13 +288,39 @@ namespace FosMan {
                 ret.msg = $"<b>{ex.Message}</b><br />{ex.StackTrace}";
             }
 
-            repTable.AddDisciplineCheckTableRow(pos, description, ret.result, ret.msg);
+            repTable.AddReportTableRow(pos, description, ret.result, ret.msg);
 
             return ret.result;
         }
 
         /// <summary>
-        /// Проверить загруженные РПД
+        /// Проверка ФОС
+        /// </summary>
+        /// <param name="rpd"></param>
+        /// <param name="discipline"></param>
+        /// <param name="repTable"></param>
+        static bool ApplyFosCheck(Fos fos, Rpd rpd, StringBuilder repTable,
+                                  ref int pos, ref int errorCount, string description, 
+                                  Func<Fos, Rpd, (bool result, string msg)> func) {
+            pos++;
+            (bool result, string msg) ret = (false, "?");
+
+            try {
+                ret = func.Invoke(fos, rpd);
+                if (!ret.result) errorCount++;
+            }
+            catch (Exception ex) {
+                ret.result = false;
+                ret.msg = $"<b>{ex.Message}</b><br />{ex.StackTrace}";
+            }
+
+            repTable.AddReportTableRow(pos, description, ret.result, ret.msg);
+
+            return ret.result;
+        }
+
+        /// <summary>
+        /// Проверить список РПД
         /// </summary>
         public static void CheckRdp(List<Rpd> rpdList, out string htmlReport) {
             htmlReport = string.Empty;
@@ -336,6 +370,7 @@ namespace FosMan {
                         var discipline = curriculum.Value.FindDiscipline(rpd.DisciplineName);
                         var checkPos = 0;
                         if (discipline != null) {
+                            rep.AddDiv($"Проверка по УП:");
                             var tdStyle = " style='border: 1px solid;'";
                             var table = new StringBuilder(@"<table style='border: 1px solid'><tr style='font-weight: bold; background-color: lightgray'>");
                             table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Проверка</th><th {tdStyle}>Результат</th><th {tdStyle}>Комментарий</th>");
@@ -599,6 +634,310 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Проверить список ФОС
+        /// </summary>
+        public static void CheckFos(List<Fos> fosList, out string htmlReport) {
+            htmlReport = string.Empty;
+
+            StringBuilder html = new("<html><body><h2>Отчёт по проверке ФОС</h2>");
+            StringBuilder toc = new("<div><ul>");
+            StringBuilder rep = new("<div>");
+            var idx = 0;
+            foreach (var fos in fosList) {
+                var anchor = $"fos{idx}";
+                idx++;
+                fos.ExtraErrors = [];
+                var errorCount = 0;
+
+                //var discipName = rpd.DisciplineName;
+                //if (string.IsNullOrEmpty(discipName)) discipName = "?";
+                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{fos.DisciplineName ?? "?"}</h3>");
+                rep.Append("<div style='padding-left: 30px'>");
+                rep.AddDiv($"Файл ФОС: <b>{fos.SourceFileName}</b>");
+                //ошибки, выявленные при загрузке
+                if (fos.Errors.Any()) {
+                    errorCount += fos.Errors.Count;
+                    rep.Append("<p />");
+                    rep.AddDiv($"<div style='color: red'>Ошибки, выявленные при загрузке ({fos.Errors.Count} шт.):</div>");
+                    fos.Errors.ForEach(e => rep.AddError(e));
+                }
+                //для проверки нам будет нужен РПД
+                var rpd = FindRpd(fos);
+                if (rpd != null) {
+                    rep.Append("<p />");
+                    rep.AddDiv($"Файл РПД: <b>{rpd.SourceFileName}</b>");
+                    rep.Append("<p />");
+                    rep.AddDiv("<b>Проверки по РПД:</b>");
+                    var tdStyle = " style='border: 1px solid;'";
+                    var table = new StringBuilder(@"<table style='border: 1px solid'><tr style='font-weight: bold; background-color: lightgray'>");
+                    table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Проверка</th><th {tdStyle}>Результат</th><th {tdStyle}>Комментарий</th>");
+                    table.Append("</tr>");
+                    int checkPos = 0;
+                    ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Кафедра", (fos, rpd) => {
+                        var result = string.Compare(fos.Department, rpd.Department, true) == 0;
+                        var msg = result ? "" : $"Обнаружено различие в кафедре [ФОС: <b>{fos.Department}</b>, РПД: <b>{rpd.Department}</b>]";
+                        return (result, msg);
+                    });
+                    ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Формы обучения", (fos, rpd) => {
+                        var result = !fos.FormsOfStudy.Except(rpd.FormsOfStudy).Any() && !rpd.FormsOfStudy.Except(fos.FormsOfStudy).Any();
+                        var msg = result ? "": $"Обнаружено различие в формах обучения " +
+                                               $"[ФОС: <b>{string.Join(", ", fos.FormsOfStudy.Select(f => f.GetDescription()))}</b>, " +
+                                               $"[РПД: <b>{string.Join(", ", rpd.FormsOfStudy.Select(f => f.GetDescription()))}</b>]";
+                        return (result, msg);
+                    });
+                    ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Год", (fos, rpd) => {
+                        var result = string.Compare(fos.Year, rpd.Year, true) == 0;
+                        var msg = result ? "" : $"Обнаружено различие в годах [ФОС: <b>{fos.Year}</b>, РПД: <b>{rpd.Year}</b>]";
+                        return (result, msg);
+                    });
+
+                    //todo
+                    //из РПД вынимать таблицу тем (с учетом объединения ячеек)
+                    //сравнивать ее с паспортом ФОС
+
+                    //проверка компетенций
+                    var checkCompetences = true;
+                    checkCompetences &= ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Год", (fos, rpd) => {
+                        //ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Наличие матрицы компетенций в УП", (eduWork) => {
+                        var result = discipline.CompetenceList?.Any() ?? false;
+                        var msg = result ? "" : $"Не удалось определить матрицу компетенций в УП.";
+                        return (result, msg);
+                    });
+                    checkCompetences &= ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций в РПД", (eduWork) => {
+                        var result = rpd.CompetenceMatrix?.IsLoaded ?? false;
+                        var msg = result ? "" : $"В РПД не обнаружена матрица компетенций.";
+                        if (result && rpd.CompetenceMatrix.Errors.Any()) {
+                            msg = "В матрице обнаружены ошибки:<br />";
+                            msg += string.Join("<br />", rpd.CompetenceMatrix.Errors);
+                            result = false;
+                        }
+                        if (!result) {
+                            if (msg.Length > 0) msg += "<br />";
+                            msg += "Проверка компетенций невозможна";
+                        }
+                        return (result, msg);
+                    });
+
+                    if (checkCompetences) {
+                        ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций", (eduWork) => {
+                            var achiCodeList = rpd.CompetenceMatrix.GetAllAchievementCodes();
+                            var Summary = "";
+                            var matrixError = false;
+                            foreach (var code in discipline.CompetenceList) {
+                                var elem = "";
+                                if (achiCodeList.Contains(code)) {
+                                    elem = $"<span style='color: green; font-weight: bold'>{code}</span>";
+                                }
+                                else {
+                                    elem = $"<span style='color: red; font-weight: bold'>{code}</span>";
+                                    matrixError = true;
+                                }
+
+                                if (Summary.Length > 0) Summary += "; ";
+                                Summary += elem;
+                            }
+                            foreach (var missedCode in achiCodeList.Except(discipline.CompetenceList)) {
+                                matrixError = true;
+                                if (Summary.Length > 0) Summary += "; ";
+                                Summary += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
+                            }
+                            var msg = matrixError ? $"Выявлено несоответствие компетенций: {Summary}" : "";
+                            return (!matrixError, msg);
+                        });
+                    }
+                    //проверка таблицы учебных работ для текущей формы обучения curriculum.Key
+                    ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount,
+                        $"Проверка времени в таблице тем ({curriculum.Key.GetDescription()})",
+                        eduWork => {
+                            if (eduWork.Table == null) {
+                                return (false, "Таблица не найдена");
+                            }
+                            else {
+                                var msg = "";
+                                try {
+                                    var result = true;
+                                    //var rowCount = eduWork.Table.RowCount - 4;
+                                    //проверка по столбцам и по рядам
+                                    var cells = new int[eduWork.Table.RowCount, eduWork.Table.ColumnCount - 2];
+                                    var startRow = 3; // eduWork.Table.RowCount - ;
+                                    var startCol = -1;
+                                    //первый ряд - ряд без объединений ячеек
+                                    var numColCount = 0;
+                                    while (startRow < eduWork.Table.RowCount) {
+                                        numColCount = 0;
+                                        for (var col = 0; col < eduWork.Table.Rows[startRow].Cells.Count; col++) {
+                                            var cell = eduWork.Table.Rows[startRow].Cells[col];
+                                            if (cell.GridSpan > 0) {
+                                                startRow++;
+                                                continue;
+                                            }
+                                            var text = cell.GetText();
+                                            if (int.TryParse(text, out _)) {
+                                                if (col > 0) { //} && startCol < 0) {
+                                                    if (startCol < 0) startCol = col;
+                                                    numColCount++;
+                                                }
+                                            }
+                                        }
+                                        break;
+                                    }
+                                    //тестируем на кол-во ячеек с числовыми значениями: должно быть 4 или 5 (когда есть подитог по КР)
+                                    var hasSubTotal = numColCount == 5;
+
+                                    //var startCol = eduWork.Table.ColumnCount - 6;
+
+                                    for (int row = startRow; row < cells.GetLength(0) - 1; row++) {
+                                        for (int col = startCol; col < cells.GetLength(1); col++) {
+                                            var cellValue = eduWork.Table.Rows[row].Cells[col].GetText();
+                                            if (!string.IsNullOrEmpty(cellValue) && int.TryParse(cellValue, out var intVal)) {
+                                                cells[row, col] = intVal;
+                                            }
+                                        }
+                                        //проверка строки
+                                        if (row < cells.GetLength(0) - 2) { //последние 2 строки пропускаем
+                                                                            //итог контактной работы
+                                            if (hasSubTotal) {
+                                                var subTotal = cells[row, startCol + 2] + cells[row, startCol + 3];
+                                                if (cells[row, startCol + 1] != subTotal) {
+                                                    if (msg.Length > 0) msg += "<br />";
+                                                    msg += $"Ряд <b>{eduWork.Table.Rows[row].Cells[startCol - 1].GetText()}</b>: значение [{cells[row, startCol + 1]}] в колонке [Контактная работа.Всего часов] не совпадает с суммой [{subTotal}]";
+                                                }
+                                            }
+                                            //обшее кол-во часов
+                                            var colDelta = hasSubTotal ? 1 : 0;
+                                            var total = cells[row, startCol + 1 + colDelta] + cells[row, startCol + 2 + colDelta] + cells[row, startCol + 3 + colDelta];
+                                            if (cells[row, startCol] != total) {
+                                                if (msg.Length > 0) msg += "<br />";
+                                                msg += $"Ряд <b>{eduWork.Table.Rows[row].Cells[startCol - 1].GetText()}</b>: значение [{cells[row, startCol]}] в колонке [Общее к-во часов] не совпадает с суммой [{total}]";
+                                            }
+                                        }
+                                    }
+                                    //подсчет нижнего итогового ряда (в нем могут быть объединения ячеек)
+                                    var total1stCol = 0;
+                                    var physColIdx = 0;
+                                    while (physColIdx < startCol) {
+                                        physColIdx += eduWork.Table.Rows[eduWork.Table.RowCount - 1].Cells[total1stCol].GridSpan;
+                                        physColIdx++;
+                                        total1stCol++;
+                                    }
+                                    var matrixCol = startCol - 1;
+                                    for (var c = total1stCol; c < eduWork.Table.Rows[eduWork.Table.RowCount - 1].Cells.Count; c++) {
+                                        matrixCol++;
+                                        var text = eduWork.Table.Rows[eduWork.Table.RowCount - 1].Cells[c].GetText();
+                                        if (int.TryParse(text, out var intVal)) {
+                                            cells[eduWork.Table.RowCount - 1, matrixCol] = intVal;
+                                        }
+                                    }
+
+                                    //проверка итоговой строки
+                                    Func<int, int> colSum = colIdx => {
+                                        int sum = 0;
+                                        for (int row = startRow; row < cells.GetLength(0) - 1; row++) {
+                                            sum += cells[row, colIdx];
+                                        }
+                                        return sum;
+                                    };
+
+                                    for (var col = startCol; col < cells.GetLength(1); col++) {
+                                        if (cells[eduWork.Table.RowCount - 1, col] != colSum(col)) {
+                                            if (msg.Length > 0) msg += "<br />";
+                                            var header = col.ToString(); // GetTableHeaderText(eduWork.Table, 3, col);
+                                            msg += $"Колонка <b>{header}</b>: итоговая сумма [{colSum(col)}] не совпадает с необходимой [{cells[eduWork.Table.RowCount - 1, col]}]";
+                                        }
+                                    }
+                                }
+                                catch (Exception ex2) {
+                                    msg = $"<b>{ex2.Message}</b><br />{ex2.StackTrace}";
+                                }
+
+                                return (string.IsNullOrEmpty(msg), msg);
+                            }
+                            //var result = discipline.EducationalWork.TotalHours == eduWork.TotalHours;
+                            //var msg = result ? "" : $"Итоговое время [{discipline.EducationalWork.TotalHours}] не соответствует УП (д.б. {eduWork.TotalHours}).";
+                        });
+
+                    table.Append("</table>");
+                    rep.Append(table);
+                }
+                else {
+                    errorCount++;
+                    rep.AddError("Не удалось найти родительский РПД. Добавление РПД осуществляется на вкладке <b>\"РПД\"</b>.");
+                    rep.AddError("Проверка ФОС по РПД невозможна.");
+                }
+                /*
+                        var checkPos = 0;
+                        if (discipline != null) {
+                            var tdStyle = " style='border: 1px solid;'";
+                            var table = new StringBuilder(@"<table style='border: 1px solid'><tr style='font-weight: bold; background-color: lightgray'>");
+                            table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Проверка</th><th {tdStyle}>Результат</th><th {tdStyle}>Комментарий</th>");
+                            table.Append("</tr>");
+
+                //проверка компетенций
+                var checkCompetences = true;
+                checkCompetences &= ApplyDisciplineCheck(curriculum.Key, fos, discipline, table, ref checkPos, ref errorCount, "Наличие матрицы компетенций в УП", (eduWork) => {
+                    var result = discipline.CompetenceList?.Any() ?? false;
+                    var msg = result ? "" : $"Не удалось определить матрицу компетенций в УП.";
+                    return (result, msg);
+                });
+                checkCompetences &= ApplyDisciplineCheck(curriculum.Key, fos, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций в ФОС", (eduWork) => {
+                    var result = fos.CompetenceMatrix?.IsLoaded ?? false;
+                    var msg = result ? "" : $"В РПД не обнаружена матрица компетенций.";
+                    if (result && fos.CompetenceMatrix.Errors.Any()) {
+                        msg = "В матрице обнаружены ошибки:<br />";
+                        msg += string.Join("<br />", fos.CompetenceMatrix.Errors);
+                        result = false;
+                    }
+                    if (!result) {
+                        if (msg.Length > 0) msg += "<br />";
+                        msg += "Проверка компетенций невозможна";
+                    }
+                    return (result, msg);
+                });
+
+                if (checkCompetences) {
+                    ApplyDisciplineCheck(curriculum.Key, fos, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций", (eduWork) => {
+                        var achiCodeList = fos.CompetenceMatrix.GetAllAchievementCodes();
+                        var Summary = "";
+                        var matrixError = false;
+                        foreach (var code in discipline.CompetenceList) {
+                            var elem = "";
+                            if (achiCodeList.Contains(code)) {
+                                elem = $"<span style='color: green; font-weight: bold'>{code}</span>";
+                            }
+                            else {
+                                elem = $"<span style='color: red; font-weight: bold'>{code}</span>";
+                                matrixError = true;
+                            }
+
+                            if (Summary.Length > 0) Summary += "; ";
+                            Summary += elem;
+                        }
+                        foreach (var missedCode in achiCodeList.Except(discipline.CompetenceList)) {
+                            matrixError = true;
+                            if (Summary.Length > 0) Summary += "; ";
+                            Summary += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
+                        }
+                        var msg = matrixError ? $"Выявлено несоответствие компетенций: {Summary}" : "";
+                        return (!matrixError, msg);
+                    });
+                }
+                */
+                if (errorCount == 0) {
+                    rep.Append("<p />");
+                    rep.AddDiv("<div style='color: green'>Ошибок не обнаружено.</div>");
+                }
+                rep.Append("</div></div>");
+
+                toc.AddTocElement(fos.DisciplineName ?? "?", anchor, errorCount);
+            }
+            rep.Append("</div>");
+            toc.Append("</ul></div>");
+            html.Append(toc).Append(rep).Append("</body></html>");
+
+            htmlReport = html.ToString();
+        }
+
+        /// <summary>
         /// Получение текста ячейки заголовка с учетом объединения ячеек
         /// </summary>
         /// <param name="table"></param>
@@ -830,20 +1169,32 @@ namespace FosMan {
         }
 
         /// <summary>
-        /// Поиск РПД
+        /// Поиск РПД по дисциплине
         /// </summary>
         /// <param name="disc"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public static Rpd? FindRpd(CurriculumDiscipline disc) {
-            var name = disc.Name.Replace('ё', 'е').ToLower();
+            //var name = disc.Name.Replace('ё', 'е').ToLower();
 
-            var rpd = m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').Equals(name));
-            rpd ??= m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').StartsWith(name));
-            rpd ??= m_rpdDic.Values.FirstOrDefault(d => name.StartsWith(d.DisciplineName.ToLower().Replace('ё', 'е')));
+            //var rpd = m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').Equals(name));
+            //rpd ??= m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').StartsWith(name));
+            //rpd ??= m_rpdDic.Values.FirstOrDefault(d => name.StartsWith(d.DisciplineName.ToLower().Replace('ё', 'е')));
+
+            var name = NormalizeName(disc.Name);
+
+            var rpd = m_rpdDic.Values.FirstOrDefault(d => NormalizeName(d.DisciplineName).Equals(name));
+            rpd ??= m_rpdDic.Values.FirstOrDefault(d => NormalizeName(d.DisciplineName).StartsWith(name));
+            rpd ??= m_rpdDic.Values.FirstOrDefault(d => name.StartsWith(NormalizeName(d.DisciplineName)));
 
             return rpd; //m_rpdDic.Values.FirstOrDefault(r => r.DisciplineName.Equals(disc.Name, StringComparison.CurrentCultureIgnoreCase));
         }
+
+        /// <summary>
+        /// Поиск РПД по ФОСу
+        /// </summary>
+        /// <param name="disc"></param>
+        /// <returns></returns>
+        public static Rpd? FindRpd(Fos fos) => m_rpdDic.Values.FirstOrDefault(d => d.Key.Equals(fos.Key));
 
         /// <summary>
         /// Попытка обработать специальное поле
@@ -1984,7 +2335,7 @@ namespace FosMan {
         }
 
         /// <summary>
-        /// Нормализация имени "Основы микро- и макроэкономики" -> "ОСНОВЫМИКРОИМАКРОЭКОНОМИКИ"
+        /// Нормализация имени ("Основы микро- и макроэкономики" -> "ОСНОВЫМИКРОИМАКРОЭКОНОМИКИ")
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -2026,7 +2377,7 @@ namespace FosMan {
         /// Сохранить стор
         /// </summary>
         public static void SaveStore() {
-            var storeFile = Path.Combine(Environment.CurrentDirectory, $"Store.json");
+            var storeFile = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME);
             if (m_config != null) {
                 var json = JsonSerializer.Serialize(m_store, m_jsonOptions);
                 File.WriteAllText(storeFile, json, Encoding.UTF8);
@@ -2037,7 +2388,7 @@ namespace FosMan {
         /// Загрузить стор
         /// </summary>
         public static void LoadStore() {
-            var storeFile = Path.Combine(Environment.CurrentDirectory, $"Store.json");
+            var storeFile = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME);
             if (File.Exists(storeFile)) {
                 var json = File.ReadAllText(storeFile);
                 m_store = JsonSerializer.Deserialize<Store>(json, m_jsonOptions);
@@ -2053,6 +2404,16 @@ namespace FosMan {
         public static void AddLoadedRpdToStore() {
             foreach (var rpd in m_rpdDic) {
                 m_store.RpdDic[rpd.Key] = rpd.Value;
+            }
+            SaveStore();
+        }
+
+        /// <summary>
+        /// Добавить/обновить загруженные ФОС в стор
+        /// </summary>
+        public static void AddLoadedFosToStore() {
+            foreach (var fos in m_fosDic) {
+                m_store.FosDic[fos.Key] = fos.Value;
             }
             SaveStore();
         }

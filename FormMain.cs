@@ -585,6 +585,10 @@ namespace FosMan {
                         tabControl1.SelectTab(tabPageRpd);
                         LoadRpdFilesAsync(App.Config.RpdList.ToArray());
                     }
+                    if (App.Config.FosList?.Any() ?? false) {
+                        tabControl1.SelectTab(tabPageFos);
+                        LoadFosFilesAsync(App.Config.FosList.ToArray());
+                    }
                 }));
             });
         }
@@ -1309,6 +1313,10 @@ namespace FosMan {
             if (App.Config.StoreRpdList) {
                 App.Config.RpdList = App.RpdList?.Values.Select(r => r.SourceFileName).ToList() ?? [];
             }
+            App.Config.FosList = [];
+            if (App.Config.StoreFosList) {
+                App.Config.FosList = App.FosList?.Values.Select(r => r.SourceFileName).ToList() ?? [];
+            }
             App.SaveConfig();
         }
 
@@ -1767,16 +1775,12 @@ namespace FosMan {
         private void iconToolStripButtonRpdCheck_Click(object sender, EventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
-                var targetDir = textBoxRpdGenTargetDir.Text;
-                if (string.IsNullOrEmpty(targetDir)) {
-                    targetDir = Path.Combine(Environment.CurrentDirectory, $"Исправленные_РПД_{DateTime.Now:yyyy-MM-dd}");
-                }
-                App.CheckRdp(rpdList, out var report);
+                CheckRdp(rpdList, out var report);
 
                 AddReport("Проверка РПД", report);
             }
             else {
-                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Исправление РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Необходимо выделить файлы, которые требуется проверить.", "Проверка РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -1853,13 +1857,13 @@ namespace FosMan {
         }
 
         private void iconToolStripButtonFosOpen_Click(object sender, EventArgs e) {
-            openFileDialogFosSelect.InitialDirectory = App.Config.RpdLastLocation ?? Environment.CurrentDirectory;
+            openFileDialogFosSelect.InitialDirectory = App.Config.FosLastLocation ?? Environment.CurrentDirectory;
 
             if (openFileDialogFosSelect.ShowDialog(this) == DialogResult.OK) {
-                var files = openFileDialogFosSelect.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
+                var files = openFileDialogFosSelect.FileNames.Where(x => !App.HasFosFile(x)).ToArray();
 
                 if (openFileDialogFosSelect.FileNames.Length > 0) {
-                    App.Config.RpdLastLocation = Path.GetDirectoryName(openFileDialogFosSelect.FileNames[0]);
+                    App.Config.FosLastLocation = Path.GetDirectoryName(openFileDialogFosSelect.FileNames[0]);
                     App.SaveConfig();
                 }
 
@@ -1890,6 +1894,51 @@ namespace FosMan {
             if (fosList.Any()) {
                 var files = fosList.Select(fos => fos.SourceFileName);
                 LoadFosFilesAsync(files.ToArray());
+            }
+        }
+
+        private void iconToolStripButtonForRememberList_Click(object sender, EventArgs e) {
+            App.Config.StoreFosList = iconToolStripButtonForRememberList.Checked;
+            App.SaveConfig();
+        }
+
+        private void iconToolStripButtonFosFromDb_Click(object sender, EventArgs e) {
+            if (MessageBox.Show($"Вы уверены, что хотите загрузить в список ФОС из Стора ({App.Store.FosDic.Count} шт.)?", "Загрузка ФОС",
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                if (App.Store?.FosDic?.Any() ?? false) {
+                    fastObjectListViewFosList.BeginUpdate();
+                    var selectedObjects = fastObjectListViewFosList.SelectedObjects;
+
+                    foreach (var fos in App.Store.FosDic.Values) {
+                        App.AddFos(fos);
+
+                        fastObjectListViewFosList.AddObject(fos);
+                        fastObjectListViewFosList.EnsureModelVisible(fos);
+                        selectedObjects.Add(fos);
+                    }
+                    fastObjectListViewFosList.SelectedObjects = selectedObjects;
+                    fastObjectListViewFosList.EndUpdate();
+                }
+            }
+        }
+
+        private void iconToolStripButtonFosToDb_Click(object sender, EventArgs e) {
+            var sw = Stopwatch.StartNew();
+
+            App.AddLoadedFosToStore();
+
+            StatusMessage($"В Стор добавлены ФОС ({App.FosList.Count} шт.) ({sw.Elapsed}). Всего в Сторе ФОС: {App.Store.FosDic.Count} шт.");
+        }
+
+        private void iconToolStripButtonFosCheck_Click(object sender, EventArgs e) {
+            var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
+            if (fosList.Any()) {
+                CheckFos(fosList, out var report);
+
+                AddReport("Проверка ФОС", report);
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, которые требуется проверить.", "Проверка ФОС", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
     }

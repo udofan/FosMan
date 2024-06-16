@@ -86,7 +86,7 @@
             checkBoxRpdFixSummaryTableOfEduWorks = new CheckBox();
             checkBoxRpdFixTableOfCompetences = new CheckBox();
             fastObjectListViewRpdList = new BrightIdeasSoftware.FastObjectListView();
-            tabPage2 = new TabPage();
+            tabPageFos = new TabPage();
             splitContainerFos = new SplitContainer();
             groupBoxFosFix = new GroupBox();
             checkBox1 = new CheckBox();
@@ -202,7 +202,7 @@
             groupBox5.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdFixFindAndReplaceItems).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).BeginInit();
-            tabPage2.SuspendLayout();
+            tabPageFos.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerFos).BeginInit();
             splitContainerFos.Panel1.SuspendLayout();
             splitContainerFos.Panel2.SuspendLayout();
@@ -230,7 +230,7 @@
             tabControl1.Controls.Add(tabPageCompetenceMatrix);
             tabControl1.Controls.Add(tabPageСurriculum);
             tabControl1.Controls.Add(tabPageRpd);
-            tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPageFos);
             tabControl1.Controls.Add(tabPageReports);
             tabControl1.Controls.Add(tabPageRpdGeneration);
             tabControl1.Controls.Add(tabPageYaGPT);
@@ -494,10 +494,10 @@
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainerRpd);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1001, 677);
+            tabPageRpd.Size = new Size(1001, 676);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -644,7 +644,7 @@
             splitContainerRpd.Dock = DockStyle.Bottom;
             splitContainerRpd.FixedPanel = FixedPanel.Panel1;
             splitContainerRpd.IsSplitterFixed = true;
-            splitContainerRpd.Location = new Point(3, 36);
+            splitContainerRpd.Location = new Point(3, 35);
             splitContainerRpd.Name = "splitContainerRpd";
             splitContainerRpd.Orientation = Orientation.Horizontal;
             // 
@@ -952,17 +952,17 @@
             fastObjectListViewRpdList.FormatRow += fastObjectListViewRpdList_FormatRow;
             fastObjectListViewRpdList.ItemActivate += fastObjectListViewRpdList_ItemActivate;
             // 
-            // tabPage2
+            // tabPageFos
             // 
-            tabPage2.Controls.Add(splitContainerFos);
-            tabPage2.Controls.Add(toolStrip2);
-            tabPage2.Location = new Point(4, 23);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1001, 677);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "ФОС";
-            tabPage2.UseVisualStyleBackColor = true;
+            tabPageFos.Controls.Add(splitContainerFos);
+            tabPageFos.Controls.Add(toolStrip2);
+            tabPageFos.Location = new Point(4, 23);
+            tabPageFos.Name = "tabPageFos";
+            tabPageFos.Padding = new Padding(3);
+            tabPageFos.Size = new Size(1001, 677);
+            tabPageFos.TabIndex = 1;
+            tabPageFos.Text = "ФОС";
+            tabPageFos.UseVisualStyleBackColor = true;
             // 
             // splitContainerFos
             // 
@@ -1282,7 +1282,7 @@
             iconToolStripButtonFosOpen.Name = "iconToolStripButtonFosOpen";
             iconToolStripButtonFosOpen.Size = new Size(95, 28);
             iconToolStripButtonFosOpen.Text = "Открыть...";
-            iconToolStripButtonFosOpen.ToolTipText = "Открыть РПД-файлы и добавить в список";
+            iconToolStripButtonFosOpen.ToolTipText = "Открыть ФОС-файлы и добавить в список";
             iconToolStripButtonFosOpen.Click += iconToolStripButtonFosOpen_Click;
             // 
             // iconToolStripButtonFosReload
@@ -1294,7 +1294,7 @@
             iconToolStripButtonFosReload.Name = "iconToolStripButtonFosReload";
             iconToolStripButtonFosReload.Size = new Size(102, 28);
             iconToolStripButtonFosReload.Text = "Перечитать";
-            iconToolStripButtonFosReload.ToolTipText = "Перечитать выделенные РПД";
+            iconToolStripButtonFosReload.ToolTipText = "Перечитать выделенные файлы";
             iconToolStripButtonFosReload.Click += iconToolStripButtonFosReload_Click;
             // 
             // toolStripSeparator10
@@ -1320,7 +1320,6 @@
             // 
             // iconToolStripButtonFosFromDb
             // 
-            iconToolStripButtonFosFromDb.Enabled = false;
             iconToolStripButtonFosFromDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightFromFile;
             iconToolStripButtonFosFromDb.IconColor = Color.DarkBlue;
             iconToolStripButtonFosFromDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
@@ -1328,11 +1327,11 @@
             iconToolStripButtonFosFromDb.Name = "iconToolStripButtonFosFromDb";
             iconToolStripButtonFosFromDb.Size = new Size(89, 28);
             iconToolStripButtonFosFromDb.Text = "Загрузить";
-            iconToolStripButtonFosFromDb.ToolTipText = "Загрузить РПД из БД";
+            iconToolStripButtonFosFromDb.ToolTipText = "Загрузить ФОС из БД";
+            iconToolStripButtonFosFromDb.Click += iconToolStripButtonFosFromDb_Click;
             // 
             // iconToolStripButtonFosToDb
             // 
-            iconToolStripButtonFosToDb.Enabled = false;
             iconToolStripButtonFosToDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightToFile;
             iconToolStripButtonFosToDb.IconColor = Color.DarkBlue;
             iconToolStripButtonFosToDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
@@ -1340,7 +1339,8 @@
             iconToolStripButtonFosToDb.Name = "iconToolStripButtonFosToDb";
             iconToolStripButtonFosToDb.Size = new Size(94, 28);
             iconToolStripButtonFosToDb.Text = "Сохранить";
-            iconToolStripButtonFosToDb.ToolTipText = "Сохранить РПД из списка в БД";
+            iconToolStripButtonFosToDb.ToolTipText = "Сохранить ФОС из списка в БД";
+            iconToolStripButtonFosToDb.Click += iconToolStripButtonFosToDb_Click;
             // 
             // toolStripSeparator12
             // 
@@ -1357,9 +1357,10 @@
             iconToolStripButtonForRememberList.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonForRememberList.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonForRememberList.Name = "iconToolStripButtonForRememberList";
-            iconToolStripButtonForRememberList.Size = new Size(101, 28);
-            iconToolStripButtonForRememberList.Text = "Запоминать";
-            iconToolStripButtonForRememberList.ToolTipText = "Запоминать список при выходе из приложения";
+            iconToolStripButtonForRememberList.Size = new Size(108, 28);
+            iconToolStripButtonForRememberList.Text = "Автозагрузка";
+            iconToolStripButtonForRememberList.ToolTipText = "Запоминать список при выходе из приложения и восстанавливать его при загрузке";
+            iconToolStripButtonForRememberList.Click += iconToolStripButtonForRememberList_Click;
             // 
             // toolStripSeparator13
             // 
@@ -1368,7 +1369,6 @@
             // 
             // iconToolStripButtonFosCheck
             // 
-            iconToolStripButtonFosCheck.Enabled = false;
             iconToolStripButtonFosCheck.IconChar = FontAwesome.Sharp.IconChar.ListCheck;
             iconToolStripButtonFosCheck.IconColor = Color.DarkBlue;
             iconToolStripButtonFosCheck.IconFont = FontAwesome.Sharp.IconFont.Auto;
@@ -1376,7 +1376,8 @@
             iconToolStripButtonFosCheck.Name = "iconToolStripButtonFosCheck";
             iconToolStripButtonFosCheck.Size = new Size(96, 28);
             iconToolStripButtonFosCheck.Text = "Проверить";
-            iconToolStripButtonFosCheck.ToolTipText = "Проверить загруженные РПД и сформировать отчёт";
+            iconToolStripButtonFosCheck.ToolTipText = "Проверить загруженные ФОС и сформировать отчёт";
+            iconToolStripButtonFosCheck.Click += iconToolStripButtonFosCheck_Click;
             // 
             // toolStripSeparator14
             // 
@@ -2005,8 +2006,8 @@
             groupBox5.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdFixFindAndReplaceItems).EndInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).EndInit();
-            tabPage2.ResumeLayout(false);
-            tabPage2.PerformLayout();
+            tabPageFos.ResumeLayout(false);
+            tabPageFos.PerformLayout();
             splitContainerFos.Panel1.ResumeLayout(false);
             splitContainerFos.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerFos).EndInit();
@@ -2040,7 +2041,7 @@
         #endregion
         private TabControl tabControl1;
         private TabPage tabPageRpd;
-        private TabPage tabPage2;
+        private TabPage tabPageFos;
         private TabPage tabPageCompetenceMatrix;
         private OpenFileDialog openFileDialogSelectCompetenceMatrixFile;
         private Microsoft.Web.WebView2.WinForms.WebView2 webView21;

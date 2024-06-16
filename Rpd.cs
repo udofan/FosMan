@@ -162,9 +162,10 @@ namespace FosMan {
             new(@"дополнительная.+литература", RegexOptions.IgnoreCase | RegexOptions.Compiled)
         };
         /// <summary>
-        /// Факультет
+        /// Ключ (по нему сравниваются РПД и ФОС)
         /// </summary>
-        //public string Faculty { get; set; }
+        [JsonIgnore]
+        public string Key { get => App.NormalizeName($"{DirectionCode}_{Profile}_{DisciplineName}"); }
         /// <summary>
         /// Год
         /// </summary>

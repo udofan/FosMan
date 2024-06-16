@@ -16,6 +16,11 @@ namespace FosMan {
     /// </summary>
     internal class Fos : BaseObj {
         /// <summary>
+        /// Ключ (по нему сравниваются РПД и ФОС)
+        /// </summary>
+        [JsonIgnore]
+        public string Key { get => App.NormalizeName($"{DirectionCode}_{Profile}_{DisciplineName}"); }
+        /// <summary>
         /// Исходный docx-файл
         /// </summary>
         [JsonInclude]
