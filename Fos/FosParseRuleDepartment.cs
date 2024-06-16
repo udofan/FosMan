@@ -10,7 +10,8 @@ namespace FosMan {
         //public bool Disabled { get; set; }
         public EParseType Type { get; set; } = EParseType.Inline;
         public string MultilineConcatValue { get; set; } = string.Empty;
-        public string Name { get; set; } = nameof(Fos.Department);
+        public string PropertyName { get; set; } = nameof(Fos.Department);
+        public Type PropertyType { get; set; } = typeof(Fos).GetProperty(nameof(Fos.Department))?.PropertyType;
         public List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; } = [
             (new(@"Кафедра\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 1)
         ];

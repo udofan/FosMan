@@ -10,7 +10,8 @@ namespace FosMan {
         //public bool Disabled { get; set; }
         public EParseType Type { get; set; } = EParseType.Inline;
         public string MultilineConcatValue { get; set; } = string.Empty;
-        public string Name { get; set; } = nameof(Fos.Compiler);
+        public string PropertyName { get; set; } = nameof(Fos.Compiler);
+        public Type PropertyType { get; set; } = typeof(Fos).GetProperty(nameof(Fos.Compiler))?.PropertyType;
         public List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; } = [
             (new(@"([А-Я]{1}\.\s*[А-Я]{1}\.\s*.+$)", RegexOptions.Compiled | RegexOptions.IgnoreCase), 1)
         ];

@@ -14,7 +14,9 @@ namespace FosMan {
             new FosParseRuleCompiler(), 
             new FosParseRuleDepartment(), 
             new FosParseRuleDisciplineName(),
-            new FosParseRuleDirection()
+            new FosParseRuleDirection(),
+            new FosParseRuleFormsOfStudy(),
+            new FosParseRuleProfile()
         };
 
         public static List<IDocParseRule<Fos>> Rules { get => m_rules; }

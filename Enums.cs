@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace FosMan {
-    internal class Enums {
+    public class Enums {
         /// <summary>
         /// Форма обучения
         /// </summary>
@@ -82,6 +82,16 @@ namespace FosMan {
             Optional,       //факультативная
             [Description("НЕИЗВЕСТНО")]
             Unknown         //опередить НЕ УДАЛОСЬ
+        }
+
+        /// <summary>
+        /// Формат таблицы компетенций
+        /// </summary>
+        public enum ECompetenceMatrixFormat {
+            Unknown,
+            Rpd,
+            Fos21,
+            Fos22
         }
     }
 }

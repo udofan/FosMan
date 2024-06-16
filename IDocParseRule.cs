@@ -17,7 +17,11 @@ namespace FosMan {
         /// <summary>
         /// Имя свойства
         /// </summary>
-        string Name { get; set; }
+        string PropertyName { get; set; }
+        /// <summary>
+        /// Тип свойства
+        /// </summary>
+        Type PropertyType { get; set; }
         /// <summary>
         /// Маркер начала захвата строк и индекс захвата при Location = Inline
         /// </summary>

@@ -10,7 +10,8 @@ namespace FosMan {
         //public bool Disabled { get; set; }
         public EParseType Type { get; set; } = EParseType.Inline;
         public string MultilineConcatValue { get; set; } = " ";
-        public string Name { get; set; } = null;
+        public string PropertyName { get; set; } = null;    //чтобы применялся Action
+        public Type PropertyType { get; set; } = null;
         public List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; } = [
             (new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 1)
         ];

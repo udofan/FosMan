@@ -71,10 +71,10 @@ namespace FosMan {
         static Regex m_regexRpdChapter = new(@"^(\d+).\s+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         //выражения для проверка заголовков таблиц учебных работ (содержания) по формам обучения
-        static Dictionary<Enums.EFormOfStudy, Regex> m_eduWorkTableHeaders = new() {
-            [Enums.EFormOfStudy.FullTime] = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-            [Enums.EFormOfStudy.MixedTime] = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-            [Enums.EFormOfStudy.PartTime] = new(@"^заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+        static Dictionary<EFormOfStudy, Regex> m_eduWorkTableHeaders = new() {
+            [EFormOfStudy.FullTime] = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            [EFormOfStudy.MixedTime] = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+            [EFormOfStudy.PartTime] = new(@"^заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled)
         };
 
         static CompetenceMatrix m_competenceMatrix = null;
@@ -261,7 +261,7 @@ namespace FosMan {
         /// <param name="rpd"></param>
         /// <param name="discipline"></param>
         /// <param name="repTable"></param>
-        static bool ApplyDisciplineCheck(Enums.EFormOfStudy formOfStudy, Rpd rpd, CurriculumDiscipline discipline, StringBuilder repTable,
+        static bool ApplyDisciplineCheck(EFormOfStudy formOfStudy, Rpd rpd, CurriculumDiscipline discipline, StringBuilder repTable,
                                          ref int pos, ref int errorCount, string description, Func<EducationalWork, (bool result, string msg)> func) {
             pos++;
             (bool result, string msg) ret = (false, "?");
@@ -626,7 +626,7 @@ namespace FosMan {
         /// <param name="profile"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public static Dictionary<Enums.EFormOfStudy, Curriculum> FindCurricula(Rpd rpd) {
+        public static Dictionary<EFormOfStudy, Curriculum> FindCurricula(Rpd rpd) {
             if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(rpd.Profile)) {
                 var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, rpd.DirectionCode, true) == 0 &&
                                                               string.Compare(c.Profile, rpd.Profile, true) == 0);
@@ -703,7 +703,7 @@ namespace FosMan {
                         var targetFile = Path.Combine(targetDir, fileName);
                         File.Copy(rpdTemplate, targetFile, true);
 
-                        var eduWorks = new Dictionary<Enums.EFormOfStudy, EducationalWork>();
+                        var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
                         foreach (var curr in curriculumGroup.Curricula.Values) {
                             if (curr.Disciplines.TryGetValue(disc.Key, out CurriculumDiscipline currDisc)) {
                                 eduWorks[curr.FormOfStudy] = currDisc.EducationalWork;
@@ -765,7 +765,7 @@ namespace FosMan {
                                     eduWorksIsOk = TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
                                 }
                                 if (!competenceTableIsOk) {
-                                    if (CompetenceMatrix.TestTable(table)) {
+                                    if (CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
                                         RecreateTableOfCompetences(table, disc, false);
                                         competenceTableIsOk = true;
                                     }
@@ -775,30 +775,30 @@ namespace FosMan {
                                     var par = table.Paragraphs.FirstOrDefault();
                                     for (var j = 0; j < 5; j++) {
                                         par = par.PreviousParagraph;
-                                        if (!fullTimeTableIsOk && m_eduWorkTableHeaders[Enums.EFormOfStudy.FullTime].IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.FullTime) && rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table != null) {
-                                                ResetTableIndentation(rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table);
-                                                var newTable = docx.AddTable(rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table);
+                                        if (!fullTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.FullTime].IsMatch(par.Text)) {
+                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.FullTime) && rpd.EducationalWorks[EFormOfStudy.FullTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.FullTime].Table);
                                                 par.InsertTableAfterSelf(newTable);
                                                 table.Remove();
                                             }
                                             fullTimeTableIsOk = true;
                                             break;
                                         }
-                                        if (!mixedTimeTableIsOk && m_eduWorkTableHeaders[Enums.EFormOfStudy.MixedTime].IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.MixedTime) && rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table != null) {
-                                                ResetTableIndentation(rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table);
-                                                var newTable = docx.AddTable(rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table);
+                                        if (!mixedTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.MixedTime].IsMatch(par.Text)) {
+                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.MixedTime) && rpd.EducationalWorks[EFormOfStudy.MixedTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.MixedTime].Table);
                                                 par.InsertTableAfterSelf(newTable);
                                                 table.Remove();
                                             }
                                             mixedTimeTableIsOk = true;
                                             break;
                                         }
-                                        if (!partTimeTableIsOk && m_eduWorkTableHeaders[Enums.EFormOfStudy.PartTime].IsMatch(par.Text)) {
-                                            if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.PartTime) && rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table != null) {
-                                                ResetTableIndentation(rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table);
-                                                var newTable = docx.AddTable(rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table);
+                                        if (!partTimeTableIsOk && m_eduWorkTableHeaders[EFormOfStudy.PartTime].IsMatch(par.Text)) {
+                                            if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.PartTime) && rpd.EducationalWorks[EFormOfStudy.PartTime].Table != null) {
+                                                ResetTableIndentation(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
+                                                var newTable = docx.AddTable(rpd.EducationalWorks[EFormOfStudy.PartTime].Table);
                                                 par.InsertTableAfterSelf(newTable);
                                                 table.Remove();
                                             }
@@ -859,7 +859,7 @@ namespace FosMan {
             //проверка на поле типа {FullTime.TotalHours} для таблиц времен учебных работ
             var parts = propName.Split('.');
             if (parts.Length == 2) {
-                if (Enum.TryParse(parts[0], true, out Enums.EFormOfStudy formOfStudy)) {
+                if (Enum.TryParse(parts[0], true, out EFormOfStudy formOfStudy)) {
                     var curriculum = curriculumGroup.Curricula.Values.FirstOrDefault(c => c.FormOfStudy == formOfStudy);
                     if (curriculum != null) {
                         var disc = curriculum.FindDiscipline(discipline.Name);
@@ -1016,7 +1016,7 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="eduWorks">словарь либо для получения, либо для простановки времен учебной работы</param>
         /// <param name="propAccess">режим работы: получить или установить значения</param>
-        public static bool TestForSummaryTableForEducationalWorks(Table table, Dictionary<Enums.EFormOfStudy, EducationalWork> eduWorks, PropertyAccess propAccess) {
+        public static bool TestForSummaryTableForEducationalWorks(Table table, Dictionary<EFormOfStudy, EducationalWork> eduWorks, PropertyAccess propAccess) {
             var result = false;
 
             if (table.RowCount > 5 && table.ColumnCount >= 2) {
@@ -1027,25 +1027,25 @@ namespace FosMan {
                 //проверка левой верхней ячейки
                 if (m_regexEduWorkType.IsMatch(cellText) ||
                     string.IsNullOrWhiteSpace(cellText) /* встречаются РПД, где в этой ячейке таблицы пусто */) {
-                    Dictionary<Enums.EFormOfStudy, int> formColIdx = new() {
-                        { Enums.EFormOfStudy.FullTime, -1 },
-                        { Enums.EFormOfStudy.MixedTime, -1 },
-                        { Enums.EFormOfStudy.PartTime, -1 }
+                    Dictionary<EFormOfStudy, int> formColIdx = new() {
+                        { EFormOfStudy.FullTime, -1 },
+                        { EFormOfStudy.MixedTime, -1 },
+                        { EFormOfStudy.PartTime, -1 }
                     };
                     for (var colIdx = 1; colIdx < headerRow.Cells.Count; colIdx++) {
                         var text = headerRow.Cells[colIdx].GetText();
                         if (!string.IsNullOrEmpty(text)) {
                             if (m_regexFormFullTime.IsMatch(text)) {
-                                formColIdx[Enums.EFormOfStudy.FullTime] = colIdx;
-                                if (propAccess == PropertyAccess.Get) eduWorks[Enums.EFormOfStudy.FullTime] = new();
+                                formColIdx[EFormOfStudy.FullTime] = colIdx;
+                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.FullTime] = new();
                             }
                             else if (m_regexFormMixedTime.IsMatch(text)) {
-                                formColIdx[Enums.EFormOfStudy.MixedTime] = colIdx;
-                                if (propAccess == PropertyAccess.Get) eduWorks[Enums.EFormOfStudy.MixedTime] = new();
+                                formColIdx[EFormOfStudy.MixedTime] = colIdx;
+                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.MixedTime] = new();
                             }
                             else if (m_regexFormPartTime.IsMatch(text)) {
-                                formColIdx[Enums.EFormOfStudy.PartTime] = colIdx;
-                                if (propAccess == PropertyAccess.Get) eduWorks[Enums.EFormOfStudy.PartTime] = new();
+                                formColIdx[EFormOfStudy.PartTime] = colIdx;
+                                if (propAccess == PropertyAccess.Get) eduWorks[EFormOfStudy.PartTime] = new();
                             }
                         }
                     }
@@ -1399,12 +1399,12 @@ namespace FosMan {
                                 }
                             }
 
-                            Enums.EEvaluationTool[] evalTools = null;
+                            EEvaluationTool[] evalTools = null;
                             string[][] studyResults = null;             //здесь будут формироваться значения для таблиц учебных работ по формам обучения
 
                             foreach (var table in docx.Tables) {
                                 var backup = table.Xml;
-                                if (fixCompetences && CompetenceMatrix.TestTable(table)) {
+                                if (fixCompetences && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
                                     if (RecreateTableOfCompetences(table, discipline, false)) {
                                         html.Append("<div style='color: green'>Таблица компетенций сформирована по матрице компетенций.</div>");
                                     }
@@ -1526,9 +1526,9 @@ namespace FosMan {
         /// </summary>
         /// <param name="rpd"></param>
         /// <returns></returns>
-        public static Dictionary<Enums.EFormOfStudy, EducationalWork> GetEducationWorks(Rpd rpd, out Dictionary<Enums.EFormOfStudy, Curriculum> curricula) {
+        public static Dictionary<EFormOfStudy, EducationalWork> GetEducationWorks(Rpd rpd, out Dictionary<EFormOfStudy, Curriculum> curricula) {
             curricula = FindCurricula(rpd);
-            var eduWorks = new Dictionary<Enums.EFormOfStudy, EducationalWork>();
+            var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
             if (curricula != null) {
                 foreach (var curr in curricula.Values) {
                     var disc = curr.FindDiscipline(rpd.DisciplineName);
@@ -1739,8 +1739,8 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="rpd"></param>
         /// <param name="formOfStudy"></param>
-        static void FillEduWorkTable(Table table, Rpd rpd, Enums.EFormOfStudy formOfStudy, 
-                                     ref Enums.EEvaluationTool[] evalTools,
+        static void FillEduWorkTable(Table table, Rpd rpd, EFormOfStudy formOfStudy, 
+                                     ref EEvaluationTool[] evalTools,
                                      ref string[][] studyResults) {
             var curricula = FindCurricula(rpd);
             if (curricula?.Any() ?? false) {
@@ -1835,11 +1835,11 @@ namespace FosMan {
         /// <param name="topicCount"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static Enums.EEvaluationTool[] GetEvalTools(int topicCount, Random rand) {
-            var tools = new Enums.EEvaluationTool[topicCount];
+        private static EEvaluationTool[] GetEvalTools(int topicCount, Random rand) {
+            var tools = new EEvaluationTool[topicCount];
             var firstTools = new[] { 
-                Enums.EEvaluationTool.Survey, 
-                Enums.EEvaluationTool.Testing 
+                EEvaluationTool.Survey, 
+                EEvaluationTool.Testing 
             };
             //для первых тем распределим firstTools
             var usedNumbers = new HashSet<int>();
@@ -1852,10 +1852,10 @@ namespace FosMan {
                 tools[i] = firstTools[num];
             }
             var secondTools = new[] {
-                Enums.EEvaluationTool.Essay,
-                Enums.EEvaluationTool.ControlWork,
-                Enums.EEvaluationTool.Paper,
-                Enums.EEvaluationTool.Presentation
+                EEvaluationTool.Essay,
+                EEvaluationTool.ControlWork,
+                EEvaluationTool.Paper,
+                EEvaluationTool.Presentation
             };
             //вторая порция средств
             usedNumbers.Clear();
@@ -1868,7 +1868,7 @@ namespace FosMan {
                 tools[i + firstTools.Length] = secondTools[num];
             }
             //третья и последующая порция
-            var thirdTools = Enum.GetValues(typeof(Enums.EEvaluationTool)).Cast<Enums.EEvaluationTool>().ToArray();
+            var thirdTools = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToArray();
             var topicIdx = firstTools.Length + secondTools.Length;
             usedNumbers.Clear();
 
@@ -1894,11 +1894,11 @@ namespace FosMan {
         /// <param name="rpd"></param>
         /// <returns></returns>
         internal static bool TestForEduWorkTable(Table table, Rpd rpd, PropertyAccess propAccess, 
-                                                 ref Enums.EEvaluationTool[] evalTools,
+                                                 ref EEvaluationTool[] evalTools,
                                                  ref string[][] studyResults,
-                                                 out Enums.EFormOfStudy formOfStudy) {
+                                                 out EFormOfStudy formOfStudy) {
             var result = false;
-            formOfStudy = Enums.EFormOfStudy.Unknown;
+            formOfStudy = EFormOfStudy.Unknown;
 
             //проверка на таблицы учебных работ с темами
             var par = table.Paragraphs.FirstOrDefault();
@@ -1910,7 +1910,7 @@ namespace FosMan {
                 if (string.IsNullOrWhiteSpace(par.Text)) {
                     continue;
                 }
-                foreach (Enums.EFormOfStudy form in Enum.GetValues(typeof(Enums.EFormOfStudy))) {
+                foreach (EFormOfStudy form in Enum.GetValues(typeof(EFormOfStudy))) {
                     if (m_eduWorkTableHeaders.TryGetValue(form, out var regex) &&
                         rpd.EducationalWorks.ContainsKey(form) &&
                         regex.IsMatch(par.Text)) {
@@ -1929,24 +1929,24 @@ namespace FosMan {
                     }
                 }
                 if (result) break;
-                //if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.FullTime) && 
-                //    rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table == null && 
+                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.FullTime) && 
+                //    rpd.EducationalWorks[EFormOfStudy.FullTime].Table == null && 
                 //    m_regexFullTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[Enums.EFormOfStudy.FullTime].Table = table;
+                //    rpd.EducationalWorks[EFormOfStudy.FullTime].Table = table;
                 //    result = true;
                 //    break;
                 //}
-                //if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.MixedTime) &&
-                //    rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table == null && 
+                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.MixedTime) &&
+                //    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table == null && 
                 //    m_regexMixedTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[Enums.EFormOfStudy.MixedTime].Table = table;
+                //    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table = table;
                 //    result = true;
                 //    break;
                 //}
-                //if (rpd.EducationalWorks.ContainsKey(Enums.EFormOfStudy.PartTime) &&
-                //    rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table == null && 
+                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.PartTime) &&
+                //    rpd.EducationalWorks[EFormOfStudy.PartTime].Table == null && 
                 //    m_regexPartTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[Enums.EFormOfStudy.PartTime].Table = table;
+                //    rpd.EducationalWorks[EFormOfStudy.PartTime].Table = table;
                 //    result = true;
                 //    break;
                 //}
@@ -2070,12 +2070,30 @@ namespace FosMan {
             return Task.WhenAll(sequence.Select(action));
         }
 
-        //public static async Task GeneratePrevDisciplinesForRpd(Rpd rpd) {
-        //    var discList = App.GetPossiblePrevDisciplines(rpd);
-        //    var names = discList.Select(d => d.Name).ToList();
-        //    var discNames = await YaGpt.GetRelatedDisciplines(rpd.DisciplineName, names);
-        //    var prevNames = discNames.TakeRandom(3, 7);
-        //    rpd.SetPrevDisciplines(prevNames);
-        //}
+
+        /// <summary>
+        /// Проверка таблицы на матрицу компетенций
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="rpd"></param>
+        public static bool TestForTableOfCompetenceMatrix(Table table, 
+                                                          ECompetenceMatrixFormat format, 
+                                                          out CompetenceMatrix matrix, 
+                                                          out List<string> errors) {
+            matrix = new CompetenceMatrix() {
+                Items = [],
+                Errors = [],
+            };
+            errors = null;
+
+            var result = CompetenceMatrix.TryParseTable(table, format, matrix);
+            errors = matrix.Errors?.ToList();
+
+            if (!result) {
+                matrix = null;
+            }
+
+            return result;
+        }
     }
 }

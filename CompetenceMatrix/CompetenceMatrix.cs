@@ -1,20 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
+﻿using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
+using static FosMan.Enums;
 
 namespace FosMan {
     /// <summary>
     /// Описание матрицы компетенций
     /// </summary>
     public class CompetenceMatrix {
-        static Regex m_regexCompetenceHeader0 = new(@"код.*наим.*компетенц", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        //вариант РПД
+        //Код и наименование компетенций - Коды и индикаторы достижения компетенций - Коды и результаты обучения
+        static Regex m_regexCompetenceRpdHeader0 = new(@"код.*наименование", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexCompetenceRpdHeader1 = new(@"код.*индикатор", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexCompetenceRpdHeader2 = new(@"код.*результат", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        //вариант ФОС - таблица 2.1
+        //Код и наименование компетенций - Код и индикаторы достижения компетенций - Этапы формирования компетенций (семестр)
+        static Regex m_regexCompetenceFos21Header0 = new(@"код.*наименование", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexCompetenceFos21Header1 = new(@"код.*индикатор", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexCompetenceFos21Header2 = new(@"этап", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        //вариант ФОС - таблица 2.2
+        //Код компетенции - Коды индикаторов достижения компетенций - Коды и результаты обучения
+        static Regex m_regexCompetenceFos22Header0 = new(@"код.*компетенц", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexCompetenceFos22Header1 = new(@"код.*индикатор", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static Regex m_regexCompetenceFos22Header2 = new(@"код.*результат", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         /// <summary>
         /// Элементы матрицы
@@ -26,6 +35,12 @@ namespace FosMan {
         /// Выявленные ошибки
         /// </summary>
         public List<string> Errors { get; set; }
+
+        /// <summary>
+        /// Флаг, что матрица загружена полностью
+        /// </summary>
+        [JsonIgnore]
+        public bool IsComplete { get => Items?.FirstOrDefault()?.Achievements?.FirstOrDefault()?.Results?.FirstOrDefault() != null; }
 
         /// <summary>
         /// Загрузка матрицы из файла
@@ -43,7 +58,7 @@ namespace FosMan {
                     if (docx.Tables.Count > 0) {
                         foreach (var table in docx.Tables) {
                             //var table = docx.Tables[1];
-                            TryParseTable(table, matrix);
+                            TryParseTable(table, ECompetenceMatrixFormat.Rpd, matrix);
                             //break;
                         }
                         matrix?.Check();
@@ -61,12 +76,23 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Поиск элемента по коду компетенции
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        CompetenceMatrixItem FindItem(string code) {
+            var normalizedCode = CompetenceMatrixItem.NormalizeCode(code);
+
+            return Items.FirstOrDefault(i => i.Code.Equals(normalizedCode));
+        }
+
+        /// <summary>
         /// Попытка отпарсить таблицу на таблицу компетенций
         /// </summary>
         /// <param name="table"></param>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static bool TryParseTable(Table table, CompetenceMatrix matrix) {
+        public static bool TryParseTable(Table table, ECompetenceMatrixFormat format, CompetenceMatrix matrix) {
             CompetenceMatrixItem currItem = null;
             CompetenceAchievement currAchievement = null;
 
@@ -75,36 +101,75 @@ namespace FosMan {
             for (var rowIdx = 0; rowIdx < table.Rows.Count; rowIdx++) {
                 var row = table.Rows[rowIdx];
                 if (row.Cells.Count >= 3) {
+                    //ячейка 0
                     var textCompetence = string.Join(" ", row.Cells[0].Paragraphs.Select(p => p.Text));
-                    if (!string.IsNullOrEmpty(textCompetence)) { //проверка на очередной ряд с компетенцией
-                        if (CompetenceMatrixItem.TryParse(textCompetence, out currItem)) {
-                            matchedTable = true;
-                            matrix.Items.Add(currItem);
+                    if (!string.IsNullOrEmpty(textCompetence) && CompetenceMatrixItem.TestCode(textCompetence)) { //проверка на очередной ряд с компетенцией
+                        if (format == ECompetenceMatrixFormat.Fos22) {
+                            //к этому моменту в матрице уже должны быть ряды и индикаторы достижений
+                            //ищем currItem по тексту textCompetence
+                            currItem = matrix.FindItem(textCompetence);
+                            if (currItem != null) {
+                                matchedTable = true;
+                            }
+                            else if (currItem == null) {
+                                matrix.Errors.Add($"Формат 2.2: в матрице не удалось найти элемент с кодом [{textCompetence}] (ряд {rowIdx}, колонка 0)");
+                            }
                         }
-                        else if (matchedTable) {
-                            matrix.Errors.Add($"Не удалось распарсить текст компетенции [{textCompetence}] (ряд {rowIdx}, колонка 0).");
+                        else { //в случае других форматов таблицы
+                            if (CompetenceMatrixItem.TryParse(textCompetence, out currItem)) {
+                                matchedTable = true;
+                                matrix.Items.Add(currItem);
+                            }
+                            else if (matchedTable) {
+                                matrix.Errors.Add($"Не удалось распарсить текст компетенции [{textCompetence}] (ряд {rowIdx}, колонка 0)");
+                            }
                         }
                     }
 
                     if (matchedTable) {
+                        //ячейка 1
                         var textIndicator = string.Join(" ", row.Cells[1].Paragraphs.Select(p => p.Text)).Trim();
                         if (!string.IsNullOrEmpty(textIndicator)) { //значение индикатора есть?
-                            if (CompetenceAchievement.TryParseIndicator(textIndicator, out currAchievement)) {
-                                currItem.Achievements.Add(currAchievement);
+                            if (format == ECompetenceMatrixFormat.Fos22) {
+                                //к этому моменту в матрице уже должны быть ряды и индикаторы достижений
+                                //ищем currAchievement по тексту textIndicator
+                                currAchievement = currItem.FindAchievement(textIndicator);
+                                if (currAchievement == null) {
+                                    matrix.Errors.Add($"Формат 2.2: в матрице не удалось найти достижение с кодом [{textIndicator}] (ряд {rowIdx}, колонка 1)");
+                                }
                             }
-                            else {
-                                matrix.Errors.Add($"Не удалось распарсить текст индикатора [{textIndicator}] (ряд {rowIdx}, колонка 1).");
+                            else {  //в случае других форматов таблицы
+                                if (CompetenceAchievement.TryParseIndicator(textIndicator, out currAchievement)) {
+                                    currItem.Achievements.Add(currAchievement);
+                                }
+                                else {
+                                    matrix.Errors.Add($"Не удалось распарсить текст индикатора [{textIndicator}] (ряд {rowIdx}, колонка 1)");
+                                }
                             }
-
                         }
-
-                        var textResult = string.Join("\r\n", row.Cells[2].Paragraphs.Select(p => p.Text)).Trim();
-                        if (!string.IsNullOrEmpty(textResult)) {
-                            if (CompetenceResult.TryParse(textResult, out var result)) {
-                                currAchievement?.Results.Add(result);
+                        //ячейка 2
+                        if (format == ECompetenceMatrixFormat.Rpd || format == ECompetenceMatrixFormat.Fos22) {
+                            var textResult = string.Join("\r\n", row.Cells[2].Paragraphs.Select(p => p.Text)).Trim();
+                            if (!string.IsNullOrEmpty(textResult)) {
+                                if (CompetenceResult.TryParse(textResult, out var result)) {
+                                    currAchievement?.Results.Add(result);
+                                }
+                                else {
+                                    matrix.Errors.Add($"Не удалось распарсить текст результата [{textResult}] (ряд {rowIdx}, колонка 2)");
+                                }
                             }
-                            else {
-                                matrix.Errors.Add($"Не удалось распарсить текст результата [{textResult}] (ряд {rowIdx}, колонка 2).");
+                        }
+                        else if (format == ECompetenceMatrixFormat.Fos21) {
+                            //в случае формата ФОС - 2.1 во 2-ой ячейке лежит номер семестра
+                            //if (row.Cells[2].RowSpan == 0) {
+                            var stage = row.Cells[2].GetText();
+                            if (!string.IsNullOrEmpty(stage)) {
+                                if (int.TryParse(stage, out var intValue)) {
+                                    currItem.Semester = intValue;
+                                }
+                                else {
+                                    matrix.Errors.Add($"Не удалось определить номер семестра по тексту [{stage}] (ряд {rowIdx}, колонка 2)");
+                                }
                             }
                         }
                     }
@@ -135,14 +200,19 @@ namespace FosMan {
                         Errors.Add($"Компетенция {item.Code}: индикатор не определён");
                     }
                     else if (!achi.Code.Contains(item.Code)) {
-                        Errors.Add($"Компетенция {item.Code}: индикатор не соответствует компетенции - {achi.Code}");
+                        Errors.Add($"Компетенция {item.Code}: индикатор {achi.Code} не соответствует компетенции - {item.Code}");
                     }
                     foreach (var res in achi.Results) {
                         if (string.IsNullOrEmpty(res.Code)) {
                             Errors.Add($"Компетенция {item.Code}: результат не определён для индикатора {achi.Code}");
                         }
-                        else if (!res.Code.Contains(item.Code)) {
-                            Errors.Add($"Компетенция {item.Code}: результат индикатора {achi.Code} не соответствует компетенции - {res.Code}");
+                        else {
+                            if (!res.Code.Contains(item.Code)) {
+                                Errors.Add($"Компетенция {item.Code}: результат индикатора {res.Code} не соответствует компетенции - {item.Code}");
+                            }
+                            if (!res.Code.Contains(achi.Code)) {
+                                Errors.Add($"Компетенция {item.Code}: результат индикатора {res.Code} не соответствует коду достижения - {achi.Code}");
+                            }
                         }
                     }
                 }
@@ -244,18 +314,35 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        internal bool TestTable(Table table) {
-            var result = false;
+        static internal bool TestTable(Table table, out ECompetenceMatrixFormat format) {
+            format = ECompetenceMatrixFormat.Unknown;
 
             if (table.RowCount > 0 && table.ColumnCount >= 3) {
                 var row = table.Rows[0];
                 var header0 = row.Cells[0].GetText();
-                if (m_regexCompetenceHeader0.IsMatch(header0)) {
-                    result = true;
+                var header1 = row.Cells[1].GetText();
+                var header2 = row.Cells[2].GetText();
+                //вариант РПД
+                if (m_regexCompetenceRpdHeader0.IsMatch(header0) &&
+                    m_regexCompetenceRpdHeader1.IsMatch(header1) &&
+                    m_regexCompetenceRpdHeader2.IsMatch(header2)) {
+                    format = ECompetenceMatrixFormat.Rpd;
+                }
+                //вариант ФОС-2.1
+                else if (m_regexCompetenceFos21Header0.IsMatch(header0) &&
+                         m_regexCompetenceFos21Header1.IsMatch(header1) &&
+                         m_regexCompetenceFos21Header2.IsMatch(header2)) {
+                    format = ECompetenceMatrixFormat.Fos21;
+                }
+                //вариант ФОС-2.2
+                else if (m_regexCompetenceFos22Header0.IsMatch(header0) &&
+                         m_regexCompetenceFos22Header1.IsMatch(header1) &&
+                         m_regexCompetenceFos22Header2.IsMatch(header2)) {
+                    format = ECompetenceMatrixFormat.Fos22;
                 }
             }
 
-            return result;
+            return format != ECompetenceMatrixFormat.Unknown;
         }
     }
 }

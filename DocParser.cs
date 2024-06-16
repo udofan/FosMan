@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Xceed.Words.NET;
+using static FosMan.Enums;
 
 namespace FosMan {
     /// <summary>
@@ -48,23 +49,21 @@ namespace FosMan {
 
                         IDocParseRule<T> catchingRule = null;
                         StringBuilder catchingValue = new();
+                        
+                        //цикл по параграфам
                         foreach (var par in docx.Paragraphs) {
                             var text = par.Text.Trim(' ', '\r', '\n', '\t');
 
                             if (catchingRule != null) { //если в режиме отлова строк для правила catchingRule
                                 if (catchingRule.StopMarkers == null) {
-                                    errors.Add($"Для правила {catchingRule.Name} с типом {catchingRule.Type} не заданы StopMarkers");
+                                    errors.Add($"Для правила {catchingRule.PropertyName} с типом {catchingRule.Type} не заданы StopMarkers");
                                     catchingRule = null; //сброс захвата
                                     continue;
                                 }
                                 var stopCatch = catchingRule.StopMarkers.Any(r => r.IsMatch(text));
                                 if (stopCatch) {
-                                    //var finalValue = catchingValue.ToString();
-                                    //if (catchingRule.TrimChars != null) {
-                                    //    finalValue = finalValue.Trim(catchingRule.TrimChars);
-                                    //}
                                     ApplyValue(catchingRule, null, targetObj, catchingValue.ToString(), errors);
-                                    //targetObj.SetProperty(catchingRule.Name, null, finalValue);
+                                    catchingValue.Clear();
                                     catchingRule = null; //сброс правила-ловца строк
                                 }
                                 else { //продолжаем захват
@@ -85,18 +84,6 @@ namespace FosMan {
                                         //инлайн поиск значения
                                         if (rule.Type == EParseType.Inline) {
                                             ApplyValue(rule, m, targetObj, null, errors);
-                                            //if (m.idx < m.match.Groups.Count) {
-                                            //    var finalValue = m.match.Groups[m.idx].Value;
-                                            //    if (rule.TrimChars != null) {
-                                            //        finalValue = finalValue.Trim(rule.TrimChars);
-                                            //    }
-                                            //    ApplyValue(rule, m, targetObj, null, errors);
-                                            //    //targetObj.SetProperty(rule.Name, null, finalValue);
-                                            //}
-                                            //else {
-                                            //    errors.Add($"Для правила {rule.Name} с типом {rule.Type} задан некорректный [inlineGroupIdx] " +
-                                            //               $"для StartMarker [{m.regex}]");
-                                            //}
                                         }
                                         else if (rule.Type == EParseType.Multiline) {
                                             catchingRule = rule;
@@ -130,13 +117,13 @@ namespace FosMan {
                                          T targetObj,
                                          string value,
                                          List<string> errors) where T : BaseObj {
-            if (!string.IsNullOrEmpty(rule.Name)) {
+            if (!string.IsNullOrEmpty(rule.PropertyName)) {
                 if (ruleMatch.HasValue) {
                     if (ruleMatch.Value.groupIdx < ruleMatch.Value.match.Groups.Count) {
                         value = ruleMatch.Value.match.Groups[ruleMatch.Value.groupIdx].Value;
                     }
                     else {
-                        errors.Add($"Для правила {rule.Name} с типом {rule.Type} задан некорректный [inlineGroupIdx] " +
+                        errors.Add($"Для правила {rule.PropertyName} с типом {rule.Type} задан некорректный [inlineGroupIdx] " +
                                    $"для StartMarker [{ruleMatch.Value.regex}]");
                         return;
                     }
@@ -144,7 +131,7 @@ namespace FosMan {
                 if (rule.TrimChars != null) {
                     value = value.Trim(rule.TrimChars);
                 }
-                targetObj.SetProperty(rule.Name, null, value);
+                targetObj.SetProperty(rule.PropertyName, null, value);
             }
             else if (rule.Action != null) {
                 rule.Action.Invoke(targetObj, ruleMatch.Value.match, value);

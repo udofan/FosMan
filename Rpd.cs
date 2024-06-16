@@ -277,6 +277,7 @@ namespace FosMan {
             rpd.QuestionList = [];
             rpd.ReferencesBase = [];
             rpd.ReferencesExtra = [];
+            rpd.CompetenceMatrix = null;
             rpd.Compiler = "";
             rpd.Department = "";
             rpd.DirectionCode = "";
@@ -575,7 +576,14 @@ namespace FosMan {
                             testTable = !App.TestForSummaryTableForEducationalWorks(table, rpd.EducationalWorks, PropertyAccess.Get);
                         }
                         if (testTable && rpd.CompetenceMatrix == null) {
-                            testTable = !TestForTableOfCompetenceMatrix(table, rpd);
+                            if (CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
+                                if (App.TestForTableOfCompetenceMatrix(table, format, out var matrix, out var errors)) {
+                                    rpd.CompetenceMatrix = matrix;
+                                    testTable = false;
+                                }
+                                if (errors.Any()) rpd.Errors.AddRange(errors);
+                            }
+                            //testTable = !App.TestForTableOfCompetenceMatrix(table, rpd);
                         }
                         if (testTable) {
                             EEvaluationTool[] evalTools = null;
@@ -629,25 +637,6 @@ namespace FosMan {
             }
 
             return rpd;
-        }
-
-        /// <summary>
-        /// Проверка таблицы на матрицу компетенций
-        /// </summary>
-        /// <param name="table"></param>
-        /// <param name="rpd"></param>
-        private static bool TestForTableOfCompetenceMatrix(Table table, Rpd rpd) {
-            var matrix = new CompetenceMatrix() {
-                Items = [],
-                Errors = [],
-            };
-            var result = CompetenceMatrix.TryParseTable(table, matrix);
-            if (result) {
-                rpd.CompetenceMatrix = matrix;
-                rpd.Errors.AddRange(matrix.Errors);
-            }
-
-            return result;
         }
 
         /// <summary>
