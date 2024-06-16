@@ -66,7 +66,13 @@ namespace FosMan {
         /// <summary>
         /// Таблица учебного времени с темами
         /// </summary>
+        [JsonIgnore]
         internal Table Table { get; set; }
+        /// <summary>
+        /// Модули обучения
+        /// </summary>
+        [JsonInclude]
+        public List<StudyModule> Modules { get; set; }
 
         /// <summary>
         /// Получить значение свойства по имени

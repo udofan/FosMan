@@ -459,7 +459,7 @@ namespace FosMan {
                 Width = 40,
                 CheckBoxes = true,
                 IsEditable = false,
-                AspectGetter = (x) => (x as Fos)?.Passport?.Items?.Any() ?? false
+                AspectGetter = (x) => (x as Fos)?.Passport?.Any() ?? false
             });
 
             //ошибки

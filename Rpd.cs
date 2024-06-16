@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 using static FosMan.Enums;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FosMan {
     internal class Rpd : BaseObj {
@@ -570,26 +571,107 @@ namespace FosMan {
                     var fullTimeTableIsOk = false;
                     var mixedTimeTableIsOk = false;
                     var partTimeTableIsOk = false;
+
+                    //функция для нормализации текста: убираем лишние пробелы и приведение к UpperCase
+                    Func<string, string> normalizeText = t => string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
+
                     //проверка таблиц
                     foreach (var table in docx.Tables) {
-                        var testTable = true;
+                        var keepTestTable = true;
                         if (!rpd.EducationalWorks.Any()) {
-                            testTable = !App.TestForSummaryTableForEducationalWorks(table, rpd.EducationalWorks, PropertyAccess.Get);
+                            keepTestTable = !App.TestForSummaryTableForEducationalWorks(table, rpd.EducationalWorks, PropertyAccess.Get);
                         }
-                        if (testTable && rpd.CompetenceMatrix == null) {
+                        if (keepTestTable && rpd.CompetenceMatrix == null) {
                             if (CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
                                 if (App.TestForTableOfCompetenceMatrix(table, format, out var matrix, out var errors)) {
                                     rpd.CompetenceMatrix = matrix;
-                                    testTable = false;
+                                    keepTestTable = false;
                                 }
                                 if (errors.Any()) rpd.Errors.AddRange(errors);
                             }
                             //testTable = !App.TestForTableOfCompetenceMatrix(table, rpd);
                         }
-                        if (testTable) {
+                        if (keepTestTable) {
                             EEvaluationTool[] evalTools = null;
                             string[][] studyResults = null;
-                            testTable = !App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, ref evalTools, ref studyResults, out _);
+                            if (App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, ref evalTools, ref studyResults, out var formOfStudy)) {
+                                //получим список модулей обучения с оценочными средствами и компетенциями
+                                var eduWork = rpd.EducationalWorks[formOfStudy];
+                                //определяем начальный значащие ряд и колонку
+                                var startRow = 3;
+                                var startCol = -1;
+                                var numColCount = 0;    //кол-во числовых ячеек
+                                while (startRow < table.RowCount) {
+                                    numColCount = 0;
+                                    for (var col = 0; col < table.Rows[startRow].Cells.Count; col++) {
+                                        var cell = table.Rows[startRow].Cells[col];
+                                        if (cell.GridSpan > 0) { //первый ряд, который нам нужен - ряд без объединений ячеек
+                                            startRow++;
+                                            continue;
+                                        }
+                                        var text = cell.GetText();
+                                        if (int.TryParse(text, out _)) {
+                                            if (col > 0) {
+                                                if (startCol < 0) startCol = col;
+                                                numColCount++;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                }
+
+                                var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
+
+                                //for (var row = 1; row < table.RowCount; row++) {
+                                //    //var evalTools = table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';');
+                                //    HashSet<EEvaluationTool> tools = [];
+                                //    foreach (var t in table.Rows[row].Cells[3].GetText().Split(',', '\n', ';')) {
+                                //        //убираем лишние пробелы
+                                //        if (evalToolDic.TryGetValue(normalizeText(t), out var tool)) {
+                                //            //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
+                                //            //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
+                                //            tools.Add(tool);
+                                //        }
+                                //        else {
+                                //            errors.Add($"Не удалось определить тип оценочного средства - {t}");
+                                //        }
+                                //    }
+
+
+                                for (var row = startRow; row < table.RowCount - 2; row++) { //минус ряд с "зачетом", минус ряд с "итого"
+                                    var module = new StudyModule();
+                                    var col = startCol - 1;
+                                    while (col < table.ColumnCount) {
+                                        if (col == startCol - 1) module.Topic = table.Rows[row].Cells[col].GetText();
+                                        if (col == table.ColumnCount - 2) { //оценочные средства
+                                            module.EvaluationTools = [];
+                                            //module.Topic = table.Rows[row].Cells[col].GetText();
+                                            foreach (var t in table.Rows[row].Cells[col].GetText().Split(',', '\n', ';')) {
+                                                //убираем лишние пробелы
+                                                if (evalToolDic.TryGetValue(normalizeText(t), out var tool)) {
+                                                    //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
+                                                    //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
+                                                    module.EvaluationTools.Add(tool);
+                                                }
+                                                else {
+                                                    if (string.IsNullOrEmpty(t)) {
+                                                        rpd.Errors.Add($"Тема [{module.Topic}]: не задан тип оценочного средства");
+                                                    }
+                                                    else {
+                                                        rpd.Errors.Add($"Тема [{module.Topic}]: не удалось определить тип оценочного средства - {t}");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (col == table.ColumnCount - 1) { //результаты обучения - компетенции
+                                            module.CompetenceIndicators = [.. table.Rows[row].Cells[col].GetText(",").Split(',', '\n', ';')];
+                                        }
+                                        col += table.Rows[row].Cells[col].GridSpan + 1; //переход на след. ячейку с учетом объединений
+                                    }
+                                }
+
+                                keepTestTable = false;  //таблица обработана
+                            }
                         }
 
                     }

@@ -78,7 +78,7 @@ namespace FosMan {
         /// Паспорт фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций (п.3)
         /// </summary>
         [JsonInclude]
-        public FosPassport Passport { get; set; }
+        public List<StudyModule> Passport { get; set; }
         /// <summary>
         /// Выявленные ошибки
         /// </summary>

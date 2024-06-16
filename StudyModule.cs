@@ -2,25 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static FosMan.Enums;
 
 namespace FosMan {
     /// <summary>
-    /// Элемент паспорта фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций
+    /// Описание модуля обучения: раздел (тема), оценочное средство, компетенции, время?
     /// </summary>
-    internal class FosPassportItem {
+    internal class StudyModule {
         /// <summary>
         /// Тема
         /// </summary>
+        [JsonInclude]
         public string Topic { get; set; }
         /// <summary>
         /// Список кодов контролируемого индикатора достижения компетенции
         /// </summary>
+        [JsonInclude]
         public HashSet<string> CompetenceIndicators { get; set; }
         /// <summary>
         /// Наименования оценочного средства (сделано множественным на всяк)
         /// </summary>
+        [JsonInclude]
         public HashSet<EEvaluationTool> EvaluationTools { get; set; }
     }
 }
