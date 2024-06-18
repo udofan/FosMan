@@ -1909,9 +1909,50 @@ namespace FosMan {
         private void iconToolStripButtonFosCheck_Click(object sender, EventArgs e) {
             var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
             if (fosList.Any()) {
-                CheckFos(fosList, out var report);
+                var addedRpdCount = 0;
+                var missedRpdCount = 0;
+                var addedCurriculumCount = 0;
+                var missedCurriculumCount = 0;
+                //дозагрузка РПД и УП по-возможности
+                foreach (var fos in fosList) {
+                    if (App.FindRpd(fos) == null) {
+                        var rpdFromStore = App.Store.RpdDic.Values.FirstOrDefault(r => r.Key.Equals(fos.Key));
+                        if (rpdFromStore != null) {
+                            App.AddRpd(rpdFromStore, false);
+                            addedRpdCount++;
+                        }
+                        else {
+                            missedRpdCount++;
+                        }
+                    }
+                    if (App.FindCurricula(fos) == null) {
+                        var curriculumFromStore = App.Store.CurriculaDic.Values.FirstOrDefault(c => c.DirectionCode.Equals(fos.DirectionCode) && c.Profile.Equals(fos.Profile));
+                        if (curriculumFromStore != null) {
+                            App.AddCurriculum(curriculumFromStore, false);
+                            addedCurriculumCount++;
+                        }
+                        else {
+                            missedCurriculumCount++;
+                        }
+                    }
+                }
+                var ret = DialogResult.Yes;
+                if (addedCurriculumCount > 0 || addedRpdCount > 0 || missedCurriculumCount > 0 || missedRpdCount > 0) {
+                    var msg = "Для проверки ФОС\n";
+                    if (addedCurriculumCount > 0 || addedRpdCount > 0) {
+                        msg += $"были дозагружены из Стора:\n   УП - {addedCurriculumCount} шт.\n   РПД - {addedRpdCount} шт.\n";
+                    }
+                    if (missedRpdCount > 0 || missedCurriculumCount > 0) {
+                        msg += $"не найдено:\n   УП - {missedCurriculumCount} шт.\n   РПД - {missedRpdCount} шт.";
+                    }
+                    ret = MessageBox.Show(msg, "Проверка ФОС", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                }
 
-                AddReport("Проверка ФОС", report);
+                if (ret == DialogResult.Yes) {
+                    CheckFos(fosList, out var report);
+
+                    AddReport("Проверка ФОС", report);
+                }
             }
             else {
                 MessageBox.Show("Необходимо выделить файлы, которые требуется проверить.", "Проверка ФОС", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);

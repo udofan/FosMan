@@ -509,7 +509,7 @@ namespace FosMan {
                             }
                             //проверка таблицы учебных работ для текущей формы обучения curriculum.Key
                             ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount,
-                                $"Проверка времени в таблице тем ({curriculum.Key.GetDescription()})",
+                                $"Проверка времени в таблице содержания ({curriculum.Key.GetDescription()})",
                                 eduWork => {
                                     if (eduWork.Table == null) {
                                         return (false, "Таблица не найдена");
@@ -617,7 +617,24 @@ namespace FosMan {
                                     //var result = discipline.EducationalWork.TotalHours == eduWork.TotalHours;
                                     //var msg = result ? "" : $"Итоговое время [{discipline.EducationalWork.TotalHours}] не соответствует УП (д.б. {eduWork.TotalHours}).";
                                 });
-                           
+
+                            //проверка тем в таблицах учебных работ по формам обучения
+                            ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, $"Проверка списка тем в таблице содержания ({curriculum.Key.GetDescription()})", (eduWork) => {
+                                var msg = "";
+                                foreach (var item in rpd.EducationalWorks) {
+                                    if (item.Value != eduWork) {
+                                        foreach (var module in eduWork.Modules) {
+                                            var normalizedTopic = NormalizeText(module.Topic);
+                                            if (item.Value.Modules.FirstOrDefault(m => NormalizeText(m.Topic).Equals(normalizedTopic)) == null) {
+                                                if (msg.Length > 0) msg += "<br />";
+                                                msg += $"Тема <b>{module.Topic}</b> не найдена в таблице содержания формы обучения [{item.Key.GetDescription()}]";
+                                            }
+                                        }
+                                    }
+                                }
+                                return (string.IsNullOrEmpty(msg), msg);
+                            });
+
                             table.Append("</table>");
                             rep.Append(table);
                         }
@@ -674,6 +691,22 @@ namespace FosMan {
                     rep.AddDiv($"<div style='color: red'>Ошибки, выявленные при загрузке ({fos.Errors.Count} шт.):</div>");
                     fos.Errors.ForEach(e => rep.AddError(e));
                 }
+                //для проверки матрицы по УП ищем Учебные планы и берем первый
+                CurriculumDiscipline discipline = null;
+                var curriculum = FindCurricula(fos)?.FirstOrDefault().Value;
+                if (curriculum != null) {
+                    discipline = curriculum.FindDiscipline(fos.DisciplineName);
+                    if (discipline == null) {
+                        errorCount++;
+                        rep.AddError($"Не удалось найти дисциплину в учебном плане <b>{curriculum.SourceFileName}</b>.");
+                    }
+                }
+                else {
+                    errorCount++;
+                    rep.AddError("Не удалось найти учебные планы. Добавление УП осуществляется на вкладке <b>\"Учебные планы\"</b>.");
+                    rep.AddError("Проверка матрицы компетенций по УП невозможна.");
+                }
+
                 //для проверки нам будет нужен РПД
                 var rpd = FindRpd(fos);
                 if (rpd != null) {
@@ -748,60 +781,64 @@ namespace FosMan {
                             return (!matrixError, msg);
                         });
 
-                        //для проверки матрицы по УП ищем Учебные планы и берем первый
-                        var curriculum = FindCurricula(fos)?.FirstOrDefault().Value;
-                        if (curriculum != null) {
-                            var discipline = curriculum.FindDiscipline(fos.DisciplineName);
-                            if (discipline != null) {
-                                rep.AddDiv($"Проверка матрицы компетенций по УП:");
+                        //проверка матрицы по УП
+                        if (discipline != null) {
+                            rep.AddDiv($"Проверка матрицы компетенций по УП:");
 
-                                //проверка компетенций
-                                checkCompetences &= ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Наличие матрицы компетенций в УП", (fos, rpd) => {
-                                    var result = discipline.CompetenceList?.Any() ?? false;
-                                    var msg = result ? "" : $"Не удалось определить матрицу компетенций в УП.";
-                                    return (result, msg);
-                                });
+                            //проверка компетенций
+                            checkCompetences &= ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Наличие матрицы компетенций в УП", (fos, rpd) => {
+                                var result = discipline.CompetenceList?.Any() ?? false;
+                                var msg = result ? "" : $"Не удалось определить матрицу компетенций в УП.";
+                                return (result, msg);
+                            });
 
-                                if (checkCompetences) {
-                                    ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций по УП", (fos, rpd) => {
-                                        var achiCodeList = fos.CompetenceMatrix.GetAllAchievementCodes();
-                                        var summary = "";
-                                        var matrixError = false;
-                                        foreach (var code in discipline.CompetenceList) {
-                                            var elem = "";
-                                            if (achiCodeList.Contains(code)) {
-                                                elem = $"<span style='color: green; font-weight: bold'>{code}</span>";
-                                            }
-                                            else {
-                                                elem = $"<span style='color: red; font-weight: bold'>{code}</span>";
-                                                matrixError = true;
-                                            }
-
-                                            if (summary.Length > 0) summary += "; ";
-                                            summary += elem;
+                            if (checkCompetences) {
+                                ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Проверка компетенций по УП", (fos, rpd) => {
+                                    var achiCodeList = fos.CompetenceMatrix.GetAllAchievementCodes();
+                                    var summary = "";
+                                    var matrixError = false;
+                                    foreach (var code in discipline.CompetenceList) {
+                                        var elem = "";
+                                        if (achiCodeList.Contains(code)) {
+                                            elem = $"<span style='color: green; font-weight: bold'>{code}</span>";
                                         }
-                                        foreach (var missedCode in achiCodeList.Except(discipline.CompetenceList)) {
+                                        else {
+                                            elem = $"<span style='color: red; font-weight: bold'>{code}</span>";
                                             matrixError = true;
-                                            if (summary.Length > 0) summary += "; ";
-                                            summary += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
                                         }
-                                        var msg = matrixError ? $"Выявлено несоответствие компетенций: {summary}" : "";
-                                        return (!matrixError, msg);
-                                    });
-                                }
+
+                                        if (summary.Length > 0) summary += "; ";
+                                        summary += elem;
+                                    }
+                                    foreach (var missedCode in achiCodeList.Except(discipline.CompetenceList)) {
+                                        matrixError = true;
+                                        if (summary.Length > 0) summary += "; ";
+                                        summary += $"<span style='color: red; font-decoration: italic'>{missedCode}??</span>"; ;
+                                    }
+                                    var msg = matrixError ? $"Выявлено несоответствие компетенций: {summary}" : "";
+                                    return (!matrixError, msg);
+                                });
+                                ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Проверка этапов формирований компетенций по УП", (fos, rpd) => {
+                                    var msg = "";
+                                    foreach (var item in fos.CompetenceMatrix.Items) {
+                                        if (item.Semester < discipline.StartSemesterIdx || item.Semester > discipline.LastSemesterIdx) {
+                                            msg += $"Компетенция {item.Code}: семестр имеет значение [{item.Semester}], " +
+                                                   $"а должен лежать в пределах [{discipline.StartSemesterIdx};{discipline.LastSemesterIdx}]";
+                                        }
+                                    }
+                                    return (string.IsNullOrEmpty(msg), msg);
+                                });
                             }
-                            else {
-                                errorCount++;
-                                rep.AddError($"Не удалось найти дисциплину в учебном плане <b>{curriculum.SourceFileName}</b>.");
-                            }
-                        }
-                        else {
-                            errorCount++;
-                            rep.AddError("Не удалось найти учебные планы. Добавление УП осуществляется на вкладке <b>\"Учебные планы\"</b>.");
-                            rep.AddError("Проверка матрицы компетенций по УП невозможна.");
                         }
                     }
-                    //todo проверка паспорта
+                    //проверка паспорта
+                    ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Проверка паспорта: темы", (fos, rpd) => {
+                        var msg = "";
+                        foreach (var module in rpd.EducationalWorks[EFormOfStudy.FullTime].Modules) {
+                            //todo
+                        }
+                        return (string.IsNullOrEmpty(msg), msg);
+                    });
                     //todo
                     //из РПД вынимать таблицу тем (с учетом объединения ячеек)
                     //сравнивать ее с паспортом ФОС
@@ -2422,6 +2459,9 @@ namespace FosMan {
             return result;
         }
 
+        //функция для нормализации текста: убираем лишние пробелы и приведение к UpperCase
+        static string NormalizeText(string text) => string.Join(" ", text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
+
         /// <summary>
         /// Проверка таблицы на паспорт ФОСа (3. Паспорт фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций)
         /// </summary>
@@ -2445,8 +2485,6 @@ namespace FosMan {
                         m_regexFosPassportHeaderIndicator.IsMatch(header2) &&
                         m_regexFosPassportHeaderEvalTool.IsMatch(header3)) {
                         passport = [];
-                        //функция для нормализации текста: убираем лишние пробелы и приведение к UpperCase
-                        Func<string, string> normalizeText = t => string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
 
                         //нормализуем список оценочных средств
                         var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
@@ -2456,7 +2494,7 @@ namespace FosMan {
                             HashSet<EEvaluationTool> tools = [];
                             foreach (var t in table.Rows[row].Cells[3].GetText().Split(',', '\n', ';')) {
                                 //убираем лишние пробелы
-                                if (evalToolDic.TryGetValue(normalizeText(t), out var tool)) {
+                                if (evalToolDic.TryGetValue(NormalizeText(t), out var tool)) {
                                  //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
                                 //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
                                     tools.Add(tool);

@@ -326,10 +326,10 @@
             tabPageСurriculum.Controls.Add(toolStrip1);
             tabPageСurriculum.Controls.Add(groupBoxDisciplines);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
-            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Location = new Point(4, 24);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1001, 677);
+            tabPageСurriculum.Size = new Size(1001, 676);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -657,7 +657,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(995, 638);
+            splitContainerRpd.Size = new Size(995, 639);
             splitContainerRpd.SplitterDistance = 280;
             splitContainerRpd.TabIndex = 7;
             // 
@@ -940,7 +940,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(995, 354);
+            fastObjectListViewRpdList.Size = new Size(995, 355);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -982,7 +982,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(995, 639);
+            splitContainerFos.Size = new Size(995, 640);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             // 
@@ -1250,7 +1250,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(995, 355);
+            fastObjectListViewFosList.Size = new Size(995, 356);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;

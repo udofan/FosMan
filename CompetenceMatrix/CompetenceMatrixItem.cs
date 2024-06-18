@@ -33,7 +33,7 @@ namespace FosMan {
         /// <summary>
         /// Этап формирования компетенций (семестр) [исп. в ФОС п. 2.1]
         /// </summary>
-        public int Semester { get; set; }
+        public int Semester { get; set; } = -1;
 
         /// <summary>
         /// Попытка отпарсить текст с кодом компетенции и описанием
