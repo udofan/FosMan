@@ -622,22 +622,6 @@ namespace FosMan {
 
                                 var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
 
-                                //for (var row = 1; row < table.RowCount; row++) {
-                                //    //var evalTools = table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';');
-                                //    HashSet<EEvaluationTool> tools = [];
-                                //    foreach (var t in table.Rows[row].Cells[3].GetText().Split(',', '\n', ';')) {
-                                //        //убираем лишние пробелы
-                                //        if (evalToolDic.TryGetValue(normalizeText(t), out var tool)) {
-                                //            //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
-                                //            //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
-                                //            tools.Add(tool);
-                                //        }
-                                //        else {
-                                //            errors.Add($"Не удалось определить тип оценочного средства - {t}");
-                                //        }
-                                //    }
-
-
                                 for (var row = startRow; row < table.RowCount - 2; row++) { //минус ряд с "зачетом", минус ряд с "итого"
                                     var module = new StudyModule();
                                     var col = startCol - 1;
@@ -709,10 +693,10 @@ namespace FosMan {
                     }
                     if (string.IsNullOrEmpty(rpd.Department)) rpd.Errors.Add("Не удалось определить название кафедры");
                     if (string.IsNullOrEmpty(rpd.Profile)) rpd.Errors.Add("Не удалось определить профиль");
-                    if (string.IsNullOrEmpty(rpd.Year)) rpd.Errors.Add("Не удалось год программы");
-                    if (string.IsNullOrEmpty(rpd.DirectionCode)) rpd.Errors.Add("Не удалось шифр направления подготовки");
-                    if (string.IsNullOrEmpty(rpd.DirectionName)) rpd.Errors.Add("Не удалось наименование направления подготовки");
-                    if (string.IsNullOrEmpty(rpd.DisciplineName)) rpd.Errors.Add("Не удалось название дисциплины");
+                    if (string.IsNullOrEmpty(rpd.Year)) rpd.Errors.Add("Не удалось определить год программы");
+                    if (string.IsNullOrEmpty(rpd.DirectionCode)) rpd.Errors.Add("Не удалось определить шифр направления подготовки");
+                    if (string.IsNullOrEmpty(rpd.DirectionName)) rpd.Errors.Add("Не удалось определить наименование направления подготовки");
+                    if (string.IsNullOrEmpty(rpd.DisciplineName)) rpd.Errors.Add("Не удалось определить название дисциплины");
                 }
             }
             catch (Exception ex) {

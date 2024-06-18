@@ -7,6 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Security.Policy;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xceed.Document.NET;
@@ -35,15 +36,19 @@ namespace FosMan {
         /// <summary>
         /// Наименование дисциплины [ключ]
         /// </summary>
+        [JsonInclude]
         public string Name { get; set; }
+        [JsonIgnore]
         public string Key { get => App.NormalizeName(Name); }
         /// <summary>
         /// Индекс дисциплины
         /// </summary>
+        [JsonInclude]
         public string Index { get; set; }
         /// <summary>
         /// Тип дисциплины
         /// </summary>
+        [JsonIgnore]
         public EDisciplineType? Type {
             get {
                 if (!string.IsNullOrEmpty(Index) && m_type == null) {
@@ -69,6 +74,7 @@ namespace FosMan {
         /// <summary>
         /// Описание типа дисциплины [поле для РПД]
         /// </summary>
+        [JsonIgnore]
         public string TypeDescription {
             get {
                 var text = "";
@@ -93,6 +99,7 @@ namespace FosMan {
         /// <summary>
         /// Доп. описание типа дисциплины [поле для РПД]
         /// </summary>
+        [JsonIgnore]
         public string TypeDescription2 {
             get {
                 var text = "";
@@ -107,19 +114,23 @@ namespace FosMan {
         /// <summary>
         /// Тип контроля в регистре: зачет, экзамен
         /// </summary>
+        [JsonIgnore]
         public string ControlType { get => EducationalWork?.ControlFormForScreen.ToLower() ?? ""; }
 
         /// <summary>
         /// Название закрепленной кафедры
         /// </summary>
+        [JsonInclude]
         public string DepartmentName { get; set; }
         /// <summary>
         /// Код закрепленной кафедры
         /// </summary>
+        [JsonInclude]
         public string DepartmentCode { get; set; }
         /// <summary>
         /// Описание кафедры
         /// </summary>
+        [JsonIgnore]
         public Department Department { 
             get {
                 if (m_department == null && !string.IsNullOrEmpty(DepartmentCode)) {
@@ -131,6 +142,7 @@ namespace FosMan {
         /// <summary>
         /// Нормализованные компетенции (коды)
         /// </summary>
+        [JsonIgnore]
         public HashSet<string> CompetenceList {
             get {
                 if (m_competenceList == null && !string.IsNullOrEmpty(Competences)) {
@@ -143,66 +155,72 @@ namespace FosMan {
         /// <summary>
         /// Компетенции строкой (берутся из xlsx)
         /// </summary>
+        [JsonInclude]
         public string Competences { get; set; }
         /// <summary>
         /// Формы контроля
         /// </summary>
         //public List<EControlForm> ControlForms { get; set; }
+        [JsonInclude]
         public int? ControlFormExamHours { get; set; }
+        [JsonInclude]
         public int? ControlFormTestHours { get; set; }
+        [JsonInclude]
         public int? ControlFormTestWithAGradeHours { get; set; }
+        [JsonInclude]
         public int? ControlFormControlWorkHours { get; set; }
         /// <summary>
         /// Итого акад.часов: по плану
         /// </summary>
+        [JsonInclude]
         public int? TotalByPlanHours { get; set; }
         /// <summary>
         /// Итого акад.часов: Конт. раб.
         /// </summary>
+        [JsonInclude]
         public int? TotalContactWorkHours { get; set; }
         /// <summary>
         /// Итого акад.часов: СР
         /// </summary>
+        [JsonInclude]
         public int? TotalSelfStudyHours { get; set; }
         /// <summary>
         /// Итого акад.часов: Конт роль
         /// </summary>
+        [JsonInclude]
         public int? TotalControlHours { get; set; }
         /// <summary>
         /// Описание учебных работ по семестрам
         /// </summary>
+        [JsonInclude]
         public EducationalWork[] Semesters { get; set; } = new EducationalWork[SEMESTER_COUNT];
 
         /// <summary>
         /// Кол-во зачетных единиц (1 ЗЕ = 36 часов)
         /// </summary>
+        [JsonIgnore]
         public int? TestUnits { get => TotalByPlanHours / 36; }
 
         /// <summary>
         /// Выявленные ошибки
         /// </summary>
+        [JsonIgnore]
         public List<string> Errors { get; set; }
         /// <summary>
         /// Доп. ошибки (исп. при проверке по загруженной матрице компетенций)
         /// </summary>
+        [JsonIgnore]
         public List<string> ExtraErrors { get; set; }
         /// <summary>
         /// Родительский УП
         /// </summary>
+        [JsonIgnore]
         public Curriculum Curriculum { get; set; }
-
-        public CurriculumDiscipline() {
-            Errors = [];
-            ExtraErrors = [];
-
-            for (var i = 0; i < Semesters.Length; i++) {
-                Semesters[i] = new();
-            }
-        }
 
         /// <summary>
         /// Объект описания учебной работы
         /// </summary>
+        [JsonIgnore]
         public EducationalWork EducationalWork {
             get {
                 m_eduWork ??= new() {
@@ -235,6 +253,7 @@ namespace FosMan {
         /// <summary>
         /// Индекс стартового семестра
         /// </summary>
+        [JsonIgnore]
         public int StartSemesterIdx {
             get {
                 if (m_startSemIdx < 0) {
@@ -250,6 +269,7 @@ namespace FosMan {
         /// <summary>
         /// Индекс последнего семестра
         /// </summary>
+        [JsonIgnore]
         public int LastSemesterIdx {
             get {
                 if (m_lastSemIdx < 0) {
@@ -259,6 +279,15 @@ namespace FosMan {
                     }
                 }
                 return m_lastSemIdx;
+            }
+        }
+
+        public CurriculumDiscipline() {
+            Errors = [];
+            ExtraErrors = [];
+
+            for (var i = 0; i < Semesters.Length; i++) {
+                Semesters[i] = new();
             }
         }
 

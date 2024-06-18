@@ -6,6 +6,7 @@ using System.Data;
 using System.Dynamic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -21,54 +22,67 @@ namespace FosMan {
         /// <summary>
         /// Направление подготовки
         /// </summary>
+        [JsonInclude]
         public string DirectionName { get; set; }
         /// <summary>
         /// Код направления
         /// </summary>
+        [JsonInclude]
         public string DirectionCode { get; set; }
         /// <summary>
         /// Профиль
         /// </summary>
+        [JsonInclude]
         public string Profile { get; set; }
         /// <summary>
         /// Факультет
         /// </summary>
+        [JsonInclude]
         public string Faculty { get; set; }
         /// <summary>
         /// Кафедра
         /// </summary>
+        [JsonInclude]
         public string Department { get; set; }
         /// <summary>
         /// Форма обучения
         /// </summary>
+        [JsonInclude]
         public Enums.EFormOfStudy FormOfStudy { get; set; } = Enums.EFormOfStudy.Unknown;
         /// <summary>
         /// Квалификация
         /// </summary>
+        [JsonInclude]
         public Enums.EDegree Degree { get; set; }
         /// <summary>
         /// Учебный год
         /// </summary>
+        [JsonInclude]
         public string AcademicYear { get; set; }
         /// <summary>
         /// Образовательный стандарт (ФГОС)
         /// </summary>
+        [JsonInclude]
         public string FSES { get; set; }
         /// <summary>
         /// Список описания дисциплин
         /// </summary>
+        [JsonInclude]
         public Dictionary<string, CurriculumDiscipline> Disciplines { get; set; }
         /// <summary>
         /// Исходный xlsx-файл
         /// </summary>
+        [JsonInclude]
         public string SourceFileName { get; set; }
         /// <summary>
         /// Ошибки
         /// </summary>
+        [JsonIgnore]
         public List<string> Errors { get; set; }
         /// <summary>
         /// Уникальный ключ, по которому УП будут объединяться в группы
         /// </summary>
+        [JsonIgnore]
         public string GroupKey { get => $"{DirectionCode} - {DirectionName} - {Profile}".ToLower(); }
 
         /// <summary>

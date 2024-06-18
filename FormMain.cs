@@ -778,6 +778,8 @@ namespace FosMan {
                 StatusMessage($"Успешно загружено {files.Length} файл(а,ов)");
             }
 
+            App.SaveStore(Enums.EStoreElements.Curricula);
+
             Application.UseWaitCursor = false;
             Application.DoEvents();
         }
@@ -937,6 +939,7 @@ namespace FosMan {
             else {
                 StatusMessage($"Успешно загружено {files.Length} файл(а,ов)");
             }
+            SaveStore(Enums.EStoreElements.Rpd);
 
             Application.UseWaitCursor = false;
             Application.DoEvents();
@@ -1010,6 +1013,7 @@ namespace FosMan {
             else {
                 StatusMessage($"Успешно загружено {files.Length} файл(а,ов)");
             }
+            SaveStore(Enums.EStoreElements.Fos);
 
             Application.UseWaitCursor = false;
             Application.DoEvents();
@@ -1523,34 +1527,6 @@ namespace FosMan {
             App.SaveConfig();
         }
 
-        private void buttonRpdSaveToDb_Click(object sender, EventArgs e) {
-            var sw = Stopwatch.StartNew();
-
-            App.AddLoadedRpdToStore();
-
-            StatusMessage($"В Стор добавлены РПД ({App.RpdList.Count} шт.) ({sw.Elapsed}). Всего в Сторе РПД: {App.Store.RpdDic.Count} шт.");
-        }
-
-        private void buttonRpdLoadFromDb_Click(object sender, EventArgs e) {
-            if (MessageBox.Show($"Вы уверены, что хотите загрузить в список РПД из Стора ({App.Store.RpdDic.Count} шт.)?", "Загрузка РПД",
-                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
-                if (App.Store?.RpdDic?.Any() ?? false) {
-                    fastObjectListViewRpdList.BeginUpdate();
-                    var selectedObjects = fastObjectListViewRpdList.SelectedObjects;
-
-                    foreach (var rpd in App.Store.RpdDic.Values) {
-                        App.AddRpd(rpd);
-
-                        fastObjectListViewRpdList.AddObject(rpd);
-                        fastObjectListViewRpdList.EnsureModelVisible(rpd);
-                        selectedObjects.Add(rpd);
-                    }
-                    fastObjectListViewRpdList.SelectedObjects = selectedObjects;
-                    fastObjectListViewRpdList.EndUpdate();
-                }
-            }
-        }
-
         async Task GenerateRelatedDisciplines(List<Rpd> rpdList, bool prevDisciplines) {
             var tasks = new List<Task>();
             var swMain = Stopwatch.StartNew();
@@ -1745,11 +1721,11 @@ namespace FosMan {
         }
 
         private void iconToolStripButtonRpdToDb_Click(object sender, EventArgs e) {
-            var sw = Stopwatch.StartNew();
+            //var sw = Stopwatch.StartNew();
 
-            App.AddLoadedRpdToStore();
+            //App.AddLoadedRpdToStore();
 
-            StatusMessage($"В Стор добавлены РПД ({App.RpdList.Count} шт.) ({sw.Elapsed}). Всего в Сторе РПД: {App.Store.RpdDic.Count} шт.");
+            //StatusMessage($"В Стор добавлены РПД ({App.RpdList.Count} шт.) ({sw.Elapsed}). Всего в Сторе РПД: {App.Store.RpdDic.Count} шт.");
         }
 
         private void iconToolStripButtonRpdFromDb_Click(object sender, EventArgs e) {
@@ -1760,7 +1736,7 @@ namespace FosMan {
                     var selectedObjects = fastObjectListViewRpdList.SelectedObjects;
 
                     foreach (var rpd in App.Store.RpdDic.Values) {
-                        App.AddRpd(rpd);
+                        App.AddRpd(rpd, false);
 
                         fastObjectListViewRpdList.AddObject(rpd);
                         fastObjectListViewRpdList.EnsureModelVisible(rpd);
@@ -1910,7 +1886,7 @@ namespace FosMan {
                     var selectedObjects = fastObjectListViewFosList.SelectedObjects;
 
                     foreach (var fos in App.Store.FosDic.Values) {
-                        App.AddFos(fos);
+                        App.AddFos(fos, false);
 
                         fastObjectListViewFosList.AddObject(fos);
                         fastObjectListViewFosList.EnsureModelVisible(fos);
@@ -1923,11 +1899,11 @@ namespace FosMan {
         }
 
         private void iconToolStripButtonFosToDb_Click(object sender, EventArgs e) {
-            var sw = Stopwatch.StartNew();
+            //var sw = Stopwatch.StartNew();
 
-            App.AddLoadedFosToStore();
+            //App.AddLoadedFosToStore();
 
-            StatusMessage($"В Стор добавлены ФОС ({App.FosList.Count} шт.) ({sw.Elapsed}). Всего в Сторе ФОС: {App.Store.FosDic.Count} шт.");
+            //StatusMessage($"В Стор добавлены ФОС ({App.FosList.Count} шт.) ({sw.Elapsed}). Всего в Сторе ФОС: {App.Store.FosDic.Count} шт.");
         }
 
         private void iconToolStripButtonFosCheck_Click(object sender, EventArgs e) {
@@ -1939,6 +1915,26 @@ namespace FosMan {
             }
             else {
                 MessageBox.Show("Необходимо выделить файлы, которые требуется проверить.", "Проверка ФОС", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+        private void iconToolStripButtonCurriculaFromDb_Click(object sender, EventArgs e) {
+            if (MessageBox.Show($"Вы уверены, что хотите загрузить в список УП из Стора ({App.Store.CurriculaDic.Count} шт.)?", "Загрузка УП",
+                MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                if (App.Store?.CurriculaDic?.Any() ?? false) {
+                    fastObjectListViewCurricula.BeginUpdate();
+                    var selectedObjects = fastObjectListViewCurricula.SelectedObjects;
+
+                    foreach (var curr in App.Store.CurriculaDic.Values) {
+                        App.AddCurriculum(curr, false);
+
+                        fastObjectListViewCurricula.AddObject(curr);
+                        fastObjectListViewCurricula.EnsureModelVisible(curr);
+                        selectedObjects.Add(curr);
+                    }
+                    fastObjectListViewCurricula.SelectedObjects = selectedObjects;
+                    fastObjectListViewCurricula.EndUpdate();
+                }
             }
         }
     }

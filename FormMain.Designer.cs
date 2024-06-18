@@ -326,10 +326,10 @@
             tabPageСurriculum.Controls.Add(toolStrip1);
             tabPageСurriculum.Controls.Add(groupBoxDisciplines);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
-            tabPageСurriculum.Location = new Point(4, 24);
+            tabPageСurriculum.Location = new Point(4, 23);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1001, 676);
+            tabPageСurriculum.Size = new Size(1001, 677);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -394,7 +394,6 @@
             // 
             // iconToolStripButtonCurriculaFromDb
             // 
-            iconToolStripButtonCurriculaFromDb.Enabled = false;
             iconToolStripButtonCurriculaFromDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightFromFile;
             iconToolStripButtonCurriculaFromDb.IconColor = Color.DarkBlue;
             iconToolStripButtonCurriculaFromDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
@@ -403,6 +402,7 @@
             iconToolStripButtonCurriculaFromDb.Size = new Size(89, 28);
             iconToolStripButtonCurriculaFromDb.Text = "Загрузить";
             iconToolStripButtonCurriculaFromDb.ToolTipText = "Загрузить РПД из БД";
+            iconToolStripButtonCurriculaFromDb.Click += iconToolStripButtonCurriculaFromDb_Click;
             // 
             // iconToolStripButtonCurriculaToDb
             // 
@@ -440,7 +440,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(6, 366);
+            groupBoxDisciplines.Location = new Point(6, 370);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(985, 308);
             groupBoxDisciplines.TabIndex = 3;
@@ -476,7 +476,7 @@
             fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(989, 323);
+            fastObjectListViewCurricula.Size = new Size(989, 327);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -494,10 +494,10 @@
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainerRpd);
-            tabPageRpd.Location = new Point(4, 24);
+            tabPageRpd.Location = new Point(4, 23);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1001, 676);
+            tabPageRpd.Size = new Size(1001, 677);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -574,6 +574,7 @@
             // 
             // iconToolStripButtonRpdToDb
             // 
+            iconToolStripButtonRpdToDb.Enabled = false;
             iconToolStripButtonRpdToDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightToFile;
             iconToolStripButtonRpdToDb.IconColor = Color.DarkBlue;
             iconToolStripButtonRpdToDb.IconFont = FontAwesome.Sharp.IconFont.Auto;
@@ -641,10 +642,10 @@
             // 
             // splitContainerRpd
             // 
-            splitContainerRpd.Dock = DockStyle.Bottom;
+            splitContainerRpd.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             splitContainerRpd.FixedPanel = FixedPanel.Panel1;
             splitContainerRpd.IsSplitterFixed = true;
-            splitContainerRpd.Location = new Point(3, 35);
+            splitContainerRpd.Location = new Point(3, 36);
             splitContainerRpd.Name = "splitContainerRpd";
             splitContainerRpd.Orientation = Orientation.Horizontal;
             // 
@@ -966,10 +967,10 @@
             // 
             // splitContainerFos
             // 
-            splitContainerFos.Dock = DockStyle.Bottom;
+            splitContainerFos.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             splitContainerFos.FixedPanel = FixedPanel.Panel1;
             splitContainerFos.IsSplitterFixed = true;
-            splitContainerFos.Location = new Point(3, 35);
+            splitContainerFos.Location = new Point(3, 36);
             splitContainerFos.Name = "splitContainerFos";
             splitContainerFos.Orientation = Orientation.Horizontal;
             // 
@@ -1332,6 +1333,7 @@
             // 
             // iconToolStripButtonFosToDb
             // 
+            iconToolStripButtonFosToDb.Enabled = false;
             iconToolStripButtonFosToDb.IconChar = FontAwesome.Sharp.IconChar.ArrowRightToFile;
             iconToolStripButtonFosToDb.IconColor = Color.DarkBlue;
             iconToolStripButtonFosToDb.IconFont = FontAwesome.Sharp.IconFont.Auto;

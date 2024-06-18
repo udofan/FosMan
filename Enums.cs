@@ -98,5 +98,16 @@ namespace FosMan {
             Fos21,
             Fos22
         }
+
+        /// <summary>
+        /// Виды элементов в Сторе
+        /// </summary>
+        [Flags]
+        public enum EStoreElements {
+            Rpd = 0b0000_0001,
+            Fos = 0b0000_0010,
+            Curricula = 0b0000_0100,
+            All = 0b1111_1111
+        }
     }
 }

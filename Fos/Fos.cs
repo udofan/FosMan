@@ -160,11 +160,22 @@ namespace FosMan {
                                 }
                             }
                         }
+                        //итоговая проверка
+                        if (fos.CompetenceMatrix == null || !fos.CompetenceMatrix.IsLoaded) {
+                            fos.Errors.Add("Не найдена матрица компетенций.");
+                        }
+                        if (string.IsNullOrEmpty(fos.Department)) fos.Errors.Add("Не удалось определить название кафедры");
+                        if (string.IsNullOrEmpty(fos.Profile)) fos.Errors.Add("Не удалось определить профиль");
+                        if (string.IsNullOrEmpty(fos.Year)) fos.Errors.Add("Не удалось определить год программы");
+                        if (string.IsNullOrEmpty(fos.DirectionCode)) fos.Errors.Add("Не удалось определить шифр направления подготовки");
+                        if (string.IsNullOrEmpty(fos.DirectionName)) fos.Errors.Add("Не удалось определить наименование направления подготовки");
+                        if (string.IsNullOrEmpty(fos.DisciplineName)) fos.Errors.Add("Не удалось определить название дисциплины");
+                        if (fos.Passport == null) fos.Errors.Add("Не удалось определить паспорт");
                     }
                 }
             }
             catch (Exception ex) {
-
+                fos.Errors.Add($"{ex.Message}\r\n{ex.StackTrace}");
             }
 
             return fos;

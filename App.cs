@@ -145,7 +145,7 @@ namespace FosMan {
         /// </summary>
         /// <param name="curriculum"></param>
         /// <returns></returns>
-        static public bool AddCurriculum(Curriculum curriculum) {
+        static public bool AddCurriculum(Curriculum curriculum, bool addToStore = true) {
             var result = false;
             if (m_curriculumDic.TryAdd(curriculum.SourceFileName, curriculum)) {
                 if (!m_curriculumGroupDic.TryGetValue(curriculum.GroupKey, out var group)) {
@@ -161,7 +161,12 @@ namespace FosMan {
                 group.AddCurriculum(curriculum);
                 CheckDisciplines();
                 result = true;
+
+                if (addToStore) {
+                    m_store.CurriculaDic.TryAdd(curriculum.SourceFileName, curriculum);
+                }
             }
+
             return result;
         }
 
@@ -170,10 +175,14 @@ namespace FosMan {
         /// </summary>
         /// <param name="fos"></param>
         /// <returns></returns>
-        static public bool AddRpd(Rpd fos) {
-            m_rpdDic[fos.SourceFileName] = fos;
-            RpdAdd?.Invoke(fos);
-            
+        static public bool AddRpd(Rpd rpd, bool addToStore = true) {
+            m_rpdDic[rpd.SourceFileName] = rpd;
+            RpdAdd?.Invoke(rpd);
+
+            if (addToStore) {
+                m_store.RpdDic.TryAdd(rpd.SourceFileName, rpd);
+            }
+
             return true;
         }
 
@@ -182,8 +191,12 @@ namespace FosMan {
         /// </summary>
         /// <param name="fos"></param>
         /// <returns></returns>
-        static public bool AddFos(Fos fos) {
+        static public bool AddFos(Fos fos, bool addToStore = true) {
             m_fosDic[fos.SourceFileName] = fos;
+
+            if (addToStore) {
+                m_store.FosDic.TryAdd(fos.SourceFileName, fos);
+            }
 
             return true;
         }
@@ -2274,47 +2287,97 @@ namespace FosMan {
         /// <summary>
         /// Сохранить стор
         /// </summary>
-        public static void SaveStore() {
-            var storeFile = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME);
-            if (m_config != null) {
-                var json = JsonSerializer.Serialize(m_store, m_jsonOptions);
-                File.WriteAllText(storeFile, json, Encoding.UTF8);
+        public static void SaveStore(EStoreElements elements) {
+            if (elements.HasFlag(EStoreElements.Rpd)) {
+                var storeFileRpd = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME_RPD);
+                if (m_config != null) {
+                    var json = JsonSerializer.Serialize(m_store.RpdDic, m_jsonOptions);
+                    File.WriteAllText(storeFileRpd, json, Encoding.UTF8);
+                }
+            }
+            if (elements.HasFlag(EStoreElements.Fos)) {
+                var storeFileFos = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME_FOS);
+                if (m_config != null) {
+                    var json = JsonSerializer.Serialize(m_store.FosDic, m_jsonOptions);
+                    File.WriteAllText(storeFileFos, json, Encoding.UTF8);
+                }
+            }
+            if (elements.HasFlag(EStoreElements.Curricula)) {
+                var storeFileCurricula = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME_CURRICULA);
+                if (m_config != null) {
+                    var json = JsonSerializer.Serialize(m_store.CurriculaDic, m_jsonOptions);
+                    File.WriteAllText(storeFileCurricula, json, Encoding.UTF8);
+                }
             }
         }
 
         /// <summary>
         /// Загрузить стор
         /// </summary>
-        public static void LoadStore() {
-            var storeFile = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME);
-            if (File.Exists(storeFile)) {
-                var json = File.ReadAllText(storeFile);
-                m_store = JsonSerializer.Deserialize<Store>(json, m_jsonOptions);
+        public static void LoadStore(EStoreElements elements = EStoreElements.All) {
+            m_store ??= new();
+
+            //РПД
+            if (elements.HasFlag(EStoreElements.Rpd)) {
+                var storeFileRpd = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME_RPD);
+                if (File.Exists(storeFileRpd)) {
+                    var json = File.ReadAllText(storeFileRpd);
+                    m_store.RpdDic = JsonSerializer.Deserialize<Dictionary<string, Rpd>>(json, m_jsonOptions);
+                }
+                else {
+                    m_store.RpdDic = [];
+                }
             }
-            else {
-                m_store = new();
+            //ФОС
+            if (elements.HasFlag(EStoreElements.Fos)) {
+                var storeFileFos = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME_FOS);
+                if (File.Exists(storeFileFos)) {
+                    var json = File.ReadAllText(storeFileFos);
+                    m_store.FosDic = JsonSerializer.Deserialize<Dictionary<string, Fos>>(json, m_jsonOptions);
+                }
+                else {
+                    m_store.FosDic = [];
+                }
+            }
+            //УП
+            if (elements.HasFlag(EStoreElements.Curricula)) {
+                var storeFileCurricula = Path.Combine(Environment.CurrentDirectory, Store.FILE_NAME_CURRICULA);
+                if (File.Exists(storeFileCurricula)) {
+                    var json = File.ReadAllText(storeFileCurricula);
+                    m_store.CurriculaDic = JsonSerializer.Deserialize<Dictionary<string, Curriculum>>(json, m_jsonOptions);
+                    foreach (var item in m_store.CurriculaDic.Values) {
+                        if (item.Disciplines != null) {
+                            foreach (var disc in item.Disciplines.Values) {
+                                disc.Curriculum = item; //восст. ссылки на родительский УП
+                            }
+                        }
+                    }
+                }
+                else {
+                    m_store.CurriculaDic = [];
+                }
             }
         }
 
         /// <summary>
         /// Добавить/обновить загруженные РПД в стор
         /// </summary>
-        public static void AddLoadedRpdToStore() {
-            foreach (var rpd in m_rpdDic) {
-                m_store.RpdDic[rpd.Key] = rpd.Value;
-            }
-            SaveStore();
-        }
+        //public static void AddLoadedRpdToStore() {
+        //    foreach (var rpd in m_rpdDic) {
+        //        m_store.RpdDic[rpd.Key] = rpd.Value;
+        //    }
+        //    SaveStore();
+        //}
 
-        /// <summary>
-        /// Добавить/обновить загруженные ФОС в стор
-        /// </summary>
-        public static void AddLoadedFosToStore() {
-            foreach (var fos in m_fosDic) {
-                m_store.FosDic[fos.Key] = fos.Value;
-            }
-            SaveStore();
-        }
+        ///// <summary>
+        ///// Добавить/обновить загруженные ФОС в стор
+        ///// </summary>
+        //public static void AddLoadedFosToStore() {
+        //    foreach (var fos in m_fosDic) {
+        //        m_store.FosDic[fos.Key] = fos.Value;
+        //    }
+        //    SaveStore();
+        //}
 
         /// <summary>
         /// Вернуть случайное значение элементов из списка (от, до)
