@@ -657,7 +657,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(995, 639);
+            splitContainerRpd.Size = new Size(995, 642);
             splitContainerRpd.SplitterDistance = 280;
             splitContainerRpd.TabIndex = 7;
             // 
@@ -940,7 +940,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(995, 355);
+            fastObjectListViewRpdList.Size = new Size(995, 358);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -982,7 +982,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(995, 640);
+            splitContainerFos.Size = new Size(995, 639);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             // 
@@ -1250,7 +1250,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(995, 356);
+            fastObjectListViewFosList.Size = new Size(995, 355);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;

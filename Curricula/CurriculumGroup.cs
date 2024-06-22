@@ -52,7 +52,7 @@ namespace FosMan {
         /// <summary>
         /// УП, входящие в группу
         /// </summary>
-        public ConcurrentDictionary<string, Curriculum> Curricula { get => m_curricula; }
+        public ConcurrentDictionary<string, Curriculum> Curricula { get => m_curricula; set => m_curricula = value; }
         /// <summary>
         /// Список дисциплин из группы
         /// </summary>
@@ -61,6 +61,17 @@ namespace FosMan {
         /// Дисциплины для генерации
         /// </summary>
         public List<CurriculumDiscipline> CheckedDisciplines { get; set; }
+
+        public CurriculumGroup(Curriculum curriculum) {
+            Department = curriculum.Department;
+            DirectionCode = curriculum.DirectionCode;
+            DirectionName = curriculum.DirectionName;
+            Profile = curriculum.Profile;
+            FSES = curriculum.FSES;
+            
+            AddCurriculum(curriculum);
+            //Curricula = new[] { [curriculum.SourceFileName] = curriculum };
+        }
 
         /// <summary>
         /// Добавить УП в группу

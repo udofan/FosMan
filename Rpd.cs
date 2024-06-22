@@ -600,37 +600,62 @@ namespace FosMan {
                                 //определяем начальный значащие ряд и колонку
                                 var startRow = 3;
                                 var startCol = -1;
-                                var numColCount = 0;    //кол-во числовых ячеек
+                                var firstNumCol = -1;
+                                var lastNumCol = -1;
+                                //var numColCount = 0;    //кол-во числовых ячеек
                                 while (startRow < table.RowCount) {
-                                    numColCount = 0;
+                                    //numColCount = 0;
+                                    firstNumCol = -1;
+                                    lastNumCol = -1;
+                                    var hasNumCells = false;
                                     for (var col = 0; col < table.Rows[startRow].Cells.Count; col++) {
                                         var cell = table.Rows[startRow].Cells[col];
-                                        if (cell.GridSpan > 0) { //первый ряд, который нам нужен - ряд без объединений ячеек
-                                            startRow++;
-                                            continue;
-                                        }
+                                        //if (cell.GridSpan > 0) { //первый ряд, который нам нужен - ряд без объединений ячеек
+                                        //    startRow++;
+                                        //    continue;
+                                        //}
                                         var text = cell.GetText();
                                         if (int.TryParse(text, out _)) {
+                                            hasNumCells = true;
+                                            if (firstNumCol < 0) firstNumCol = col;
+                                            if (col > lastNumCol) lastNumCol = col;
                                             if (col > 0) {
                                                 if (startCol < 0) startCol = col;
-                                                numColCount++;
+                                                //numColCount++;
                                             }
                                         }
                                     }
-                                    break;
+                                    if (hasNumCells) {
+                                        break;
+                                    }
+                                    startRow++;
                                 }
 
+                                eduWork.Modules = [];
                                 var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
 
+                                var maxColCount = lastNumCol + 3;
                                 for (var row = startRow; row < table.RowCount - 2; row++) { //минус ряд с "зачетом", минус ряд с "итого"
                                     var module = new StudyModule();
                                     var col = startCol - 1;
-                                    while (col < table.ColumnCount) {
-                                        if (col == startCol - 1) module.Topic = table.Rows[row].Cells[col].GetText();
-                                        if (col == table.ColumnCount - 2) { //оценочные средства
+                                    var cellIdx = col;
+                                    while (col < maxColCount) {
+                                        if (col == startCol - 1) {
+                                            if (table.Rows[row].Cells.Count <= cellIdx) {
+                                                var tt = 0;
+                                            }
+                                            try {
+                                                module.Topic = table.Rows[row].Cells[cellIdx].GetText();
+                                            }
+                                            catch (Exception exx) {
+                                                var tt = 0;
+                                            }
+                                        }
+                                        if (col == maxColCount - 2) { //оценочные средства
                                             module.EvaluationTools = [];
+                                            //var counts = table.Rows.Select(r => r.Cells.Count).ToList();
                                             //module.Topic = table.Rows[row].Cells[col].GetText();
-                                            foreach (var t in table.Rows[row].Cells[col].GetText().Split(',', '\n', ';')) {
+                                            foreach (var t in table.Rows[row].Cells[cellIdx].GetText().Split(',', '\n', ';')) {
                                                 //убираем лишние пробелы
                                                 if (evalToolDic.TryGetValue(normalizeText(t), out var tool)) {
                                                     //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
@@ -639,19 +664,21 @@ namespace FosMan {
                                                 }
                                                 else {
                                                     if (string.IsNullOrEmpty(t)) {
-                                                        rpd.Errors.Add($"Тема [{module.Topic}]: не задан тип оценочного средства");
+                                                        rpd.Errors.Add($"Тема [{module.Topic}]: не задан тип оценочного средства [{formOfStudy.GetDescription()}]");
                                                     }
                                                     else {
-                                                        rpd.Errors.Add($"Тема [{module.Topic}]: не удалось определить тип оценочного средства - {t}");
+                                                        rpd.Errors.Add($"Тема [{module.Topic}]: не удалось определить тип оценочного средства - {t} [{formOfStudy.GetDescription()}]");
                                                     }
                                                 }
                                             }
                                         }
-                                        if (col == table.ColumnCount - 1) { //результаты обучения - компетенции
-                                            module.CompetenceIndicators = [.. table.Rows[row].Cells[col].GetText(",").Split(',', '\n', ';')];
+                                        if (col == maxColCount - 1) { //результаты обучения - компетенции
+                                            module.CompetenceIndicators = table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';').ToHashSet();
                                         }
-                                        col += table.Rows[row].Cells[col].GridSpan + 1; //переход на след. ячейку с учетом объединений
+                                        col += table.Rows[row].Cells[cellIdx].GridSpan + 1; //переход на след. ячейку с учетом объединений
+                                        cellIdx++;                                          //индексы ячеек последовательны
                                     }
+                                    eduWork.Modules.Add(module);
                                 }
 
                                 keepTestTable = false;  //таблица обработана

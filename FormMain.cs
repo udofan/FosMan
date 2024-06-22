@@ -1751,9 +1751,46 @@ namespace FosMan {
         private void iconToolStripButtonRpdCheck_Click(object sender, EventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
-                CheckRdp(rpdList, out var report);
+                var addedCurriculumCount = 0;
+                var missedCurriculumCount = 0;
+                //дозагрузка УП по-возможности
+                foreach (var rpd in rpdList) {
+                    var curricula = App.FindCurricula(rpd);
+                    if ((curricula?.Count ?? 0) != rpd.FormsOfStudy.Count) {
+                        var curriculaFromStore = App.Store.CurriculaDic.Values.Where(c =>
+                            c.DirectionCode.Equals(rpd.DirectionCode) &&
+                            c.Profile.Equals(rpd.Profile) &&
+                            !curricula.Select(x => x.Value.FormOfStudy).Contains(c.FormOfStudy)
+                        );
+                        if (curriculaFromStore != null) {
+                            foreach (var curr in curriculaFromStore) {
+                                App.AddCurriculum(curr, false);
+                                addedCurriculumCount++;
+                            }
+                        }
+                        else {
+                            missedCurriculumCount++;
+                        }
+                    }
+                }
+                var ret = DialogResult.Yes;
+                if (addedCurriculumCount > 0 || missedCurriculumCount > 0) {
+                    var msg = "Для проверки ФОС\n";
+                    if (addedCurriculumCount > 0) {
+                        msg += $"были дозагружены из Стора:\n   УП - {addedCurriculumCount} шт.\n";
+                    }
+                    if (missedCurriculumCount > 0) {
+                        msg += $"не найдено:\n   УП - {missedCurriculumCount} шт.\n";
+                    }
+                    msg += "\nВы уверены, что хотите продолжить?";
+                    ret = MessageBox.Show(msg, "Проверка РПД", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                }
 
-                AddReport("Проверка РПД", report);
+                if (ret == DialogResult.Yes) {
+                    CheckRdp(rpdList, out var report);
+
+                    AddReport("Проверка РПД", report);
+                }
             }
             else {
                 MessageBox.Show("Необходимо выделить файлы, которые требуется проверить.", "Проверка РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -1925,11 +1962,28 @@ namespace FosMan {
                             missedRpdCount++;
                         }
                     }
-                    if (App.FindCurricula(fos) == null) {
-                        var curriculumFromStore = App.Store.CurriculaDic.Values.FirstOrDefault(c => c.DirectionCode.Equals(fos.DirectionCode) && c.Profile.Equals(fos.Profile));
-                        if (curriculumFromStore != null) {
-                            App.AddCurriculum(curriculumFromStore, false);
-                            addedCurriculumCount++;
+                    //if (App.FindCurricula(fos) == null) {
+                    //    var curriculumFromStore = App.Store.CurriculaDic.Values.FirstOrDefault(c => c.DirectionCode.Equals(fos.DirectionCode) && c.Profile.Equals(fos.Profile));
+                    //    if (curriculumFromStore != null) {
+                    //        App.AddCurriculum(curriculumFromStore, false);
+                    //        addedCurriculumCount++;
+                    //    }
+                    //    else {
+                    //        missedCurriculumCount++;
+                    //    }
+                    //}
+                    var curricula = App.FindCurricula(fos);
+                    if ((curricula?.Count ?? 0) != fos.FormsOfStudy.Count) {
+                        var curriculaFromStore = App.Store.CurriculaDic.Values.Where(c =>
+                            c.DirectionCode.Equals(fos.DirectionCode) &&
+                            c.Profile.Equals(fos.Profile) &&
+                            !curricula.Select(x => x.Value.FormOfStudy).Contains(c.FormOfStudy)
+                        );
+                        if (curriculaFromStore != null) {
+                            foreach (var curr in curriculaFromStore) {
+                                App.AddCurriculum(curr, false);
+                                addedCurriculumCount++;
+                            }
                         }
                         else {
                             missedCurriculumCount++;
@@ -1943,8 +1997,9 @@ namespace FosMan {
                         msg += $"были дозагружены из Стора:\n   УП - {addedCurriculumCount} шт.\n   РПД - {addedRpdCount} шт.\n";
                     }
                     if (missedRpdCount > 0 || missedCurriculumCount > 0) {
-                        msg += $"не найдено:\n   УП - {missedCurriculumCount} шт.\n   РПД - {missedRpdCount} шт.";
+                        msg += $"не найдено:\n   УП - {missedCurriculumCount} шт.\n   РПД - {missedRpdCount} шт.\n";
                     }
+                    msg += "\nВы уверены, что хотите продолжить?";
                     ret = MessageBox.Show(msg, "Проверка ФОС", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 }
 

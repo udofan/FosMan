@@ -27,10 +27,12 @@ using System.Text.Unicode;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web;
+using System.Windows.Media.Media3D;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 using static FosMan.Enums;
 using static System.Resources.ResXFileRef;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace FosMan {
@@ -85,7 +87,7 @@ namespace FosMan {
         static ConcurrentDictionary<string, Curriculum> m_curriculumDic = [];
         static ConcurrentDictionary<string, Rpd> m_rpdDic = [];
         static ConcurrentDictionary<string, Fos> m_fosDic = [];
-        static Dictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
+        static ConcurrentDictionary<string, CurriculumGroup> m_curriculumGroupDic = [];
 
         //static Dictionary<string, Department> m_departments = [];
         static Config m_config = new();
@@ -118,7 +120,7 @@ namespace FosMan {
         /// <summary>
         /// Группы УП
         /// </summary>
-        public static Dictionary<string, CurriculumGroup> CurriculumGroups { get => m_curriculumGroupDic; }
+        public static ConcurrentDictionary<string, CurriculumGroup> CurriculumGroups { get => m_curriculumGroupDic; }
 
         /// <summary>
         /// Стор данных
@@ -148,17 +150,22 @@ namespace FosMan {
         static public bool AddCurriculum(Curriculum curriculum, bool addToStore = true) {
             var result = false;
             if (m_curriculumDic.TryAdd(curriculum.SourceFileName, curriculum)) {
-                if (!m_curriculumGroupDic.TryGetValue(curriculum.GroupKey, out var group)) {
-                    group = new() {
-                        Department = curriculum.Department,
-                        DirectionCode = curriculum.DirectionCode,
-                        DirectionName = curriculum.DirectionName,
-                        Profile = curriculum.Profile,
-                        FSES = curriculum.FSES
-                    };
-                    m_curriculumGroupDic[curriculum.GroupKey] = group;
-                }
-                group.AddCurriculum(curriculum);
+                m_curriculumGroupDic.AddOrUpdate(curriculum.GroupKey, key => new(curriculum), (key, value) => {
+                    value.AddCurriculum(curriculum);
+                    return value;
+                });
+
+                //});.TryGetValue(curriculum.GroupKey, out var group)) {
+                //    group = new() {
+                //        Department = curriculum.Department,
+                //        DirectionCode = curriculum.DirectionCode,
+                //        DirectionName = curriculum.DirectionName,
+                //        Profile = curriculum.Profile,
+                //        FSES = curriculum.FSES
+                //    };
+                //    m_curriculumGroupDic[curriculum.GroupKey] = group;
+                //}
+                //group.AddCurriculum(curriculum);
                 CheckDisciplines();
                 result = true;
 
@@ -524,27 +531,35 @@ namespace FosMan {
                                             var startRow = 3; // eduWork.Table.RowCount - ;
                                             var startCol = -1;
                                             //первый ряд - ряд без объединений ячеек
-                                            var numColCount = 0;
+                                            var firstNumCol = -1;
+                                            var lastNumCol = -1;
                                             while (startRow < eduWork.Table.RowCount) {
-                                                numColCount = 0;
+                                                firstNumCol = -1;
+                                                lastNumCol = -1;
+                                                var hasNumCells = false;
                                                 for (var col = 0; col < eduWork.Table.Rows[startRow].Cells.Count; col++) {
                                                     var cell = eduWork.Table.Rows[startRow].Cells[col];
-                                                    if (cell.GridSpan > 0) {
-                                                        startRow++;
-                                                        continue;
-                                                    }
+                                                    //if (cell.GridSpan > 0) {
+                                                    //    startRow++;
+                                                    //    continue;
+                                                    //}
                                                     var text = cell.GetText();
                                                     if (int.TryParse(text, out _)) {
-                                                        if (col > 0) { //} && startCol < 0) {
+                                                        hasNumCells = true;
+                                                        if (firstNumCol < 0) firstNumCol = col;
+                                                        if (col > lastNumCol) lastNumCol = col;
+                                                        if (col > 0) {
                                                             if (startCol < 0) startCol = col;
-                                                            numColCount++;
                                                         }
                                                     }
                                                 }
-                                                break;
+                                                if (hasNumCells) {
+                                                    break;
+                                                }
+                                                startRow++;
                                             }
                                             //тестируем на кол-во ячеек с числовыми значениями: должно быть 4 или 5 (когда есть подитог по КР)
-                                            var hasSubTotal = numColCount == 5;
+                                            var hasSubTotal = lastNumCol - firstNumCol + 1 == 5;
 
                                             //var startCol = eduWork.Table.ColumnCount - 6;
 
@@ -600,12 +615,33 @@ namespace FosMan {
                                                 return sum;
                                             };
 
+                                            var lastRow = eduWork.Table.RowCount - 1;
                                             for (var col = startCol; col < cells.GetLength(1); col++) {
-                                                if (cells[eduWork.Table.RowCount - 1, col] != colSum(col)) {
+                                                if (cells[lastRow, col] != colSum(col)) {
+                                                    var header = col.ToString();
                                                     if (msg.Length > 0) msg += "<br />";
-                                                    var header = col.ToString(); // GetTableHeaderText(eduWork.Table, 3, col);
-                                                    msg += $"Колонка <b>{header}</b>: итоговая сумма [{colSum(col)}] не совпадает с необходимой [{cells[eduWork.Table.RowCount - 1, col]}]";
+                                                    msg += $"Колонка <b>{header}</b>: итоговая сумма [{colSum(col)}] не совпадает с необходимой [{cells[lastRow, col]}]";
                                                 }
+                                            }
+                                            //проверяем по сводной таблице
+                                            if (eduWork.TotalHours != cells[lastRow, startCol]) {
+                                                if (msg.Length > 0) msg += "<br />";
+                                                msg += $"Колонка <b>(#{startCol}) [Общее время]</b>: значение [{cells[lastRow, startCol]}] не совпадает со значением из сводной таблицы - {eduWork.TotalHours}";
+                                            }
+                                            var colIdx = startCol + 1 + (hasSubTotal ? 1 : 0);
+                                            if (eduWork.LectureHours != cells[lastRow, colIdx]) {
+                                                if (msg.Length > 0) msg += "<br />";
+                                                msg += $"Колонка <b>(#{colIdx}) [Контактная работа.Лекции]</b>: значение [{cells[lastRow, colIdx]}] не совпадает со значением из сводной таблицы - {eduWork.LectureHours}";
+                                            }
+                                            colIdx++;
+                                            if (eduWork.PracticalHours != cells[lastRow, colIdx]) {
+                                                if (msg.Length > 0) msg += "<br />";
+                                                msg += $"Колонка <b>(#{colIdx}) [Контактная работа.Практика]</b>: значение [{cells[lastRow, colIdx]}] не совпадает со значением из сводной таблицы - {eduWork.PracticalHours}";
+                                            }
+                                            colIdx++;
+                                            if (eduWork.SelfStudyHours != cells[lastRow, colIdx]) {
+                                                if (msg.Length > 0) msg += "<br />";
+                                                msg += $"Колонка <b>(#{colIdx}) [Самостоятельная работа]</b>: значение [{cells[lastRow, colIdx]}] не совпадает со значением из сводной таблицы - {eduWork.SelfStudyHours}";
                                             }
                                         }
                                         catch (Exception ex2) {
@@ -623,11 +659,31 @@ namespace FosMan {
                                 var msg = "";
                                 foreach (var item in rpd.EducationalWorks) {
                                     if (item.Value != eduWork) {
+                                        var idx = 0;
                                         foreach (var module in eduWork.Modules) {
+                                            idx++;
                                             var normalizedTopic = NormalizeText(module.Topic);
                                             if (item.Value.Modules.FirstOrDefault(m => NormalizeText(m.Topic).Equals(normalizedTopic)) == null) {
                                                 if (msg.Length > 0) msg += "<br />";
                                                 msg += $"Тема <b>{module.Topic}</b> не найдена в таблице содержания формы обучения [{item.Key.GetDescription()}]";
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        foreach (var module in eduWork.Modules) {
+                                            if (string.IsNullOrEmpty(module.Topic)) {
+                                                if (msg.Length > 0) msg += "<br />";
+                                                msg += $"Тема #{idx} не указана [{item.Key.GetDescription()}]";
+                                            }
+                                            else {
+                                                if (module.EvaluationTools == null || module.EvaluationTools.Count == 0) {
+                                                    if (msg.Length > 0) msg += "<br />";
+                                                    msg += $"Тема <b>{module.Topic}</b>: не указано оценочное средство [{item.Key.GetDescription()}]";
+                                                }
+                                                if (module.CompetenceIndicators == null || module.CompetenceIndicators.Count == 0) {
+                                                    if (msg.Length > 0) msg += "<br />";
+                                                    msg += $"Тема <b>{module.Topic}</b>: не указаны коды индикаторов компетенции [{item.Key.GetDescription()}]";
+                                                }
                                             }
                                         }
                                     }
@@ -821,9 +877,9 @@ namespace FosMan {
                                 ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Проверка этапов формирований компетенций по УП", (fos, rpd) => {
                                     var msg = "";
                                     foreach (var item in fos.CompetenceMatrix.Items) {
-                                        if (item.Semester < discipline.StartSemesterIdx || item.Semester > discipline.LastSemesterIdx) {
+                                        if (item.Semester < discipline.StartSemesterIdx + 1 || item.Semester > discipline.LastSemesterIdx + 1) {
                                             msg += $"Компетенция {item.Code}: семестр имеет значение [{item.Semester}], " +
-                                                   $"а должен лежать в пределах [{discipline.StartSemesterIdx};{discipline.LastSemesterIdx}]";
+                                                   $"а должен лежать в пределах [{discipline.StartSemesterIdx + 1};{discipline.LastSemesterIdx + 1}]";
                                         }
                                     }
                                     return (string.IsNullOrEmpty(msg), msg);
@@ -834,8 +890,19 @@ namespace FosMan {
                     //проверка паспорта
                     ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Проверка паспорта: темы", (fos, rpd) => {
                         var msg = "";
-                        foreach (var module in rpd.EducationalWorks[EFormOfStudy.FullTime].Modules) {
-                            //todo
+                        //список тем по идее для всех форм обучения одинаковый, поэтому смело берем темы очной формы
+                        var rpdModules = rpd.EducationalWorks[EFormOfStudy.FullTime].Modules;
+                        if (rpdModules != null) {
+                            foreach (var module in fos.Passport) {
+                                var topic = NormalizeText(module.Topic);
+                                if (rpdModules.FirstOrDefault(m => NormalizeText(m.Topic).Equals(topic)) != null) {
+                                    if (msg.Length > 0) msg += "<br />";
+                                    msg += $"Тема <b>{module.Topic}</b> не найдена в РПД";
+                                }
+                            }
+                        }
+                        else {
+                            msg = $"В РПД нет данных о содержании дисциплины формы обучения [{EFormOfStudy.FullTime.GetDescription()}]";
                         }
                         return (string.IsNullOrEmpty(msg), msg);
                     });
