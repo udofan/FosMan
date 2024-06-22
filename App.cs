@@ -265,6 +265,12 @@ namespace FosMan {
             report.Append($"<div>{Summary}</div>");
         }
 
+        static void AddFileLink(this StringBuilder report, string text, string fileName) {
+            //report.Append($"<div>{text} <a href='file://{fileName.Replace(@"\",@"/")}'>{fileName}</a></div>");
+            report.Append($"<div>{text} <span onclick='window.chrome.webview.hostObjects.external.jsOpenFile(this.innerText);'" +
+                $" style='text-decoration: underline; cursor: hand; color: blue'>{fileName}</span></div>");
+        }
+
         static void AddTocElement(this StringBuilder toc, string element, string anchor, int errorCount) {
             var color = errorCount > 0 ? "red" : "green";
             toc.Append($"<li><a href='#{anchor}'><span style='color:{color};'>{element} (ошибок: {errorCount})</span></a></li>");
@@ -359,7 +365,7 @@ namespace FosMan {
                 //if (string.IsNullOrEmpty(discipName)) discipName = "?";
                 rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{rpd.DisciplineName ?? "?"}</h3>");
                 rep.Append("<div style='padding-left: 30px'>");
-                rep.AddDiv($"Файл РПД: <b>{rpd.SourceFileName}</b>");
+                rep.AddFileLink($"Файл РПД:", rpd.SourceFileName);
                 //ошибки, выявленные при загрузке
                 if (rpd.Errors.Any()) {
                     errorCount += rpd.Errors.Count;
@@ -386,7 +392,7 @@ namespace FosMan {
                     foreach (var curriculum in curricula) {
                         rep.Append("<p />");
                         rep.AddDiv($"Форма обучения: <b>{curriculum.Value.FormOfStudy.GetDescription()}</b>");
-                        rep.AddDiv($"Файл УП: <b>{curriculum.Value.SourceFileName}</b>");
+                        rep.AddFileLink($"Файл УП:", curriculum.Value.SourceFileName);
                         var discipline = curriculum.Value.FindDiscipline(rpd.DisciplineName);
                         var checkPos = 0;
                         if (discipline != null) {
@@ -739,7 +745,7 @@ namespace FosMan {
                 //if (string.IsNullOrEmpty(discipName)) discipName = "?";
                 rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{fos.DisciplineName ?? "?"}</h3>");
                 rep.Append("<div style='padding-left: 30px'>");
-                rep.AddDiv($"Файл ФОС: <b>{fos.SourceFileName}</b>");
+                rep.AddFileLink($"Файл ФОС:", fos.SourceFileName);
                 //ошибки, выявленные при загрузке
                 if (fos.Errors.Any()) {
                     errorCount += fos.Errors.Count;
@@ -751,6 +757,7 @@ namespace FosMan {
                 CurriculumDiscipline discipline = null;
                 var curriculum = FindCurricula(fos)?.FirstOrDefault().Value;
                 if (curriculum != null) {
+                    rep.AddFileLink($"Файл УП", curriculum.SourceFileName);
                     discipline = curriculum.FindDiscipline(fos.DisciplineName);
                     if (discipline == null) {
                         errorCount++;
@@ -766,8 +773,9 @@ namespace FosMan {
                 //для проверки нам будет нужен РПД
                 var rpd = FindRpd(fos);
                 if (rpd != null) {
-                    rep.Append("<p />");
-                    rep.AddDiv($"Файл РПД: <b>{rpd.SourceFileName}</b>");
+                    //rep.Append("<p />");
+                    rep.AddFileLink("Файл РПД:", rpd.SourceFileName);
+                    //rep.AddDiv($"Файл РПД: <b>{rpd.SourceFileName}</b>");
                     rep.Append("<p />");
                     rep.AddDiv("<b>Проверки по РПД:</b>");
                     var tdStyle = " style='border: 1px solid;'";
@@ -878,7 +886,8 @@ namespace FosMan {
                                     var msg = "";
                                     foreach (var item in fos.CompetenceMatrix.Items) {
                                         if (item.Semester < discipline.StartSemesterIdx + 1 || item.Semester > discipline.LastSemesterIdx + 1) {
-                                            msg += $"Компетенция {item.Code}: семестр имеет значение [{item.Semester}], " +
+                                            if (msg.Length > 0) msg += "<br />";
+                                            msg += $"Компетенция <b>{item.Code}</b>: семестр имеет значение [{item.Semester}], " +
                                                    $"а должен лежать в пределах [{discipline.StartSemesterIdx + 1};{discipline.LastSemesterIdx + 1}]";
                                         }
                                     }

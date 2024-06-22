@@ -657,7 +657,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(995, 642);
+            splitContainerRpd.Size = new Size(995, 647);
             splitContainerRpd.SplitterDistance = 280;
             splitContainerRpd.TabIndex = 7;
             // 
@@ -940,7 +940,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(995, 358);
+            fastObjectListViewRpdList.Size = new Size(995, 363);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -957,10 +957,10 @@
             // 
             tabPageFos.Controls.Add(splitContainerFos);
             tabPageFos.Controls.Add(toolStrip2);
-            tabPageFos.Location = new Point(4, 23);
+            tabPageFos.Location = new Point(4, 24);
             tabPageFos.Name = "tabPageFos";
             tabPageFos.Padding = new Padding(3);
-            tabPageFos.Size = new Size(1001, 677);
+            tabPageFos.Size = new Size(1001, 676);
             tabPageFos.TabIndex = 1;
             tabPageFos.Text = "ФОС";
             tabPageFos.UseVisualStyleBackColor = true;

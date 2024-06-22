@@ -1070,6 +1070,8 @@ namespace FosMan {
                 webView.NavigateToString(html);
                 tabPageNewReport.Controls.Add(webView);
                 webView.Dock = DockStyle.Fill;
+                var webViewInterop = new WebViewInterop();
+                webView.CoreWebView2.AddHostObjectToScript("external", webViewInterop);
 
                 tabPageNewReport.Tag = html;    //запоминаем на случай сохранения
                 tabControlReports.TabPages.Add(tabPageNewReport);
