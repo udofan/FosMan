@@ -326,10 +326,10 @@
             tabPageСurriculum.Controls.Add(toolStrip1);
             tabPageСurriculum.Controls.Add(groupBoxDisciplines);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
-            tabPageСurriculum.Location = new Point(4, 24);
+            tabPageСurriculum.Location = new Point(4, 23);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1001, 676);
+            tabPageСurriculum.Size = new Size(1001, 677);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "Учебные планы";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -440,7 +440,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(6, 370);
+            groupBoxDisciplines.Location = new Point(6, 377);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(985, 308);
             groupBoxDisciplines.TabIndex = 3;
@@ -476,7 +476,7 @@
             fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(989, 327);
+            fastObjectListViewCurricula.Size = new Size(989, 334);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -488,16 +488,17 @@
             fastObjectListViewCurricula.CellToolTipShowing += fastObjectListViewCurricula_CellToolTipShowing;
             fastObjectListViewCurricula.FormatRow += fastObjectListViewCurricula_FormatRow;
             fastObjectListViewCurricula.ItemActivate += fastObjectListViewCurricula_ItemActivate;
+            fastObjectListViewCurricula.SelectedIndexChanged += fastObjectListViewCurricula_SelectedIndexChanged;
             fastObjectListViewCurricula.KeyDown += fastObjectListViewCurricula_KeyDown;
             // 
             // tabPageRpd
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainerRpd);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1001, 677);
+            tabPageRpd.Size = new Size(1001, 676);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "РПД";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -657,7 +658,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(995, 647);
+            splitContainerRpd.Size = new Size(995, 649);
             splitContainerRpd.SplitterDistance = 280;
             splitContainerRpd.TabIndex = 7;
             // 
@@ -940,7 +941,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(995, 363);
+            fastObjectListViewRpdList.Size = new Size(995, 365);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -982,7 +983,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(995, 639);
+            splitContainerFos.Size = new Size(995, 642);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             // 
@@ -1250,7 +1251,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(995, 355);
+            fastObjectListViewFosList.Size = new Size(995, 358);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -1261,6 +1262,7 @@
             fastObjectListViewFosList.VirtualMode = true;
             fastObjectListViewFosList.CellToolTipShowing += fastObjectListViewFosList_CellToolTipShowing;
             fastObjectListViewFosList.FormatRow += fastObjectListViewFosList_FormatRow;
+            fastObjectListViewFosList.ItemActivate += fastObjectListViewFosList_ItemActivate;
             // 
             // toolStrip2
             // 
@@ -1313,6 +1315,7 @@
             iconToolStripButtonFosClear.Size = new Size(101, 28);
             iconToolStripButtonFosClear.Text = "Очистить...";
             iconToolStripButtonFosClear.ToolTipText = "Очистить список";
+            iconToolStripButtonFosClear.Click += iconToolStripButtonFosClear_Click;
             // 
             // toolStripSeparator11
             // 

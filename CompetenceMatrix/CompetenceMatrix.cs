@@ -158,6 +158,9 @@ namespace FosMan {
                                     matrix.Errors.Add($"Не удалось распарсить текст результата [{textResult}] (ряд {rowIdx}, колонка 2)");
                                 }
                             }
+                            else {
+                                matrix.Errors.Add($"Не указаны коды результата (ряд {rowIdx}, колонка 2)");
+                            }
                         }
                         else if (format == ECompetenceMatrixFormat.Fos21) {
                             //в случае формата ФОС - 2.1 во 2-ой ячейке лежит номер семестра
@@ -170,6 +173,9 @@ namespace FosMan {
                                 else {
                                     matrix.Errors.Add($"Не удалось определить номер семестра по тексту [{stage}] (ряд {rowIdx}, колонка 2)");
                                 }
+                            }
+                            else {
+                                matrix.Errors.Add($"Не указан семестр (ряд {rowIdx}, колонка 2)");
                             }
                         }
                     }

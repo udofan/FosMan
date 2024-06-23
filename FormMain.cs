@@ -814,9 +814,12 @@ namespace FosMan {
         }
 
         private void fastObjectListViewCurricula_ItemActivate(object sender, EventArgs e) {
-            var curriculum = fastObjectListViewCurricula.FocusedObject as Curriculum;
-            if (curriculum != null) {
-                ShowCurriculumDisciplines(curriculum);
+            if (fastObjectListViewCurricula.FocusedObject is Curriculum curriculum) {
+                var p = new Process();
+                p.StartInfo = new ProcessStartInfo(curriculum.SourceFileName) {
+                    UseShellExecute = true
+                };
+                p.Start();
             }
         }
 
@@ -996,7 +999,7 @@ namespace FosMan {
                             Application.DoEvents();
                         }));
 
-                        if (fos.Errors.Any()) {
+                        if (fos?.Errors?.Any() ?? false) {
                             errLog.TryAdd(file, fos.Errors);
                         }
                     }
@@ -1949,9 +1952,10 @@ namespace FosMan {
             var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
             if (fosList.Any()) {
                 var addedRpdCount = 0;
-                var missedRpdCount = 0;
+                //var missedRpdCount = 0;
                 var addedCurriculumCount = 0;
                 var missedCurriculumCount = 0;
+                var missedRpdDisciplines = new List<string>();
                 //дозагрузка РПД и УП по-возможности
                 foreach (var fos in fosList) {
                     if (App.FindRpd(fos) == null) {
@@ -1961,7 +1965,8 @@ namespace FosMan {
                             addedRpdCount++;
                         }
                         else {
-                            missedRpdCount++;
+                            //missedRpdCount++;
+                            missedRpdDisciplines.Add(fos.DisciplineName);
                         }
                     }
                     //if (App.FindCurricula(fos) == null) {
@@ -1993,13 +1998,16 @@ namespace FosMan {
                     }
                 }
                 var ret = DialogResult.Yes;
-                if (addedCurriculumCount > 0 || addedRpdCount > 0 || missedCurriculumCount > 0 || missedRpdCount > 0) {
+                if (addedCurriculumCount > 0 || addedRpdCount > 0 || missedCurriculumCount > 0 || missedRpdDisciplines.Count > 0) {
                     var msg = "Для проверки ФОС\n";
                     if (addedCurriculumCount > 0 || addedRpdCount > 0) {
                         msg += $"были дозагружены из Стора:\n   УП - {addedCurriculumCount} шт.\n   РПД - {addedRpdCount} шт.\n";
                     }
-                    if (missedRpdCount > 0 || missedCurriculumCount > 0) {
-                        msg += $"не найдено:\n   УП - {missedCurriculumCount} шт.\n   РПД - {missedRpdCount} шт.\n";
+                    if (missedCurriculumCount > 0) {
+                        msg += $"не найдено УП - {missedCurriculumCount} шт.\n";
+                    }
+                    if (missedRpdDisciplines.Count > 0) {
+                        msg += $"не найдено РПД ({missedRpdDisciplines.Count} шт.):\n   * {string.Join("   * ", missedRpdDisciplines)}\n";
                     }
                     msg += "\nВы уверены, что хотите продолжить?";
                     ret = MessageBox.Show(msg, "Проверка ФОС", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -2033,6 +2041,31 @@ namespace FosMan {
                     fastObjectListViewCurricula.SelectedObjects = selectedObjects;
                     fastObjectListViewCurricula.EndUpdate();
                 }
+            }
+        }
+
+        private void iconToolStripButtonFosClear_Click(object sender, EventArgs e) {
+            if (MessageBox.Show("Вы уверены, что хотите очистить список загруженных ФОС?",
+                    "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                App.FosList.Clear();
+                fastObjectListViewFosList.ClearObjects();
+            }
+        }
+
+        private void fastObjectListViewFosList_ItemActivate(object sender, EventArgs e) {
+            if (fastObjectListViewFosList.FocusedObject is Fos fos) {
+                var p = new Process();
+                p.StartInfo = new ProcessStartInfo(fos.SourceFileName) {
+                    UseShellExecute = true
+                };
+                p.Start();
+            }
+        }
+
+        private void fastObjectListViewCurricula_SelectedIndexChanged(object sender, EventArgs e) {
+            var curriculum = fastObjectListViewCurricula.FocusedObject as Curriculum;
+            if (curriculum != null) {
+                ShowCurriculumDisciplines(curriculum);
             }
         }
     }

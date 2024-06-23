@@ -183,6 +183,8 @@ namespace FosMan {
         /// <param name="fos"></param>
         /// <returns></returns>
         static public bool AddRpd(Rpd rpd, bool addToStore = true) {
+            if (rpd == null) return false;
+
             m_rpdDic[rpd.SourceFileName] = rpd;
             RpdAdd?.Invoke(rpd);
 
@@ -199,6 +201,8 @@ namespace FosMan {
         /// <param name="fos"></param>
         /// <returns></returns>
         static public bool AddFos(Fos fos, bool addToStore = true) {
+            if (fos == null) return false;
+
             m_fosDic[fos.SourceFileName] = fos;
 
             if (addToStore) {
@@ -690,6 +694,15 @@ namespace FosMan {
                                                     if (msg.Length > 0) msg += "<br />";
                                                     msg += $"Тема <b>{module.Topic}</b>: не указаны коды индикаторов компетенции [{item.Key.GetDescription()}]";
                                                 }
+                                                else { //проверка компетенций по матрице
+                                                    var results = rpd.CompetenceMatrix.GetAllResultCodes();
+                                                    foreach (var code in module.CompetenceIndicators) {
+                                                        if (!results.Contains(code)) {
+                                                            if (msg.Length > 0) msg += "<br />";
+                                                            msg += $"Тема <b>{module.Topic}</b>: указанный код индикатора компетенции [{code}] не найден в матрице";
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -792,7 +805,7 @@ namespace FosMan {
                     ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Формы обучения", (fos, rpd) => {
                         var result = !fos.FormsOfStudy.Except(rpd.FormsOfStudy).Any() && !rpd.FormsOfStudy.Except(fos.FormsOfStudy).Any();
                         var msg = result ? "": $"Обнаружено различие в формах обучения " +
-                                               $"[ФОС: <b>{string.Join(", ", fos.FormsOfStudy.Select(f => f.GetDescription()))}</b>, " +
+                                               $"[ФОС: <b>{string.Join(", ", fos.FormsOfStudy.Select(f => f.GetDescription()))}</b>], " +
                                                $"[РПД: <b>{string.Join(", ", rpd.FormsOfStudy.Select(f => f.GetDescription()))}</b>]";
                         return (result, msg);
                     });
@@ -904,7 +917,7 @@ namespace FosMan {
                         if (rpdModules != null) {
                             foreach (var module in fos.Passport) {
                                 var topic = NormalizeText(module.Topic);
-                                if (rpdModules.FirstOrDefault(m => NormalizeText(m.Topic).Equals(topic)) != null) {
+                                if (rpdModules.FirstOrDefault(m => NormalizeText(m.Topic).Equals(topic)) == null) {
                                     if (msg.Length > 0) msg += "<br />";
                                     msg += $"Тема <b>{module.Topic}</b> не найдена в РПД";
                                 }
@@ -2535,8 +2548,9 @@ namespace FosMan {
             return result;
         }
 
-        //функция для нормализации текста: убираем лишние пробелы и приведение к UpperCase
-        static string NormalizeText(string text) => string.Join(" ", text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
+        //функция для нормализации текста: убираем лишние пробелы, приводим к UpperCase, удаляем цифры, тире, точки
+        static string NormalizeText(string text) => string.Concat(string.Join(" ", text.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                                                                  .Where(c => c != '-' && c != '.' && (c < '0' || c > '9'))).ToUpper().Trim();
 
         /// <summary>
         /// Проверка таблицы на паспорт ФОСа (3. Паспорт фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций)
@@ -2568,7 +2582,7 @@ namespace FosMan {
                         for (var row = 1; row < table.RowCount; row++) {
                             //var evalTools = table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';');
                             HashSet<EEvaluationTool> tools = [];
-                            foreach (var t in table.Rows[row].Cells[3].GetText().Split(',', '\n', ';')) {
+                            foreach (var t in table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';')) {
                                 //убираем лишние пробелы
                                 if (evalToolDic.TryGetValue(NormalizeText(t), out var tool)) {
                                  //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
