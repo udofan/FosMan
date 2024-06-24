@@ -53,7 +53,7 @@ namespace FosMan {
         /// Элементы списка "найти и заменить" для режима исправлений РПД
         /// </summary>
         [JsonInclude]
-        public List<RpdFindAndReplaceItem> RpdFindAndReplaceItems { get; set; } = [];
+        public List<FindAndReplaceItem> RpdFindAndReplaceItems { get; set; } = [];
         /// <summary>
         /// Целевая директория для генерируемых РПД
         /// </summary>
@@ -84,7 +84,7 @@ namespace FosMan {
         [JsonInclude]
         public string CurriculumLastLocation { get; set; }
         /// <summary>
-        /// Список свойств документа
+        /// Список свойств документа РПД
         /// </summary>
         [JsonInclude]
         public List<DocProperty> RpdFixDocPropertyList { get; set; }
@@ -129,6 +129,41 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public List<string> FosList { get; set; } = [];
+        /// <summary>
+        /// Фикс таблицы компетенций #1
+        /// </summary>
+        [JsonInclude]
+        public bool FosFixCompetenceTable1 { get; set; }
+        /// <summary>
+        /// Фикс таблицы компетенций #2
+        /// </summary>
+        [JsonInclude]
+        public bool FosFixCompetenceTable2 { get; set; }
+        /// <summary>
+        /// Фикс таблицы паспорта
+        /// </summary>
+        [JsonInclude]
+        public bool FosFixPassportTable1 { get; set; }
+        /// <summary>
+        /// Сброс цветовых выделений
+        /// </summary>
+        [JsonInclude]
+        public bool FosFixResetSelection { get; set; }
+        /// <summary>
+        /// Сброс цветовых выделений
+        /// </summary>
+        [JsonInclude]
+        public string FosFixTargetDir { get; set; }
+        /// <summary>
+        /// Элементы списка "найти и заменить" для режима исправлений ФОС
+        /// </summary>
+        [JsonInclude]
+        public List<FindAndReplaceItem> FosFixFindAndReplaceItems { get; set; } = [];
+        /// <summary>
+        /// Список свойств документа ФОС
+        /// </summary>
+        [JsonInclude]
+        public List<DocProperty> FosFixDocPropertyList { get; set; }
         /// <summary>
         /// Список описаний кафедр
         /// </summary>

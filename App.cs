@@ -1704,6 +1704,9 @@ namespace FosMan {
             if (!(m_config.RpdFixDocPropertyList?.Any() ?? false)) {
                 m_config.RpdFixDocPropertyList = DocProperty.DefaultProperties;
             }
+            if (!(m_config.FosFixDocPropertyList?.Any() ?? false)) {
+                m_config.FosFixDocPropertyList = DocProperty.DefaultProperties;
+            }
         }
 
         /// <summary>
@@ -1841,14 +1844,14 @@ namespace FosMan {
                             var replaceCount = 0;
 
                             //заполнение предыд. и послед. дисциплин осуществим с помощью поиска и замены
-                            List<RpdFindAndReplaceItem> extraReplaceItems = new();
+                            List<FindAndReplaceItem> extraReplaceItems = new();
                             
                             if (Config.RpdFixSetPrevAndNextDisciplines) {
-                                extraReplaceItems.Add(new RpdFindAndReplaceItem() {
+                                extraReplaceItems.Add(new FindAndReplaceItem() {
                                     FindPattern = "{PrevDisciplines}",
                                     ReplacePattern = rpd.PrevDisciplines
                                 });
-                                extraReplaceItems.Add(new RpdFindAndReplaceItem() {
+                                extraReplaceItems.Add(new FindAndReplaceItem() {
                                     FindPattern = "{NextDisciplines}",
                                     ReplacePattern = rpd.NextDisciplines
                                 });

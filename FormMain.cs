@@ -478,34 +478,34 @@ namespace FosMan {
             list.PrimarySortColumn = olvColumnDisciplineName;
         }
 
-        void TuneRpdFindAndReplaceList() {
+        void TuneFindAndReplaceList(FastObjectListView list) {
             var olvColFind = new OLVColumn("Найти", "FindPattern") {
                 Width = 200,
                 CellEditUseWholeCell = true,
                 IsEditable = true
             };
-            fastObjectListViewRpdFixFindAndReplaceItems.Columns.Add(olvColFind);
+            list.Columns.Add(olvColFind);
             var olvColReplace = new OLVColumn("Заменить на", "ReplacePattern") {
                 Width = 200,
                 CellEditUseWholeCell = true,
                 IsEditable = true
             };
-            fastObjectListViewRpdFixFindAndReplaceItems.Columns.Add(olvColReplace);
+            list.Columns.Add(olvColReplace);
         }
 
-        void TuneDocPropertiesList() {
+        void TuneDocPropertiesList(FastObjectListView list) {
             var olvColName = new OLVColumn("Свойство", "Name") {
                 Width = 150,
                 CellEditUseWholeCell = true,
                 IsEditable = true
             };
-            fastObjectListViewDocProperties.Columns.Add(olvColName);
+            list.Columns.Add(olvColName);
             var olvColValue = new OLVColumn("Значение", "Value") {
                 Width = 150,
                 CellEditUseWholeCell = true,
                 IsEditable = true
             };
-            fastObjectListViewDocProperties.Columns.Add(olvColValue);
+            list.Columns.Add(olvColValue);
         }
 
         private void FormMain_Load(object sender, EventArgs e) {
@@ -520,8 +520,10 @@ namespace FosMan {
             TuneFosList(fastObjectListViewFosList);
             TuneDisciplineList(fastObjectListViewDisciplines, true);
             TuneDisciplineList(fastObjectListViewDisciplineListForGeneration, false);
-            TuneRpdFindAndReplaceList();
-            TuneDocPropertiesList();
+            TuneFindAndReplaceList(fastObjectListViewRpdFixFindAndReplaceItems);
+            TuneFindAndReplaceList(fastObjectListViewFosFixFindAndReplace);
+            TuneDocPropertiesList(fastObjectListViewRpdFixDocProperties);
+            TuneDocPropertiesList(fastObjectListViewFosFixDocProperties);
 
             //список шаблонов
             var templateDir = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES);
@@ -535,9 +537,10 @@ namespace FosMan {
 
             //восстановим элементы из конфига
             fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFindAndReplaceItems);
-            fastObjectListViewDocProperties.AddObjects(App.Config.RpdFixDocPropertyList);
+            fastObjectListViewRpdFixDocProperties.AddObjects(App.Config.RpdFixDocPropertyList);
             m_matrixFileName = App.Config.CompetenceMatrixFileName ?? "";
-            ShowHideRpdFixMode(false);
+            ShowHideFixMode(fastObjectListViewRpdList, splitContainerRpd, false);
+            ShowHideFixMode(fastObjectListViewFosList, splitContainerFos, false);
             iconToolStripButtonCurriculaRememberList.Checked = App.Config.StoreCurriculumList;
             iconToolStripButtonCompetenceMatrixAutoload.Checked = App.Config.CompetenceMatrixAutoload;
             iconToolStripButtonRpdRememberList.Checked = App.Config.StoreRpdList;
@@ -551,6 +554,14 @@ namespace FosMan {
             checkBoxRpdFixByTemplate.Checked = App.Config.RpdFixByTemplate;
             checkBoxRpdFixSetPrevAndNextDisciplines.Checked = App.Config.RpdFixSetPrevAndNextDisciplines;
             checkBoxRpdFixRemoveColorSelection.Checked = App.Config.RpdFixRemoveColorSelections;
+
+            checkBoxFosFixCompetenceTable1.Checked = App.Config.FosFixCompetenceTable1;
+            checkBoxFosFixCompetenceTable2.Checked = App.Config.FosFixCompetenceTable2;
+            checkBoxFosFixPassportTable.Checked = App.Config.FosFixPassportTable1;
+            checkBoxFosFixResetSelection.Checked = App.Config.FosFixResetSelection;
+            textBoxFosFixTargetDir.Text = App.Config.FosFixTargetDir;
+            fastObjectListViewFosFixFindAndReplace.AddObjects(App.Config.FosFixFindAndReplaceItems);
+            fastObjectListViewFosFixDocProperties.AddObjects(App.Config.FosFixDocPropertyList);
 
             if (!string.IsNullOrEmpty(App.Config.RpdGenTemplate)) {
                 if (comboBoxRpdGenTemplates.Items.Contains(App.Config.RpdGenTemplate)) {
@@ -1254,37 +1265,37 @@ namespace FosMan {
             tabControl1.SelectTab(tabPageRpd);
         }
 
-        void ShowHideRpdFixMode(bool show) {
+        void ShowHideFixMode(FastObjectListView list, SplitContainer splitContainer, bool show) {
             var maxDist = 280;
             var delta = 10;
 
-            fastObjectListViewRpdList.BeginUpdate();
+            list.BeginUpdate();
 
             if (show) {
-                while (splitContainerRpd.SplitterDistance < maxDist) {
-                    var newDist = Math.Min(splitContainerRpd.SplitterDistance + delta, maxDist);
-                    splitContainerRpd.SplitterDistance = newDist;
+                while (splitContainer.SplitterDistance < maxDist) {
+                    var newDist = Math.Min(splitContainer.SplitterDistance + delta, maxDist);
+                    splitContainer.SplitterDistance = newDist;
                     //Thread.Sleep(10);
                     Application.DoEvents();
                 }
             }
             else {
-                while (splitContainerRpd.SplitterDistance > 0) {
-                    var newDist = Math.Max(splitContainerRpd.SplitterDistance - delta, 0);
-                    splitContainerRpd.SplitterDistance = newDist;
+                while (splitContainer.SplitterDistance > 0) {
+                    var newDist = Math.Max(splitContainer.SplitterDistance - delta, 0);
+                    splitContainer.SplitterDistance = newDist;
                     //Thread.Sleep(10);
                     Application.DoEvents();
                 }
             }
-            fastObjectListViewRpdList.EndUpdate();
+            list.EndUpdate();
         }
 
         private void buttonRpdShowFixMode_Click(object sender, EventArgs e) {
-            ShowHideRpdFixMode(splitContainerRpd.SplitterDistance == 0);
+            ShowHideFixMode(fastObjectListViewRpdList, splitContainerRpd, splitContainerRpd.SplitterDistance == 0);
         }
 
         private void buttonAddFindAndReplaceItem_Click(object sender, EventArgs e) {
-            var newItem = new RpdFindAndReplaceItem();
+            var newItem = new FindAndReplaceItem();
             fastObjectListViewRpdFixFindAndReplaceItems.AddObject(newItem);
             fastObjectListViewRpdFixFindAndReplaceItems.FocusedObject = newItem;
             fastObjectListViewRpdFixFindAndReplaceItems.EnsureModelVisible(newItem);
@@ -1304,7 +1315,7 @@ namespace FosMan {
                     "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (ret == DialogResult.Yes) {
                     foreach (var item in fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects) {
-                        App.Config.RpdFindAndReplaceItems.Remove(item as RpdFindAndReplaceItem);
+                        App.Config.RpdFindAndReplaceItems.Remove(item as FindAndReplaceItem);
                     }
                     App.SaveConfig();
 
@@ -1410,11 +1421,11 @@ namespace FosMan {
         }
 
         private void buttonRpdFixSelectTargetDir_Click(object sender, EventArgs e) {
-            var initDir = Directory.Exists(buttonRpdFixSelectTargetDir.Text) ? buttonRpdFixSelectTargetDir.Text : Environment.CurrentDirectory;
+            var initDir = Directory.Exists(textBoxRpdFixTargetDir.Text) ? textBoxRpdFixTargetDir.Text : Environment.CurrentDirectory;
             folderBrowserDialogSelectDir.InitialDirectory = initDir;
 
             if (folderBrowserDialogSelectDir.ShowDialog() == DialogResult.OK) {
-                buttonRpdFixSelectTargetDir.Text = folderBrowserDialogSelectDir.SelectedPath;
+                textBoxRpdFixTargetDir.Text = folderBrowserDialogSelectDir.SelectedPath;
             }
         }
 
@@ -1803,7 +1814,7 @@ namespace FosMan {
         }
 
         private void iconToolStripButtonRpdFixMode_Click(object sender, EventArgs e) {
-            ShowHideRpdFixMode(splitContainerRpd.SplitterDistance == 0);
+            ShowHideFixMode(fastObjectListViewRpdList, splitContainerRpd, splitContainerRpd.SplitterDistance == 0);
         }
 
         private void iconToolStripButtonRpdRememberList_Click(object sender, EventArgs e) {
@@ -2066,6 +2077,70 @@ namespace FosMan {
             var curriculum = fastObjectListViewCurricula.FocusedObject as Curriculum;
             if (curriculum != null) {
                 ShowCurriculumDisciplines(curriculum);
+            }
+        }
+
+        private void checkBoxFosFixCompetenceTable1_CheckedChanged(object sender, EventArgs e) {
+            App.Config.FosFixCompetenceTable1 = checkBoxFosFixCompetenceTable1.Checked;
+            App.SaveConfig();
+        }
+
+        private void checkBoxFosFixCompetenceTable2_CheckedChanged(object sender, EventArgs e) {
+            App.Config.FosFixCompetenceTable2 = checkBoxFosFixCompetenceTable2.Checked;
+            App.SaveConfig();
+        }
+
+        private void checkBoxFosFixPassportTable_CheckedChanged(object sender, EventArgs e) {
+            App.Config.FosFixPassportTable1 = checkBoxFosFixPassportTable.Checked;
+            App.SaveConfig();
+        }
+
+        private void checkBoxFosFixResetSelection_CheckedChanged(object sender, EventArgs e) {
+            App.Config.FosFixResetSelection = checkBoxFosFixResetSelection.Checked;
+            App.SaveConfig();
+        }
+
+        private void textBoxFosFixTargetDir_TextChanged(object sender, EventArgs e) {
+            App.Config.FosFixTargetDir = textBoxFosFixTargetDir.Text;
+            App.SaveConfig();
+        }
+
+        private void buttonFosFixSelectTargetDir_Click(object sender, EventArgs e) {
+            var initDir = Directory.Exists(textBoxFosFixTargetDir.Text) ? textBoxFosFixTargetDir.Text : Environment.CurrentDirectory;
+            folderBrowserDialogSelectDir.InitialDirectory = initDir;
+
+            if (folderBrowserDialogSelectDir.ShowDialog() == DialogResult.OK) {
+                textBoxFosFixTargetDir.Text = folderBrowserDialogSelectDir.SelectedPath;
+            }
+        }
+
+        private void buttonFosFixAddFindAndReplaceItem_Click(object sender, EventArgs e) {
+            var newItem = new FindAndReplaceItem();
+            fastObjectListViewFosFixFindAndReplace.AddObject(newItem);
+            fastObjectListViewFosFixFindAndReplace.FocusedObject = newItem;
+            fastObjectListViewFosFixFindAndReplace.EnsureModelVisible(newItem);
+            fastObjectListViewFosFixFindAndReplace.EditModel(newItem);
+            fastObjectListViewFosFixFindAndReplace.CheckObject(newItem);
+
+            App.Config.FosFixFindAndReplaceItems.Add(newItem);
+        }
+
+        private void iconToolStripButtonFosFixMode_Click(object sender, EventArgs e) {
+            ShowHideFixMode(fastObjectListViewFosList, splitContainerFos, splitContainerFos.SplitterDistance == 0);
+        }
+
+        private void buttonFosFixRemoveFindAndReplaceItem_Click(object sender, EventArgs e) {
+            if (fastObjectListViewFosFixFindAndReplace.SelectedObjects.Count > 0) {
+                var ret = MessageBox.Show($"Вы уверены, что хотите удалить выделенные элементы ({fastObjectListViewFosFixFindAndReplace.SelectedObjects.Count} шт.)?",
+                    "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (ret == DialogResult.Yes) {
+                    foreach (var item in fastObjectListViewFosFixFindAndReplace.SelectedObjects) {
+                        App.Config.FosFixFindAndReplaceItems.Remove(item as FindAndReplaceItem);
+                    }
+                    App.SaveConfig();
+
+                    fastObjectListViewFosFixFindAndReplace.RemoveObjects(fastObjectListViewFosFixFindAndReplace.SelectedObjects);
+                }
             }
         }
     }
