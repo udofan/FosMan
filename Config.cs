@@ -143,7 +143,7 @@ namespace FosMan {
         /// Фикс таблицы паспорта
         /// </summary>
         [JsonInclude]
-        public bool FosFixPassportTable1 { get; set; }
+        public bool FosFixPassportTable { get; set; }
         /// <summary>
         /// Сброс цветовых выделений
         /// </summary>

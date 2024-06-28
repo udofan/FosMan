@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics.Eventing.Reader;
 using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
@@ -27,6 +28,7 @@ using System.Text.Unicode;
 using System.Threading.Tasks;
 using System.Transactions;
 using System.Web;
+using System.Windows;
 using System.Windows.Media.Media3D;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
@@ -34,6 +36,7 @@ using static FosMan.Enums;
 using static System.Resources.ResXFileRef;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace FosMan {
     /// <summary>
@@ -957,6 +960,113 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Проверка списка УП
+        /// </summary>
+        /// <param name="curricula"></param>
+        /// <param name="htmlReport"></param>
+        public static void CheckCurricula(List<Curriculum> curricula, out string htmlReport) {
+            htmlReport = string.Empty;
+
+            StringBuilder html = new("<html><body><h2>Отчёт по проверке РПД</h2>");
+            StringBuilder toc = new("<div><ul>");
+            StringBuilder rep = new("<div>");
+            
+            var idx = 0;
+            var anchors = new Dictionary<string, string>();
+            foreach (var curriculum in curricula) {
+                var caption = $"{curriculum.DirectionCode} {curriculum.DirectionName} - {curriculum.Profile}";
+                var anchor = $"curriculum{idx}";
+                anchors[curriculum.SourceFileName] = anchor;
+                idx++;
+                //rpd.ExtraErrors = [];
+                var errorCount = 0;
+
+                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue;'>{caption}</h3>");
+                rep.Append("<div style='padding-left: 30px'>");
+                rep.AddFileLink($"Файл УП:", curriculum.SourceFileName);
+                //ошибки, выявленные при загрузке
+                if (curriculum.Errors.Any()) {
+                    errorCount += curriculum.Errors.Count;
+                    rep.Append("<p />");
+                    rep.AddDiv($"<div style='color: red'>Ошибки, выявленные при загрузке УП ({curriculum.Errors.Count} шт.):</div>");
+                    curriculum.Errors.ForEach(e => rep.AddError(e));
+                }
+
+                if (errorCount == 0) {
+                    rep.Append("<p />");
+                    rep.AddDiv("<div style='color: green'>Ошибок не обнаружено.</div>");
+                }
+                rep.Append("</div></div>");
+
+                toc.AddTocElement(caption, anchor, errorCount);
+            }
+
+            //проверка дисциплин
+            var anchorDisciplines = "disciplines";
+            var discCheckCaption = "Проверка дисциплин";
+            rep.Append($"<div id='{anchorDisciplines}' style='width: 100%;'><h3 style='background-color: lightgreen;'>{discCheckCaption}</h3>");
+
+            var discErrCount = 0;
+
+            //формируем сквозной список дисциплин
+            var disciplines = new ConcurrentDictionary<string, ConcurrentDictionary<string, CurriculumDiscipline>>();
+            Parallel.ForEach(curricula, c => {
+                foreach (var disc in c.Disciplines.Values) {
+                    disciplines.AddOrUpdate(disc.Key, new ConcurrentDictionary<string, CurriculumDiscipline>() { [disc.Curriculum.SourceFileName] = disc }, (key, oldValue) => {
+                        oldValue.TryAdd(disc.Curriculum.SourceFileName, disc);
+                        return oldValue;
+                    });
+                }
+            });
+
+            var tdStyle = " style='border: 1px solid;'";
+            var table = new StringBuilder(@"<table style='border: 1px solid'><tr style='font-weight: bold; background-color: lightgray'>");
+
+            table.Append($"<tr><th {tdStyle}><b>Дисциплина</b></th><th {tdStyle}><b>Входит в УП (количество)</b></th><th {tdStyle}>Проверка компетенций</th></tr>");
+
+            //disciplines = disciplines.OrderBy(x => x.Value.FirstOrDefault().Value.Name);
+
+            idx = 0;
+            foreach (var disc in disciplines.OrderBy(x => x.Value.FirstOrDefault().Value.Name)) {
+                idx++;
+                var hasError = false;
+
+                var competences = disc.Value.Select(x => string.Join(", ", x.Value.CompetenceList.OrderBy(x => x))).ToHashSet();
+                hasError = competences.Count > 1;
+                var checkStatus = hasError ? "&times;" : "&check;";
+                if (competences.Count > 1) {
+                    checkStatus = "";
+                    var j = 0;
+                    foreach (var item in disc.Value) {
+                        j++;
+                        var curriculum = item.Value.Curriculum;
+                        if (checkStatus.Length > 0) checkStatus += "<br />";
+                        var tooltip = $"{curriculum.DirectionCode} {curriculum.DirectionName} - {curriculum.Profile}";
+                        checkStatus += $"<a href='#{anchors[curriculum.SourceFileName]}' title='{tooltip}'>{j}</a> - {string.Join(", ", item.Value.CompetenceList)}";
+
+                    }
+                    //checkStatus = string.Join("<br />", competences);
+                }
+
+                //table.Append($"<tr {tdStyle}></tr>")
+                table.Append($"<tr style='color: {(hasError ? "red" : "green")}'><td {tdStyle}>{idx}. {disc.Value.FirstOrDefault().Value.Name}</td>" +
+                                                                               $"<td {tdStyle}>{disc.Value.Count}</td>" +
+                                                                               $"<td {tdStyle}>{checkStatus}</td></tr>");
+            }
+
+            table.Append("</table");
+            rep.Append(table);
+
+            toc.AddTocElement(discCheckCaption, anchorDisciplines, discErrCount);
+
+            rep.Append("</div>");
+            toc.Append("</ul></div>");
+            html.Append(toc).Append(rep).Append("</body></html>");
+
+            htmlReport = html.ToString();
+        }
+
+        /// <summary>
         /// Получение текста ячейки заголовка с учетом объединения ячеек
         /// </summary>
         /// <param name="table"></param>
@@ -1148,7 +1258,7 @@ namespace FosMan {
                                 }
                                 if (!competenceTableIsOk) {
                                     if (CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
-                                        RecreateTableOfCompetences(table, disc, false);
+                                        RecreateRpdTableOfCompetences(table, disc, false);
                                         competenceTableIsOk = true;
                                     }
                                 }
@@ -1533,7 +1643,7 @@ namespace FosMan {
         /// </summary>
         /// <param name="table">пустая таблицы (1 ряд, 3 колонки)</param>
         /// <param name="discipline"></param>
-        static bool RecreateTableOfCompetences(Table table, CurriculumDiscipline discipline, bool recreateHeaders) {
+        static bool RecreateRpdTableOfCompetences(Table table, CurriculumDiscipline discipline, bool recreateHeaders) {
             var result = false;
 
             //очистка таблицы
@@ -1627,6 +1737,19 @@ namespace FosMan {
                 }
             }
             result = appliedIndicatorCount == discipline.CompetenceList.Count;
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Воссоздание таблицы компетенций #1 ФОС (п. 2.1)
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="discipline"></param>
+        /// <returns></returns>
+        static bool RecreateFosTableOfCompetences1(Table table, CurriculumDiscipline discipline) {
+            var result = false;
 
             return result;
         }
@@ -1742,7 +1865,7 @@ namespace FosMan {
                     html.Append("<li>Заполнение списков предыдущих и последующих дисциплин</li>");
                 }
                 if (Config.RpdFixRemoveColorSelections) {
-                    html.Append("<li>Очистка цветных выделений для служебных областей``</li>");
+                    html.Append("<li>Очистка цветных выделений для служебных областей</li>");
                 }
                 var findAndReplaceItems = Config.RpdFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
                 if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
@@ -1802,7 +1925,7 @@ namespace FosMan {
                             foreach (var table in docx.Tables) {
                                 var backup = table.Xml;
                                 if (fixCompetences && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
-                                    if (RecreateTableOfCompetences(table, discipline, false)) {
+                                    if (RecreateRpdTableOfCompetences(table, discipline, false)) {
                                         html.Append("<div style='color: green'>Таблица компетенций сформирована по матрице компетенций.</div>");
                                     }
                                     else {
@@ -1903,6 +2026,207 @@ namespace FosMan {
                     }
                     else {
                         html.Append($"<div style='color:red'>Файл <b>{rpd.SourceFileName}</b> не найден</div>");
+                    }
+                }
+            }
+            catch (Exception ex) {
+                html.Append($"<div>{ex.Message}</div>");
+                html.Append($"<div>{ex.StackTrace}</div>");
+            }
+            finally {
+                templateDocx?.Dispose();
+                html.Append("</body></html>");
+            }
+
+            htmlReport = html.ToString();
+        }
+
+        /// <summary>
+        /// Режим фикса ФОС
+        /// </summary>
+        /// <param name="fosList"></param>
+        internal static void FixFosFiles(List<Fos> fosList, string targetDir, out string htmlReport) {
+            var html = new StringBuilder("<html><body><h2>Отчёт по исправлению ФОС</h2>");
+            DocX templateDocx = null;
+            DocxChapters templateChapters = null;
+
+            try {
+                html.Append("<div><b>Режим работы:</b></div><ul>");
+                if (Config.FosFixCompetenceTable1) {
+                    html.Append("<li>Исправление таблицы компетенций #1 (п.2.1)</li>");
+                }
+                if (Config.FosFixCompetenceTable2) {
+                    html.Append("<li>Исправление таблицы компетенций #2 (п.2.2)</li>");
+                }
+                if (Config.FosFixPassportTable) {
+                    html.Append("<li>Исправление таблицы паспорта</li>");
+                }
+                if (Config.FosFixResetSelection) {
+                    html.Append("<li>Очистка цветных выделений для служебных областей</li>");
+                }
+                var findAndReplaceItems = Config.FosFixFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
+                if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
+                    var tdStyle = "style='border: 1px solid;'";
+                    html.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
+                    foreach (var item in findAndReplaceItems) {
+                        html.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
+                    }
+                    html.Append("</table></li>");
+                }
+                html.Append("</ul>");
+
+                foreach (var fos in fosList) {
+                    html.Append("<p />");
+                    if (File.Exists(fos.SourceFileName)) {
+                        html.Append($"<div>Исходный файл: <b>{fos.SourceFileName}</b></div>");
+                        html.Append($"<div>Дисциплина: <b>{fos.DisciplineName}</b></div>");
+
+                        var fixCompetences1 = Config.FosFixCompetenceTable1;
+                        var fixCompetences2 = Config.FosFixCompetenceTable2;
+                        var fixPassport = Config.FosFixPassportTable;
+
+                        var rpd = FindRpd(fos);
+                        if (rpd == null) {
+                            html.Append($"<div style='color: red'>Не удалось найти РПД</div>");
+                            fixPassport = false;
+                            fixCompetences1 = false;
+                            fixCompetences2 = false;
+                        }
+                        
+                        if (fixCompetences1 && fos.TableOfCompetence1 != null) {
+                            
+                        }
+                        if (fixCompetences2 && fos.TableOfCompetence2 != null) {
+
+                        }
+                        if (fixPassport && fos.TableOfPassport != null) {
+
+                        }
+                        //var discipline = FindDiscipline(rpd);
+                        //if (discipline == null) {
+                        //    fixCompetences = false;
+                        //    html.Append($"<div style='color: red'>Не удалось найти дисциплину [{fos.DisciplineName}] в загруженных учебных планах</div>");
+                        //}
+
+                        //var fixEduWorksSummary = Config.RpdFixTableOfEduWorks;
+                        //var eduWorks = GetEducationWorks(fos, out _);
+                        //if (!(eduWorks?.Any() ?? false)) {
+                        //    fixEduWorks = false;
+                        //    html.Append($"<div style='color: red'>Не удалось найти учебные работы для дисциплины [{rpd.DisciplineName}] в загруженных учебных планах</div>");
+                        //}
+                        //if (fos.FormsOfStudy.Count != eduWorks.Count) {
+                        //    fixEduWorksSummary = false;
+                        //    foreach (var form in fos.FormsOfStudy) {
+                        //        if (!eduWorks.ContainsKey(form)) {
+                        //            html.Append($"<div style='color: red'>Учебный план для формы обучения [{form.GetDescription()}] не загружен</div>");
+                        //        }
+                        //    }
+                        //}
+                        //var fixEduWorkTables = Config.RpdFixFillEduWorkTables;
+                        //var eduWorkTableIsFixed = fos.FormsOfStudy.ToDictionary(x => x, x => false);
+
+                        //var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
+
+                        var setDocProperties = Config.FosFixDocPropertyList?.Where(i => i.IsChecked).ToList();
+
+                        using (var docx = DocX.Load(fos.SourceFileName)) {
+                            if (setDocProperties?.Any() ?? false) {
+                                foreach (var item in setDocProperties) {
+                                    ///docx.CoreProperties[item.Name] = item.Value;
+                                    docx.AddCoreProperty(item.Name, item.Value);
+                                }
+                            }
+
+                            //EEvaluationTool[] evalTools = null;
+                            //string[][] studyResults = null;             //здесь будут формироваться значения для таблиц учебных работ по формам обучения
+
+                            //foreach (var table in docx.Tables) {
+                            //    var backup = table.Xml;
+                            //    if (fixCompetences && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
+                            //        if (RecreateTableOfCompetences(table, discipline, false)) {
+                            //            html.Append("<div style='color: green'>Таблица компетенций сформирована по матрице компетенций.</div>");
+                            //        }
+                            //        else {
+                            //            html.Append("<div style='color: red'>Не удалось сформировать обновленную таблицу компетенций.</div>");
+                            //            table.Xml = backup;
+                            //        }
+                            //    }
+                            //    if (fixEduWorksSummary && !eduSummaryTableIsFixed) {
+                            //        eduSummaryTableIsFixed |= TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
+                            //    }
+                            //    if (fixEduWorkTables) {
+                            //        //фикс-заполнение таблицы учебных работ для формы обучения
+                            //        if (TestForEduWorkTable(table, fos, PropertyAccess.Set, ref evalTools, ref studyResults, out var formOfStudy)) {
+                            //            eduWorkTableIsFixed[formOfStudy] = true;
+                            //        }
+                            //    }
+                            //}
+                            //if (fixEduWorksSummary) {
+                            //    if (eduSummaryTableIsFixed) {
+                            //        html.Append("<div style='color: green'>Сводная таблица учебных работ заполнена по учебным планам.</div>");
+                            //    }
+                            //    else {
+                            //        html.Append("<div style='color: red'>Не удалось сформировать сводную таблицу учебных работ.</div>");
+                            //        //table.Xml = backup;
+                            //    }
+                            //}
+                            //if (fixEduWorkTables) {
+                            //    foreach (var item in eduWorkTableIsFixed) {
+                            //        if (item.Value) {
+                            //            html.Append($"<div style='color: green'>Таблица учебных работ для формы обучения [{item.Key.GetDescription()}] успешно заполнена.</div>");
+                            //        }
+                            //        else {
+                            //            html.Append($"<div style='color: red'>Таблицу учебных работ для формы обучения [{item.Key.GetDescription()}] не удалось заполнить.</div>");
+                            //        }
+                            //    }
+                            //}
+
+                            //обработка "найти и заменить"
+                            var replaceCount = 0;
+
+                            if ((findAndReplaceItems?.Any() ?? false) || App.Config.FosFixResetSelection) {
+                                foreach (var par in docx.Paragraphs) {
+                                    //поиск и замена
+                                    if (findAndReplaceItems?.Any() ?? false) {
+                                        foreach (var findItem in findAndReplaceItems) {
+                                            var replaceOptions = new FunctionReplaceTextOptions() {
+                                                FindPattern = findItem.FindPattern,
+                                                ContainerLocation = ReplaceTextContainer.All,
+                                                StopAfterOneReplacement = false,
+                                                RegexMatchHandler = m => findItem.ReplacePattern,
+                                                RegExOptions = RegexOptions.IgnoreCase
+                                            };
+                                            if (par.ReplaceText(replaceOptions)) {
+                                                replaceCount++;
+                                            }
+                                        }
+                                    }
+                                    //очистка цветных выделений
+                                    if (App.Config.FosFixResetSelection) {
+                                        par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
+                                        par.Highlight(Highlight.none);
+                                    }
+                                }
+                                html.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
+                            }
+                            //extraReplaceItems?.ForEach(x => findAndReplaceItems.Remove(x)); //убираем, т.к. это было нужно только для текущего РПД
+
+                            //фикс разделов по шаблону
+                            //if (fixByTemplate) {
+                            //    var docxSections = ScanDocxForChapters(docx);
+                            //}
+
+                            var fileName = Path.GetFileName(fos.SourceFileName);
+                            var newFileName = Path.Combine(targetDir, fileName);
+                            if (!Directory.Exists(targetDir)) {
+                                Directory.CreateDirectory(targetDir);
+                            }
+                            docx.SaveAs(newFileName);
+                            html.Append($"<div>Итоговый файл: <b>{newFileName}</b></div>");
+                        }
+                    }
+                    else {
+                        html.Append($"<div style='color:red'>Файл <b>{fos.SourceFileName}</b> не найден</div>");
                     }
                 }
             }

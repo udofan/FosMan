@@ -557,7 +557,7 @@ namespace FosMan {
 
             checkBoxFosFixCompetenceTable1.Checked = App.Config.FosFixCompetenceTable1;
             checkBoxFosFixCompetenceTable2.Checked = App.Config.FosFixCompetenceTable2;
-            checkBoxFosFixPassportTable.Checked = App.Config.FosFixPassportTable1;
+            checkBoxFosFixPassportTable.Checked = App.Config.FosFixPassportTable;
             checkBoxFosFixResetSelection.Checked = App.Config.FosFixResetSelection;
             textBoxFosFixTargetDir.Text = App.Config.FosFixTargetDir;
             fastObjectListViewFosFixFindAndReplace.AddObjects(App.Config.FosFixFindAndReplaceItems);
@@ -2091,7 +2091,7 @@ namespace FosMan {
         }
 
         private void checkBoxFosFixPassportTable_CheckedChanged(object sender, EventArgs e) {
-            App.Config.FosFixPassportTable1 = checkBoxFosFixPassportTable.Checked;
+            App.Config.FosFixPassportTable = checkBoxFosFixPassportTable.Checked;
             App.SaveConfig();
         }
 
@@ -2141,6 +2141,35 @@ namespace FosMan {
 
                     fastObjectListViewFosFixFindAndReplace.RemoveObjects(fastObjectListViewFosFixFindAndReplace.SelectedObjects);
                 }
+            }
+        }
+
+        private void buttonFosFixStart_Click(object sender, EventArgs e) {
+            var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
+            if (fosList.Any()) {
+                var targetDir = textBoxFosFixTargetDir.Text;
+                if (string.IsNullOrEmpty(targetDir)) {
+                    targetDir = Path.Combine(Environment.CurrentDirectory, $"Исправленные_ФОС_{DateTime.Now:yyyy-MM-dd}");
+                }
+                App.FixFosFiles(fosList, targetDir, out var htmlReport);
+
+                AddReport("Исправление ФОС", htmlReport);
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Исправление ФОС", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+        private void iconToolStripButtonCurriculaCheck_Click(object sender, EventArgs e) {
+            var curriculaList = fastObjectListViewCurricula.SelectedObjects?.Cast<Curriculum>().ToList();
+            if (curriculaList.Any()) {
+
+                CheckCurricula(curriculaList, out var report);
+
+                AddReport("Проверка УП", report);
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, которые требуется проверить.", "Проверка УП", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
     }

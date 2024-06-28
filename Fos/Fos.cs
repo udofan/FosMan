@@ -7,6 +7,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Xceed.Document.NET;
 using Xceed.Words.NET;
 using static FosMan.Enums;
 
@@ -89,6 +90,21 @@ namespace FosMan {
         /// </summary>
         [JsonIgnore]
         public List<string> ExtraErrors { get; set; }
+        /// <summary>
+        /// Таблицы компетенций #1
+        /// </summary>
+        [JsonIgnore]
+        public Table TableOfCompetence1 { get; set; }
+        /// <summary>
+        /// Таблицы компетенций #2
+        /// </summary>
+        [JsonIgnore]
+        public Table TableOfCompetence2 { get; set; }
+        /// <summary>
+        /// Таблица паспорта
+        /// </summary>
+        [JsonIgnore]
+        public Table TableOfPassport{ get; set; }
 
         /// <summary>
         /// Загрузка ФОС из файла
@@ -132,6 +148,7 @@ namespace FosMan {
                                 format == ECompetenceMatrixFormat.Fos21) {
                                 if (App.TestForTableOfCompetenceMatrix(table, format, out var matrix, out errors)) {
                                     fos.CompetenceMatrix = matrix;
+                                    fos.TableOfCompetence1 = table;
                                     keepTestTable = false;
                                 }
                                 if (errors.Any()) fos.Errors.AddRange(errors.Select(e => $"Матрица компетенций: {e}"));
@@ -148,6 +165,7 @@ namespace FosMan {
                                     if (fos.CompetenceMatrix.Errors.Any()) {
                                         fos.Errors.AddRange(fos.CompetenceMatrix.Errors.Select(e => $"Матрица компетенций: {e}"));
                                     }
+                                    fos.TableOfCompetence2 = table;
                                     keepTestTable = false;
                                 }
                             }
@@ -155,8 +173,9 @@ namespace FosMan {
                             if (keepTestTable && fos.Passport == null) {
                                 if (App.TestForFosPassport(table, out var passport, out errors)) {
                                     fos.Passport = passport;
-                                    keepTestTable = false;
+                                    fos.TableOfPassport = table;
                                     if (errors.Any()) fos.Errors.AddRange(errors.Select(e => $"Паспорт: {e}"));
+                                    keepTestTable = false;
                                 }
                             }
                         }
