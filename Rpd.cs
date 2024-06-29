@@ -594,7 +594,9 @@ namespace FosMan {
                         if (keepTestTable) {
                             EEvaluationTool[] evalTools = null;
                             string[][] studyResults = null;
-                            if (App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, ref evalTools, ref studyResults, out var formOfStudy)) {
+                            if (App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, EEduWorkFixType.All, ref evalTools, ref studyResults, 
+                                                        0, null, null, /* параметры для режима исправления - здесь они не нужны */
+                                                        out var formOfStudy)) {
                                 //получим список модулей обучения с оценочными средствами и компетенциями
                                 var eduWork = rpd.EducationalWorks[formOfStudy];
                                 //определяем начальный значащие ряд и колонку

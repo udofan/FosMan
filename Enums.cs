@@ -109,5 +109,32 @@ namespace FosMan {
             Curricula = 0b0000_0100,
             All = 0b1111_1111
         }
+
+        /// <summary>
+        /// Типы фиксов таблицы содержания дисциплин (РПД)
+        /// </summary>
+        [Flags]
+        public enum EEduWorkFixType {
+            /// <summary>
+            /// Значение не определено
+            /// </summary>
+            Undefined = 0,
+            /// <summary>
+            /// Время (всего, лекции, практика, самоподготовка)
+            /// </summary>
+            Time = 0b0000_0001,
+            /// <summary>
+            /// Оценочные средства
+            /// </summary>
+            EvalTools = 0b0000_0010,
+            /// <summary>
+            /// Результаты компетенций
+            /// </summary>
+            CompetenceResults = 0b0000_0100,
+            /// <summary>
+            /// Все виды фиксов
+            /// </summary>
+            All = 0b1111_1111
+        }
     }
 }

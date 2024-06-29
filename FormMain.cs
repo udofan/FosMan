@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Xml.Schema;
 using Xceed.Document.NET;
 using static FosMan.App;
+using static FosMan.Enums;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FosMan {
@@ -480,13 +481,13 @@ namespace FosMan {
 
         void TuneFindAndReplaceList(FastObjectListView list) {
             var olvColFind = new OLVColumn("Найти", "FindPattern") {
-                Width = 200,
+                Width = 180,
                 CellEditUseWholeCell = true,
                 IsEditable = true
             };
             list.Columns.Add(olvColFind);
             var olvColReplace = new OLVColumn("Заменить на", "ReplacePattern") {
-                Width = 200,
+                Width = 180,
                 CellEditUseWholeCell = true,
                 IsEditable = true
             };
@@ -536,7 +537,7 @@ namespace FosMan {
             }
 
             //восстановим элементы из конфига
-            fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFindAndReplaceItems);
+            fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFixFindAndReplaceItems);
             fastObjectListViewRpdFixDocProperties.AddObjects(App.Config.RpdFixDocPropertyList);
             m_matrixFileName = App.Config.CompetenceMatrixFileName ?? "";
             ShowHideFixMode(fastObjectListViewRpdList, splitContainerRpd, false);
@@ -547,13 +548,20 @@ namespace FosMan {
             checkBoxRpdFixTableOfCompetences.Checked = App.Config.RpdFixTableOfCompetences;
             checkBoxRpdFixSummaryTableOfEduWorks.Checked = App.Config.RpdFixTableOfEduWorks;
             textBoxRpdFixTargetDir.Text = App.Config.RpdFixTargetDir;
-            checkBoxRpdFixFillEduWorkTables.Checked = App.Config.RpdFixFillEduWorkTables;
+            checkBoxRpdFixEduWorkTablesFixTime.Checked = App.Config.RpdFixEduWorkTablesFixTime;
+            checkBoxRpdFixEduWorkTablesFixEvalTools.Checked = App.Config.RpdFixEduWorkTablesFixEvalTools;
+            checkBoxRpdFixEduWorkTablesFixComptenceResults.Checked = App.Config.RpdFixEduWorkTablesFixCompetenceCodes;
+            if (App.Config.RpdFixMaxCompetenceResultsCount >= numericUpDownRpdFixMaxCompetenceResultsCount.Minimum &&
+                App.Config.RpdFixMaxCompetenceResultsCount <= numericUpDownRpdFixMaxCompetenceResultsCount.Maximum) {
+                numericUpDownRpdFixMaxCompetenceResultsCount.Value = App.Config.RpdFixMaxCompetenceResultsCount;
+            }
             textBoxRpdGenFileNameTemplate.Text = App.Config.RpdGenFileNameTemplate;
             textBoxRpdGenTargetDir.Text = App.Config.RpdGenTargetDir;
             textBoxRpdFixFileTemplate.Text = App.Config.RpdFixTemplateFileName;
             checkBoxRpdFixByTemplate.Checked = App.Config.RpdFixByTemplate;
             checkBoxRpdFixSetPrevAndNextDisciplines.Checked = App.Config.RpdFixSetPrevAndNextDisciplines;
             checkBoxRpdFixRemoveColorSelection.Checked = App.Config.RpdFixRemoveColorSelections;
+            checkBoxRpdFixFindAndReplace.Checked = App.Config.RpdFixFindAndReplace;
 
             checkBoxFosFixCompetenceTable1.Checked = App.Config.FosFixCompetenceTable1;
             checkBoxFosFixCompetenceTable2.Checked = App.Config.FosFixCompetenceTable2;
@@ -571,6 +579,8 @@ namespace FosMan {
             if (comboBoxRpdGenTemplates.SelectedIndex < 0 && comboBoxRpdGenTemplates.Items.Count > 0) {
                 comboBoxRpdGenTemplates.SelectedIndex = 0;
             }
+
+            InitEvalToolsLists();
 
             //отладка
             //textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
@@ -602,6 +612,28 @@ namespace FosMan {
                     }
                 }));
             });
+        }
+
+        /// <summary>
+        /// Подготовка списков типов оценочных средств для режима исправления РПД
+        /// </summary>
+        void InitEvalToolsLists() {
+            var items = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().Order();
+            foreach (EEvaluationTool item in items) {
+                var idx = checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Items.Add(item.GetDescription());
+                if (App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems == null &&
+                    (item == EEvaluationTool.Essay || item == EEvaluationTool.Paper || item == EEvaluationTool.Presentation || item == EEvaluationTool.ControlWork)
+                    || (App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems?.Contains(item) ?? false)) {
+                    checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.SetItemChecked(idx, true);
+                }
+
+                idx = checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Items.Add(item.GetDescription());
+                if (App.Config.RpdFixEduWorkTablesEvalTools1stStageItems == null &&
+                    (item == EEvaluationTool.Survey || item == EEvaluationTool.Testing)
+                    || (App.Config.RpdFixEduWorkTablesEvalTools1stStageItems?.Contains(item) ?? false)) {
+                    checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.SetItemChecked(idx, true);
+                }
+            }
         }
 
         void StatusMessage(string msg, bool isError = false) {
@@ -1266,7 +1298,12 @@ namespace FosMan {
         }
 
         void ShowHideFixMode(FastObjectListView list, SplitContainer splitContainer, bool show) {
-            var maxDist = 280;
+            if (!int.TryParse(list.Tag?.ToString(), out var maxDist)) {
+                maxDist = splitContainer.SplitterDistance;
+                list.Tag = maxDist;
+            }
+
+            //var maxDist = 280;
             var delta = 10;
 
             list.BeginUpdate();
@@ -1302,7 +1339,7 @@ namespace FosMan {
             fastObjectListViewRpdFixFindAndReplaceItems.EditModel(newItem);
             fastObjectListViewRpdFixFindAndReplaceItems.CheckObject(newItem);
 
-            App.Config.RpdFindAndReplaceItems.Add(newItem);
+            App.Config.RpdFixFindAndReplaceItems.Add(newItem);
         }
 
         private void fastObjectListViewRpdFixFindAndReplaceItems_CellEditFinished(object sender, CellEditEventArgs e) {
@@ -1315,7 +1352,7 @@ namespace FosMan {
                     "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
                 if (ret == DialogResult.Yes) {
                     foreach (var item in fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects) {
-                        App.Config.RpdFindAndReplaceItems.Remove(item as FindAndReplaceItem);
+                        App.Config.RpdFixFindAndReplaceItems.Remove(item as FindAndReplaceItem);
                     }
                     App.SaveConfig();
 
@@ -1534,7 +1571,7 @@ namespace FosMan {
         }
 
         private void checkBoxRpdFixFillEduWorkTables_CheckedChanged(object sender, EventArgs e) {
-            App.Config.RpdFixFillEduWorkTables = checkBoxRpdFixFillEduWorkTables.Checked;
+            App.Config.RpdFixEduWorkTablesFixTime = checkBoxRpdFixEduWorkTablesFixTime.Checked;
             App.SaveConfig();
         }
 
@@ -2171,6 +2208,41 @@ namespace FosMan {
             else {
                 MessageBox.Show("Необходимо выделить файлы, которые требуется проверить.", "Проверка УП", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
+        }
+
+        private void checkBoxRpdFixEduWorkTablesFixEvalTools_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixEduWorkTablesFixEvalTools = checkBoxRpdFixEduWorkTablesFixEvalTools.Checked;
+            App.SaveConfig();
+        }
+
+        private void numericUpDownRpdFixMaxCompetenceResultsCount_ValueChanged(object sender, EventArgs e) {
+            App.Config.RpdFixMaxCompetenceResultsCount = numericUpDownRpdFixMaxCompetenceResultsCount.Value;
+            App.SaveConfig();
+        }
+
+        private void checkedListBoxRpdFixEduWorkTablesEvalToolsFirstItems_SelectedIndexChanged(object sender, EventArgs e) {
+            var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription(), x => x);
+            var checkedTools = checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.CheckedItems.Cast<string>().Select(x => evalToolDic[x]).ToList();
+
+            App.Config.RpdFixEduWorkTablesEvalTools1stStageItems = checkedTools;
+            App.SaveConfig();
+        }
+
+        private void checkedListBoxRpdFixEduWorkTablesEvalToolsAllItems_SelectedIndexChanged(object sender, EventArgs e) {
+            var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription(), x => x);
+            var checkedTools = checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.CheckedItems.Cast<string>().Select(x => evalToolDic[x]).ToList();
+
+            App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems = checkedTools;
+            App.SaveConfig();
+        }
+
+        private void checkBoxRpdFixFindAndReplace_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixFindAndReplace = checkBoxRpdFixFindAndReplace.Checked;
+            App.SaveConfig();
+
+            buttonAddFindAndReplaceItem.Enabled = checkBoxRpdFixFindAndReplace.Checked;
+            buttonRemoveFindAndReplaceItems.Enabled = checkBoxRpdFixFindAndReplace.Checked;
+            fastObjectListViewRpdFixFindAndReplaceItems.Enabled = checkBoxRpdFixFindAndReplace.Checked;
         }
     }
 }

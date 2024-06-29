@@ -5,6 +5,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static FosMan.Enums;
 
 namespace FosMan {
     internal class Config {
@@ -50,10 +51,15 @@ namespace FosMan {
         [JsonInclude]
         public bool RpdFixTableOfEduWorks { get; set; } = true;
         /// <summary>
+        /// Применять настройку "найти и заменить" для режима исправлений РПД
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixFindAndReplace { get; set; } = false;
+        /// <summary>
         /// Элементы списка "найти и заменить" для режима исправлений РПД
         /// </summary>
         [JsonInclude]
-        public List<FindAndReplaceItem> RpdFindAndReplaceItems { get; set; } = [];
+        public List<FindAndReplaceItem> RpdFixFindAndReplaceItems { get; set; } = [];
         /// <summary>
         /// Целевая директория для генерируемых РПД
         /// </summary>
@@ -64,10 +70,35 @@ namespace FosMan {
         [JsonInclude]
         public string RpdFixTemplateFileName { get; set; }
         /// <summary>
-        /// Заполнение таблиц учебных работ для форм обучения
+        /// Заполнение таблиц учебных работ для форм обучения: распределение времени по темам
         /// </summary>
         [JsonInclude]
-        public bool RpdFixFillEduWorkTables { get; set; }
+        public bool RpdFixEduWorkTablesFixTime { get; set; }
+        /// <summary>
+        /// Заполнение таблиц учебных работ для форм обучения: расстановка оценочных средств
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixEduWorkTablesFixEvalTools { get; set; }
+        /// <summary>
+        /// Заполнение таблиц учебных работ для форм обучения: расстановка результатов компетенций случайным образом
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixEduWorkTablesFixCompetenceCodes { get; set; }
+        /// <summary>
+        /// Максимальное значение результатов компетенций при их автоматической расстановке
+        /// </summary>
+        [JsonInclude]
+        public decimal RpdFixMaxCompetenceResultsCount { get; set; } = 3;
+        /// <summary>
+        /// Список оценочных средств, выдаваемых первым темам при их расстановке
+        /// </summary>
+        [JsonInclude]
+        public List<EEvaluationTool> RpdFixEduWorkTablesEvalTools1stStageItems { get; set; } = [EEvaluationTool.Survey, EEvaluationTool.Testing];
+        /// <summary>
+        /// Полный список оценочных средств, выдаваемых темам при их расстановке
+        /// </summary>
+        [JsonInclude]
+        public List<EEvaluationTool> RpdFixEduWorkTablesEvalTools2ndStageItems { get; set; } = [EEvaluationTool.Essay, EEvaluationTool.Paper, EEvaluationTool.Presentation, EEvaluationTool.ControlWork];
         /// <summary>
         /// Задать списки предшествующих и последующих дисциплин
         /// </summary>

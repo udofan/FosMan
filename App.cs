@@ -706,6 +706,7 @@ namespace FosMan {
                                         }
                                     }
                                     else {
+                                        var uniqueEvalTools = new HashSet<EEvaluationTool>();
                                         foreach (var module in eduWork.Modules) {
                                             if (string.IsNullOrEmpty(module.Topic)) {
                                                 if (msg.Length > 0) msg += "<br />";
@@ -715,6 +716,11 @@ namespace FosMan {
                                                 if (module.EvaluationTools == null || module.EvaluationTools.Count == 0) {
                                                     if (msg.Length > 0) msg += "<br />";
                                                     msg += $"Тема <b>{module.Topic}</b>: не указано оценочное средство [{item.Key.GetDescription()}]";
+                                                }
+                                                else {
+                                                    foreach (var evalTool in module.EvaluationTools) {
+                                                        uniqueEvalTools.Add(evalTool);
+                                                    }
                                                 }
                                                 if (module.CompetenceResultCodes == null || module.CompetenceResultCodes.Count == 0) {
                                                     if (msg.Length > 0) msg += "<br />";
@@ -730,6 +736,11 @@ namespace FosMan {
                                                     }
                                                 }
                                             }
+                                        }
+                                        if (uniqueEvalTools.Count < 3) {
+                                            if (msg.Length > 0) msg += "<br />";
+                                            msg += $"Слишком маленький список применяемых оценочных средств ({uniqueEvalTools.Count} шт.): " +
+                                                   $"{string.Join(", ", uniqueEvalTools.Select(t => t.GetDescription()))}";
                                         }
                                     }
                                 }
@@ -2253,7 +2264,7 @@ namespace FosMan {
                 if (Config.RpdFixTableOfEduWorks) {
                     html.Append("<li>Исправление таблицы учебных работ</li>");
                 }
-                if (Config.RpdFixFillEduWorkTables) {
+                if (Config.RpdFixEduWorkTablesFixTime) {
                     html.Append("<li>Заполнение таблиц учебных работ для форм обучения</li>");
                 }
                 if (Config.RpdFixSetPrevAndNextDisciplines) {
@@ -2262,14 +2273,18 @@ namespace FosMan {
                 if (Config.RpdFixRemoveColorSelections) {
                     html.Append("<li>Очистка цветных выделений для служебных областей</li>");
                 }
-                var findAndReplaceItems = Config.RpdFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
-                if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
-                    var tdStyle = "style='border: 1px solid;'";
-                    html.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
-                    foreach (var item in findAndReplaceItems) {
-                        html.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
+
+                List<FindAndReplaceItem> findAndReplaceItems = new();
+                if (App.Config.RpdFixFindAndReplace) {
+                    findAndReplaceItems = Config.RpdFixFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
+                    if (App.Config.RpdFixFindAndReplace && findAndReplaceItems != null && findAndReplaceItems.Any()) {
+                        var tdStyle = "style='border: 1px solid;'";
+                        html.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
+                        foreach (var item in findAndReplaceItems) {
+                            html.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
+                        }
+                        html.Append("</table></li>");
                     }
-                    html.Append("</table></li>");
                 }
                 html.Append("</ul>");
 
@@ -2299,7 +2314,7 @@ namespace FosMan {
                                 }
                             }
                         }
-                        var fixEduWorkTables = Config.RpdFixFillEduWorkTables;
+                        var fixEduWorkTables = Config.RpdFixEduWorkTablesFixTime;
                         var eduWorkTableIsFixed = rpd.FormsOfStudy.ToDictionary(x => x, x => false);
 
                         var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
@@ -2332,8 +2347,16 @@ namespace FosMan {
                                     eduSummaryTableIsFixed |= TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
                                 }
                                 if (fixEduWorkTables) {
+                                    EEduWorkFixType fixType = EEduWorkFixType.Undefined;
+                                    if (Config.RpdFixEduWorkTablesFixTime) fixType |= EEduWorkFixType.Time;
+                                    if (Config.RpdFixEduWorkTablesFixEvalTools) fixType |= EEduWorkFixType.EvalTools;
+                                    if (Config.RpdFixEduWorkTablesFixCompetenceCodes) fixType |= EEduWorkFixType.CompetenceResults;
                                     //фикс-заполнение таблицы учебных работ для формы обучения
-                                    if (TestForEduWorkTable(table, rpd, PropertyAccess.Set, ref evalTools, ref studyResults, out var formOfStudy)) {
+                                    if (TestForEduWorkTable(table, rpd, PropertyAccess.Set, fixType, ref evalTools, ref studyResults,
+                                                            Config.RpdFixMaxCompetenceResultsCount,
+                                                            Config.RpdFixEduWorkTablesEvalTools1stStageItems,
+                                                            Config.RpdFixEduWorkTablesEvalTools2ndStageItems,
+                                                            out var formOfStudy)) {
                                         eduWorkTableIsFixed[formOfStudy] = true;
                                     }
                                 }
@@ -2875,9 +2898,14 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="rpd"></param>
         /// <param name="formOfStudy"></param>
-        static void FillEduWorkTable(Table table, Rpd rpd, EFormOfStudy formOfStudy, 
+        static void FillEduWorkTable(Table table, Rpd rpd, 
+                                     EEduWorkFixType fixTypes,
+                                     EFormOfStudy formOfStudy, 
                                      ref EEvaluationTool[] evalTools,
-                                     ref string[][] studyResults) {
+                                     ref string[][] studyResults,
+                                     decimal maxCompetenceResultsCount,
+                                     List<EEvaluationTool> evalTools1stStageItems,
+                                     List<EEvaluationTool> evalTools2ndStageItems) {
             var curricula = FindCurricula(rpd);
             if (curricula?.Any() ?? false) {
                 if (table.ColumnCount == 8) {
@@ -2885,44 +2913,54 @@ namespace FosMan {
                     var rand = new Random(seed);
 
                     var topicCount = table.RowCount - 5;
-                    //распределяем время (время должно быть четным)
-                    var topics = SplitEduTime(topicCount, rpd.EducationalWorks[formOfStudy], rand);
-                    
-                    //проверка
-                    if (topics.Sum(t => t.contact) != (rpd.EducationalWorks[formOfStudy].ContactWorkHours ?? 0)) {
-                        throw new Exception("Сумма времени контактной работы по темам не совпадает с итоговой");
-                    }
-                    if (topics.Sum(t => t.total) != (rpd.EducationalWorks[formOfStudy].TotalHours ?? 0) - (rpd.EducationalWorks[formOfStudy].ControlHours ?? 0)) {
-                        throw new Exception("Сумма итогового времени по темам не совпадает с итоговой");
-                    }
-                    if (topics.Sum(t => t.selfStudy) != (rpd.EducationalWorks[formOfStudy].SelfStudyHours ?? 0)) {
-                        throw new Exception("Сумма времени самостоятельной работы не совпадает с итоговой");
+
+                    (int total, int contact, int lecture, int practical, int selfStudy)[] topics = null;
+
+                    //распределяем время
+                    if (fixTypes.HasFlag(EEduWorkFixType.Time)) {
+                        topics = SplitEduTime(topicCount, rpd.EducationalWorks[formOfStudy], rand);
+
+                        //проверка
+                        if (topics.Sum(t => t.contact) != (rpd.EducationalWorks[formOfStudy].ContactWorkHours ?? 0)) {
+                            throw new Exception("Сумма времени контактной работы по темам не совпадает с итоговой");
+                        }
+                        if (topics.Sum(t => t.total) != (rpd.EducationalWorks[formOfStudy].TotalHours ?? 0) - (rpd.EducationalWorks[formOfStudy].ControlHours ?? 0)) {
+                            throw new Exception("Сумма итогового времени по темам не совпадает с итоговой");
+                        }
+                        if (topics.Sum(t => t.selfStudy) != (rpd.EducationalWorks[formOfStudy].SelfStudyHours ?? 0)) {
+                            throw new Exception("Сумма времени самостоятельной работы не совпадает с итоговой");
+                        }
                     }
 
                     //формирование оценочных средств
-                    if (evalTools == null) {
-                        evalTools = GetEvalTools(topicCount, rand);
+                    if (evalTools == null && fixTypes.HasFlag(EEduWorkFixType.EvalTools)) {
+                        evalTools = GetEvalTools(topicCount, rand, evalTools1stStageItems.ToArray(), evalTools2ndStageItems.ToArray());
                     }
 
                     var resultCodes = rpd.CompetenceMatrix.GetAllResultCodes().ToList();
 
                     //формирование результатов обучения
-                    if (studyResults == null) {
-                        studyResults = GetStudyResults(topicCount, resultCodes.ToList(), 3, rand);
+                    if (studyResults == null && fixTypes.HasFlag(EEduWorkFixType.CompetenceResults)) {
+                        studyResults = GetStudyResults(topicCount, resultCodes.ToList(), (int)maxCompetenceResultsCount, rand);
                     }
 
                     for (int topic = 0; topic < topicCount; topic++) {
                         var row = topic + 3;
-                        //var cellTopic = table.Rows[row].Cells[0];
-                        table.Rows[row].Cells[1].SetText(topics[topic].total.ToString());
-                        table.Rows[row].Cells[2].SetText(topics[topic].contact.ToString());
-                        table.Rows[row].Cells[3].SetText(topics[topic].lecture.ToString());
-                        table.Rows[row].Cells[4].SetText(topics[topic].practical.ToString());
-                        table.Rows[row].Cells[5].SetText(topics[topic].selfStudy.ToString());
-                        table.Rows[row].Cells[6].SetText(evalTools[topic].GetDescription());
-                        var codes = studyResults[topic].ToHashSet().ToList();
-                        codes.Sort((x1, x2) => resultCodes.IndexOf(x1) - resultCodes.IndexOf(x2));
-                        table.Rows[row].Cells[7].SetText(string.Join("\n", codes));
+                        if (fixTypes.HasFlag(EEduWorkFixType.Time)) {
+                            table.Rows[row].Cells[1].SetText(topics[topic].total.ToString());
+                            table.Rows[row].Cells[2].SetText(topics[topic].contact.ToString());
+                            table.Rows[row].Cells[3].SetText(topics[topic].lecture.ToString());
+                            table.Rows[row].Cells[4].SetText(topics[topic].practical.ToString());
+                            table.Rows[row].Cells[5].SetText(topics[topic].selfStudy.ToString());
+                        }
+                        if (fixTypes.HasFlag(EEduWorkFixType.EvalTools)) {
+                            table.Rows[row].Cells[6].SetText(evalTools[topic].GetDescription());
+                        }
+                        if (fixTypes.HasFlag(EEduWorkFixType.CompetenceResults)) {
+                            var codes = studyResults[topic].ToHashSet().ToList();
+                            codes.Sort((x1, x2) => resultCodes.IndexOf(x1) - resultCodes.IndexOf(x2));
+                            table.Rows[row].Cells[7].SetText(string.Join("\n", codes));
+                        }
                     }
                 }
             }
@@ -2934,7 +2972,6 @@ namespace FosMan {
         /// <param name="topicCount"></param>
         /// <param name="rand"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         private static string[][] GetStudyResults(int topicCount, List<string> codeList, int maxCount, Random rand) {
             var results = new string[topicCount][];
 
@@ -2971,41 +3008,41 @@ namespace FosMan {
         /// <param name="topicCount"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        private static EEvaluationTool[] GetEvalTools(int topicCount, Random rand) {
+        private static EEvaluationTool[] GetEvalTools(int topicCount, Random rand, EEvaluationTool[] firstStageTools, EEvaluationTool[] secondStageTools) {
             var tools = new EEvaluationTool[topicCount];
-            var firstTools = new[] { 
-                EEvaluationTool.Survey, 
-                EEvaluationTool.Testing 
-            };
+            //var firstTools = new[] { 
+            //    EEvaluationTool.Survey, 
+            //    EEvaluationTool.Testing 
+            //};
             //для первых тем распределим firstTools
             var usedNumbers = new HashSet<int>();
-            for (var i = 0; i < firstTools.Length; i++) {
+            for (var i = 0; i < firstStageTools.Length; i++) {
                 var num = 0;
                 while (true) {
-                    num = rand.Next(firstTools.Length);
+                    num = rand.Next(firstStageTools.Length);
                     if (usedNumbers.Add(num)) break;
                 }
-                tools[i] = firstTools[num];
+                tools[i] = firstStageTools[num];
             }
-            var secondTools = new[] {
-                EEvaluationTool.Essay,
-                EEvaluationTool.ControlWork,
-                EEvaluationTool.Paper,
-                EEvaluationTool.Presentation
-            };
+            //var secondTools = new[] {
+            //    EEvaluationTool.Essay,
+            //    EEvaluationTool.ControlWork,
+            //    EEvaluationTool.Paper,
+            //    EEvaluationTool.Presentation
+            //};
             //вторая порция средств
             usedNumbers.Clear();
-            for (var i = 0; i < Math.Min(topicCount - firstTools.Length, secondTools.Length); i++) {
+            for (var i = 0; i < Math.Min(topicCount - firstStageTools.Length, secondStageTools.Length); i++) {
                 var num = 0;
                 while (true) {
-                    num = rand.Next(secondTools.Length);
+                    num = rand.Next(secondStageTools.Length);
                     if (usedNumbers.Add(num)) break;
                 }
-                tools[i + firstTools.Length] = secondTools[num];
+                tools[i + firstStageTools.Length] = secondStageTools[num];
             }
             //третья и последующая порция
-            var thirdTools = firstTools.Concat(secondTools).ToArray(); //Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToArray();
-            var topicIdx = firstTools.Length + secondTools.Length;
+            var thirdTools = firstStageTools.Concat(secondStageTools).ToArray(); //Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToArray();
+            var topicIdx = firstStageTools.Length + secondStageTools.Length;
             usedNumbers.Clear();
 
             while (topicIdx < topicCount) {
@@ -3030,8 +3067,12 @@ namespace FosMan {
         /// <param name="rpd"></param>
         /// <returns></returns>
         internal static bool TestForEduWorkTable(Table table, Rpd rpd, PropertyAccess propAccess, 
+                                                 EEduWorkFixType fixTypes,
                                                  ref EEvaluationTool[] evalTools,
                                                  ref string[][] studyResults,
+                                                 decimal maxCompetenceResultsCount,
+                                                 List<EEvaluationTool> evalTools1stStageItems,
+                                                 List<EEvaluationTool> evalTools2ndStageItems,
                                                  out EFormOfStudy formOfStudy) {
             var result = false;
             formOfStudy = EFormOfStudy.Unknown;
@@ -3055,7 +3096,7 @@ namespace FosMan {
                         }
                         else {
                             //простановка времени по темам
-                            FillEduWorkTable(table, rpd, form, ref evalTools, ref studyResults);
+                            FillEduWorkTable(table, rpd, fixTypes, form, ref evalTools, ref studyResults, maxCompetenceResultsCount, evalTools1stStageItems, evalTools2ndStageItems);
                         }
                         formOfStudy = form;
                         result = true;
