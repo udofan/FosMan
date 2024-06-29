@@ -350,5 +350,27 @@ namespace FosMan {
 
             return format != ECompetenceMatrixFormat.Unknown;
         }
+
+        /// <summary>
+        /// Получить список достижений по списку результатов
+        /// </summary>
+        /// <param name="resultCodes"></param>
+        /// <returns></returns>
+        public HashSet<CompetenceAchievement> GetAchievements(HashSet<string> resultCodes) {
+            HashSet<CompetenceAchievement> list = new();
+
+            foreach (var item in Items) {
+                foreach (var achi in item.Achievements) {
+                    foreach (var res in achi.Results) {
+                        if (resultCodes.Contains(res.Code)) {
+                            list.Add(achi);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return list;
+        }
     }
 }

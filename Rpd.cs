@@ -673,7 +673,7 @@ namespace FosMan {
                                             }
                                         }
                                         if (col == maxColCount - 1) { //результаты обучения - компетенции
-                                            module.CompetenceIndicators = table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';').ToHashSet();
+                                            module.CompetenceResultCodes = table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';').ToHashSet();
                                         }
                                         col += table.Rows[row].Cells[cellIdx].GridSpan + 1; //переход на след. ячейку с учетом объединений
                                         cellIdx++;                                          //индексы ячеек последовательны

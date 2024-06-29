@@ -30,6 +30,7 @@ using System.Transactions;
 using System.Web;
 using System.Windows;
 using System.Windows.Controls;
+//using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
@@ -715,13 +716,13 @@ namespace FosMan {
                                                     if (msg.Length > 0) msg += "<br />";
                                                     msg += $"Тема <b>{module.Topic}</b>: не указано оценочное средство [{item.Key.GetDescription()}]";
                                                 }
-                                                if (module.CompetenceIndicators == null || module.CompetenceIndicators.Count == 0) {
+                                                if (module.CompetenceResultCodes == null || module.CompetenceResultCodes.Count == 0) {
                                                     if (msg.Length > 0) msg += "<br />";
-                                                    msg += $"Тема <b>{module.Topic}</b>: не указаны коды индикаторов компетенции [{item.Key.GetDescription()}]";
+                                                    msg += $"Тема <b>{module.Topic}</b>: не указаны коды результатов индикаторов компетенции [{item.Key.GetDescription()}]";
                                                 }
                                                 else { //проверка компетенций по матрице
                                                     var results = rpd.CompetenceMatrix.GetAllResultCodes();
-                                                    foreach (var code in module.CompetenceIndicators) {
+                                                    foreach (var code in module.CompetenceResultCodes) {
                                                         if (!results.Contains(code)) {
                                                             if (msg.Length > 0) msg += "<br />";
                                                             msg += $"Тема <b>{module.Topic}</b>: указанный код индикатора компетенции [{code}] не найден в матрице";
@@ -1972,6 +1973,29 @@ namespace FosMan {
             return result;
         }
 
+        /// <summary>
+        /// Установить текст в ячейку (пустую изначально)
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="text"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="lineSpacting"></param>
+        /// <param name="alignment"></param>
+        /// <param name="verticalAlignment"></param>
+        public static void SetTextFormatted(this Cell cell, string text,
+                                            bool fontBold = false, 
+                                            double fontSize = 12,
+                                            float lineSpacing = 12,
+                                            Alignment alignment = Alignment.left,
+                                            Xceed.Document.NET.VerticalAlignment verticalAlignment = Xceed.Document.NET.VerticalAlignment.Center) {
+            var par = cell.Paragraphs.FirstOrDefault();
+
+            par.SetLineSpacing(LineSpacingType.Line, lineSpacing);
+            par.IndentationFirstLine = 0.1f;
+            par.Alignment = alignment;
+            par.InsertText($"{text}", formatting: new Formatting() { Bold = fontBold, Size = fontSize });
+            cell.VerticalAlignment = verticalAlignment;
+        }
 
         /// <summary>
         /// Воссоздание таблицы компетенций #2 ФОС (п. 2.2)
@@ -2077,6 +2101,51 @@ namespace FosMan {
             }
             result = true;
 
+            return result;
+        }
+
+
+        /// <summary>
+        /// Воссоздание таблицы паспорта ФОСа (п. 3)
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="rpd"></param>
+        /// <param name="updateHeaders"></param>
+        private static bool RecreateFosTableOfPassport(Table table, Rpd rpd, bool recreateHeaders, double? fontSize = 12, float lineSpacing = 12) {
+            var result = false;
+
+            if (table.ColumnCount < 4) {
+                return false;
+            }
+            
+            //очистка таблицы
+            var topRowIdxToRemove = 1;
+            for (var rowIdx = table.RowCount - 1; rowIdx >= topRowIdxToRemove; rowIdx--) {
+                table.RemoveRow(rowIdx);
+            }
+
+            if (recreateHeaders) {
+                SetTableHeaders(table, [ "№ п/п",
+                                         "Контролируемые модули, разделы (темы) дисциплины",
+                                         "Код контролируемого индикатора достижения компетенции",
+                                         "Наименование\r\nоценочного средства" ],
+                                fontSize: fontSize, lineSpacing: lineSpacing);
+            }
+
+            //цикл по списку модулей
+            var idx = 0;
+            foreach (var m in rpd.EducationalWorks[EFormOfStudy.FullTime].Modules) {
+                idx++;
+                var row = table.InsertRow();
+                row.Cells[0].SetTextFormatted($"{idx}.", alignment: Alignment.center);
+                row.Cells[1].SetTextFormatted($"{m.Topic}");
+                //получим список кодов индикаторов по списку результатов
+                var indicators = rpd.CompetenceMatrix.GetAchievements(m.CompetenceResultCodes);
+                row.Cells[2].SetTextFormatted($"{string.Join(", ", indicators.Select(i => i.Code))}", alignment: Alignment.center);
+                row.Cells[3].SetTextFormatted($"{string.Join("\r\n", m.EvaluationTools.Select(t => t.GetDescription()))}", alignment: Alignment.center);
+            }
+
+            result = true;
             return result;
         }
 
@@ -2471,7 +2540,7 @@ namespace FosMan {
                                     }
                                 }
                                 if (fixCompetences2 && CompetenceMatrix.TestTable(table, out format) && format == ECompetenceMatrixFormat.Fos22) {
-                                    if (RecreateFosTableOfCompetences2(table, rpd, true /*отладка!*/)) {
+                                    if (RecreateFosTableOfCompetences2(table, rpd, false)) {
                                         html.Append("<div style='color: green'>Таблица компетенций #2 сформирована по матрице компетенций РПД.</div>");
                                     }
                                     else {
@@ -2479,8 +2548,8 @@ namespace FosMan {
                                         table.Xml = backup;
                                     }
                                 }
-                                if (fixPassport && fos.TableOfPassport != null) {
-
+                                if (fixPassport && TestTableForFosPassport(table, out _, out _)) {
+                                    RecreateFosTableOfPassport(table, rpd, true);
                                 }
                             }
                             
@@ -3231,7 +3300,7 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="passport"></param>
         /// <returns></returns>
-        public static bool TestForFosPassport(Table table, out List<StudyModule> passport, out List<string> errors) {
+        public static bool TestTableForFosPassport(Table table, out List<StudyModule> passport, out List<string> errors) {
             errors = [];
             passport = null;
 
@@ -3269,7 +3338,7 @@ namespace FosMan {
 
                             passport.Add(new() {
                                 Topic = table.Rows[row].Cells[1].GetText(),
-                                CompetenceIndicators = [.. table.Rows[row].Cells[2].GetText(",").Split(',', '\n', ';')],
+                                CompetenceResultCodes = [.. table.Rows[row].Cells[2].GetText(",").Split(',', '\n', ';')],
                                 EvaluationTools = tools
                             });
                         }

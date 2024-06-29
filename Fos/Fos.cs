@@ -171,7 +171,7 @@ namespace FosMan {
                             }
                             //проверка на таблицу "3. Паспорт фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций"
                             if (keepTestTable && fos.Passport == null) {
-                                if (App.TestForFosPassport(table, out var passport, out errors)) {
+                                if (App.TestTableForFosPassport(table, out var passport, out errors)) {
                                     fos.Passport = passport;
                                     fos.TableOfPassport = table;
                                     if (errors.Any()) fos.Errors.AddRange(errors.Select(e => $"Паспорт: {e}"));
