@@ -221,12 +221,12 @@ namespace FosMan {
         /// Выявленные ошибки
         /// </summary>
         [JsonIgnore]
-        public List<string> Errors { get; set; }
+        public ErrorList Errors { get; set; }
         /// <summary>
         /// Список доп. ошибок, выявленных при проверке
         /// </summary>
         [JsonIgnore]
-        public List<string> ExtraErrors { get; set; }
+        public ErrorList ExtraErrors { get; set; }
         /// <summary>
         /// Составитель
         /// </summary>
@@ -271,7 +271,8 @@ namespace FosMan {
         public static Rpd LoadFromFile(string fileName, Rpd rpd = null) {
             rpd ??= new();
             
-            rpd.Errors = [];
+            rpd.Errors = new();
+            rpd.ExtraErrors = new();
             rpd.SourceFileName = fileName;
             rpd.EducationalWorks = [];
             rpd.FormsOfStudy = [];
@@ -636,10 +637,10 @@ namespace FosMan {
                                                 }
                                                 else {
                                                     if (string.IsNullOrEmpty(t)) {
-                                                        rpd.Errors.Add($"Тема [{module.Topic}]: не задан тип оценочного средства [{formOfStudy.GetDescription()}]");
+                                                        rpd.Errors.Add(EErrorType.RpdMissingEvalTool, $"Тема [{module.Topic}] ({formOfStudy.GetDescription()})");
                                                     }
                                                     else {
-                                                        rpd.Errors.Add($"Тема [{module.Topic}]: не удалось определить тип оценочного средства - {t} [{formOfStudy.GetDescription()}]");
+                                                        rpd.Errors.Add(EErrorType.RpdUnknownEvalTool, $"Значение - {t}, тема [{module.Topic}] ({formOfStudy.GetDescription()})");
                                                     }
                                                 }
                                             }
@@ -662,44 +663,43 @@ namespace FosMan {
                     if (rpd.FormsOfStudy.Count != rpd.EducationalWorks.Count) {
                         foreach (var form in rpd.FormsOfStudy) {
                             if (!rpd.EducationalWorks.ContainsKey(form)) {
-                                rpd.Errors.Add($"Не найдена информация по учебным работам по форме обучения {form}");
+                                rpd.Errors.Add(EErrorType.RpdMissingEduWork, $"Форма обучения [{form}]");
                             }
                         }
                     }
                     if (rpd.CompetenceMatrix == null || !rpd.CompetenceMatrix.IsLoaded) {
-                        rpd.Errors.Add("Не найдена матрица компетенций.");
+                        rpd.Errors.Add(EErrorType.RpdMissingCompetenceMatrix);
                     }
                     if (rpd.SummaryParagraphs.Count == 0) {
-                        rpd.Errors.Add("Не удалось обнаружить содержание разделов и тем");
+                        rpd.Errors.Add(EErrorType.RpdMissingTOC);
                     }
                     if (rpd.QuestionList.Count == 0) {
-                        rpd.Errors.Add("Не удалось обнаружить список вопросов к зачету/экзамену");
+                        rpd.Errors.Add(EErrorType.RpdMissingQuestionList);
                     }
-                    if (rpd.EducationalWorks.Count != 3) {
-                        rpd.Errors.Add($"Не удалось обнаружить учебные работы по всем формам обучения " +
-                                       $"(только для: {string.Join(", ", rpd.EducationalWorks?.Select(x => x.Key.GetDescription()))})");
+                    if (rpd.EducationalWorks.Count != rpd.FormsOfStudy.Count) {
+                        rpd.Errors.Add(EErrorType.RpdNotFullEduWorks, $"(только для: {string.Join(", ", rpd.EducationalWorks?.Select(x => x.Key.GetDescription()))})");
                     }
                     if (rpd.ReferencesBase.Count == 0) {
-                        rpd.Errors.Add("Не удалось обнаружить список основной литературы");
+                        rpd.Errors.Add(EErrorType.RpdMissingReferencesBase);
                     }
                     if (rpd.ReferencesExtra.Count == 0) {
-                        rpd.Errors.Add("Не удалось обнаружить список дополнительной литературы");
+                        rpd.Errors.Add(EErrorType.RpdMissingReferencesExtra);
                     }
                     foreach (var eduWork in rpd.EducationalWorks) {
                         if (eduWork.Value.Table == null) {
-                            rpd.Errors.Add($"Не удалось обнаружить таблицу учебных работ для формы обучения [{eduWork.Key.GetDescription()}]");
+                            rpd.Errors.Add(EErrorType.RpdMissingEduWorkTable, $"(форма обучения [{eduWork.Key.GetDescription()}])");
                         }
                     }
-                    if (string.IsNullOrEmpty(rpd.Department)) rpd.Errors.Add("Не удалось определить название кафедры");
-                    if (string.IsNullOrEmpty(rpd.Profile)) rpd.Errors.Add("Не удалось определить профиль");
-                    if (string.IsNullOrEmpty(rpd.Year)) rpd.Errors.Add("Не удалось определить год программы");
-                    if (string.IsNullOrEmpty(rpd.DirectionCode)) rpd.Errors.Add("Не удалось определить шифр направления подготовки");
-                    if (string.IsNullOrEmpty(rpd.DirectionName)) rpd.Errors.Add("Не удалось определить наименование направления подготовки");
-                    if (string.IsNullOrEmpty(rpd.DisciplineName)) rpd.Errors.Add("Не удалось определить название дисциплины");
+                    if (string.IsNullOrEmpty(rpd.Department)) rpd.Errors.Add(EErrorType.RpdMissingDepartment);
+                    if (string.IsNullOrEmpty(rpd.Profile)) rpd.Errors.Add(EErrorType.RpdMissingProfile);
+                    if (string.IsNullOrEmpty(rpd.Year)) rpd.Errors.Add(EErrorType.RpdMissingYear);
+                    if (string.IsNullOrEmpty(rpd.DirectionCode)) rpd.Errors.Add(EErrorType.RpdMissingDirectionCode);
+                    if (string.IsNullOrEmpty(rpd.DirectionName)) rpd.Errors.Add(EErrorType.RpdMissingDirectionName);
+                    if (string.IsNullOrEmpty(rpd.DisciplineName)) rpd.Errors.Add(EErrorType.RpdMissingDisciplineName);
                 }
             }
             catch (Exception ex) {
-                rpd.Errors.Add($"{ex.Message}\r\n{ex.StackTrace}");
+                rpd.Errors.AddException(ex);
             }
 
             return rpd;

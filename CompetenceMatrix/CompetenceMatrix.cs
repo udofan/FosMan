@@ -28,13 +28,16 @@ namespace FosMan {
         /// <summary>
         /// Элементы матрицы
         /// </summary>
+        [JsonInclude]
         public List<CompetenceMatrixItem> Items { get; set; }
 
+        [JsonIgnore]
         public bool IsLoaded { get => Items?.Any() ?? false; }
         /// <summary>
         /// Выявленные ошибки
         /// </summary>
-        public List<string> Errors { get; set; }
+        [JsonIgnore]
+        public ErrorList Errors { get; set; }
 
         /// <summary>
         /// Флаг, что матрица загружена полностью
@@ -50,7 +53,7 @@ namespace FosMan {
         public static CompetenceMatrix LoadFromFile(string fileName) {
             var matrix = new CompetenceMatrix() {
                 Items = [],
-                Errors = [],
+                Errors = new(),
             };
 
             try {
@@ -64,12 +67,12 @@ namespace FosMan {
                         matrix?.Check();
                     }
                     else {
-                        matrix.Errors.Add("В документе не найдено таблиц.");
+                        matrix.Errors.Add(EErrorType.CompetenceMatrixNoTables);
                     }
                 }
             }
             catch (Exception ex) {
-                matrix.Errors.Add($"{ex.Message}\r\n{ex.StackTrace}");
+                matrix.Errors.AddException(ex); // ($"{ex.Message}\r\n{ex.StackTrace}");
             }
 
             return matrix;
@@ -112,7 +115,7 @@ namespace FosMan {
                                 matchedTable = true;
                             }
                             else if (currItem == null) {
-                                matrix.Errors.Add($"Формат 2.2: в матрице не удалось найти элемент с кодом [{textCompetence}] (ряд {rowIdx}, колонка 0)");
+                                matrix.Errors.Add(EErrorType.CompetenceMatrixMissingItem, "код [{textCompetence}] (ряд {rowIdx}, колонка 0)");
                             }
                         }
                         else { //в случае других форматов таблицы
@@ -121,7 +124,7 @@ namespace FosMan {
                                 matrix.Items.Add(currItem);
                             }
                             else if (matchedTable) {
-                                matrix.Errors.Add($"Не удалось распарсить текст компетенции [{textCompetence}] (ряд {rowIdx}, колонка 0)");
+                                matrix.Errors.Add(EErrorType.CompetenceMatrixItemParseError, $"значение [{textCompetence}] (ряд {rowIdx}, колонка 0)");
                             }
                         }
                     }
@@ -135,7 +138,7 @@ namespace FosMan {
                                 //ищем currAchievement по тексту textIndicator
                                 currAchievement = currItem.FindAchievement(textIndicator);
                                 if (currAchievement == null) {
-                                    matrix.Errors.Add($"Формат 2.2: в матрице не удалось найти достижение с кодом [{textIndicator}] (ряд {rowIdx}, колонка 1)");
+                                    matrix.Errors.Add(EErrorType.CompetenceMatrixMissingAchievement, $"код [{textIndicator}] (ряд {rowIdx}, колонка 1)");
                                 }
                             }
                             else {  //в случае других форматов таблицы
@@ -143,7 +146,7 @@ namespace FosMan {
                                     currItem.Achievements.Add(currAchievement);
                                 }
                                 else {
-                                    matrix.Errors.Add($"Не удалось распарсить текст индикатора [{textIndicator}] (ряд {rowIdx}, колонка 1)");
+                                    matrix.Errors.Add(EErrorType.CompetenceMatrixAchievementParseError, $"значение [{textIndicator}] (ряд {rowIdx}, колонка 1)");
                                 }
                             }
                         }
@@ -155,11 +158,11 @@ namespace FosMan {
                                     currAchievement?.Results.Add(result);
                                 }
                                 else {
-                                    matrix.Errors.Add($"Не удалось распарсить текст результата [{textResult}] (ряд {rowIdx}, колонка 2)");
+                                    matrix.Errors.Add(EErrorType.CompetenceMatrixResultParseError, $"значение [{textResult}] (ряд {rowIdx}, колонка 2)");
                                 }
                             }
                             else {
-                                matrix.Errors.Add($"Не указаны коды результата (ряд {rowIdx}, колонка 2)");
+                                matrix.Errors.Add(EErrorType.CompetenceMatrixMissingResult, $"(ряд {rowIdx}, колонка 2)");
                             }
                         }
                         else if (format == ECompetenceMatrixFormat.Fos21) {
@@ -171,11 +174,11 @@ namespace FosMan {
                                     currItem.Semester = intValue;
                                 }
                                 else {
-                                    matrix.Errors.Add($"Не удалось определить номер семестра по тексту [{stage}] (ряд {rowIdx}, колонка 2)");
+                                    matrix.Errors.Add(EErrorType.CompetenceMatrixSemesterParseError, $"значение [{stage}] (ряд {rowIdx}, колонка 2)");
                                 }
                             }
                             else {
-                                matrix.Errors.Add($"Не указан семестр (ряд {rowIdx}, колонка 2)");
+                                matrix.Errors.Add(EErrorType.CompetenceMatrixMissingSemester, $"(ряд {rowIdx}, колонка 2)");
                             }
                         }
                     }
@@ -194,30 +197,30 @@ namespace FosMan {
         /// </summary>
         public void Check() {
             if (!Items.Any()) {
-                Errors.Add("Список компетенций не определён");
+                Errors.Add(EErrorType.CompetenceMatrixIsEmpty);
             }
 
             foreach (var item in Items) {
                 if (!item.Achievements.Any()) {
-                    Errors.Add($"Компетенция {item.Code}: список индикаторов не определён");
+                    Errors.Add(EErrorType.CompetenceMatrixItemMissingAchievements, $"Компетенция {item.Code}");
                 }
                 foreach (var achi in item.Achievements) {
                     if (string.IsNullOrEmpty(achi.Code)) {
-                        Errors.Add($"Компетенция {item.Code}: индикатор не определён");
+                        Errors.Add(EErrorType.CompetenceMatrixItemMissingAchievementCode, $"Компетенция {item.Code}");
                     }
                     else if (!achi.Code.Contains(item.Code)) {
-                        Errors.Add($"Компетенция {item.Code}: индикатор {achi.Code} не соответствует компетенции - {item.Code}");
+                        Errors.Add(EErrorType.CompetenceMatrixAchievementCodeMismatch, $"Компетенция {item.Code} - индикатор {achi.Code}");
                     }
                     foreach (var res in achi.Results) {
                         if (string.IsNullOrEmpty(res.Code)) {
-                            Errors.Add($"Компетенция {item.Code}: результат не определён для индикатора {achi.Code}");
+                            Errors.Add(EErrorType.CompetenceMatrixMissingAchievementResult, $"Компетенция {item.Code} - индикатор {achi.Code}");
                         }
                         else {
                             if (!res.Code.Contains(item.Code)) {
-                                Errors.Add($"Компетенция {item.Code}: результат индикатора {res.Code} не соответствует компетенции - {item.Code}");
+                                Errors.Add(EErrorType.CompetenceMatrixResultCodeItemMismatch, $"Компетенция {item.Code} - результат индикатора {res.Code}");
                             }
                             if (!res.Code.Contains(achi.Code)) {
-                                Errors.Add($"Компетенция {item.Code}: результат индикатора {res.Code} не соответствует коду достижения - {achi.Code}");
+                                Errors.Add(EErrorType.CompetenceMatrixResultCodeAchievementMismatch, $"Компетенция {item.Code} - индикатор {achi.Code} - результат индикатора {res.Code}");
                             }
                         }
                     }
@@ -234,9 +237,9 @@ namespace FosMan {
             var tdStyle = " style='border: 1px solid; vertical-align: top;'";
 
             //если есть ошибки
-            if (Errors?.Any() ?? false) {
+            if ((Errors?.IsEmpty ?? true) == false) {
                 html += "<div style='color: red;'><b>ОШИБКИ:</b></div>";
-                html += string.Join("", Errors.Select(e => $"<div style='color: red'>{e}</div>"));
+                html += string.Join("", Errors.Items.Select(e => $"<div style='color: red'>{e}</div>"));
             }
 
             //формирование матрицы

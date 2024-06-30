@@ -381,7 +381,7 @@ namespace FosMan {
             var olvColumnErrors = new OLVColumn("Ошибки", nameof(Rpd.Errors)) {
                 Width = 50,
                 IsEditable = false,
-                AspectGetter = (x) => ((x as Rpd)?.Errors?.Any() ?? false) ? "есть" : "нет"
+                AspectGetter = (x) => ((x as Rpd)?.Errors?.IsEmpty ?? true) ? "нет" : "да"
             };
             list.Columns.Add(olvColumnErrors);
             var olvColumnFileName = new OLVColumn("Файл", nameof(Rpd.SourceFileName)) {
@@ -670,8 +670,8 @@ namespace FosMan {
 
                 if (matrix.IsLoaded) {
                     App.SetCompetenceMatrix(matrix);
-                    if (matrix.Errors.Any()) {
-                        errLog.TryAdd(fileName, matrix.Errors);
+                    if (!matrix.Errors.IsEmpty) {
+                        errLog.TryAdd(fileName, matrix.Errors.Items.Select(e => $"{e}").ToList());
                     }
                     //m_matrixFileName = fileName;
 
@@ -968,8 +968,8 @@ namespace FosMan {
                             Application.DoEvents();
                         }));
 
-                        if (rpd.Errors.Any()) {
-                            errLog.TryAdd(file, rpd.Errors);
+                        if (!rpd.Errors.IsEmpty) {
+                            errLog.TryAdd(file, rpd.Errors.Items.Select(e => $"{e}").ToList());
                         }
                     }
                 }));
@@ -1068,7 +1068,7 @@ namespace FosMan {
         private void fastObjectListViewRpdList_CellToolTipShowing(object sender, ToolTipShowingEventArgs e) {
             if (e.Model is Rpd rpd) {
                 if (e.Column.AspectName.Equals("Errors")) {
-                    e.Text = string.Join("\r\n", rpd.Errors);
+                    e.Text = string.Join("\r\n", rpd.Errors.Items.Select(e => $"{e}"));
                     e.StandardIcon = ToolTipControl.StandardIcons.Error;
                     e.IsBalloon = true;
                 }
@@ -1077,7 +1077,7 @@ namespace FosMan {
 
         private void fastObjectListViewRpdList_FormatRow(object sender, FormatRowEventArgs e) {
             if (e.Model is Rpd rpd) {
-                if (rpd.Errors?.Any() ?? false) {
+                if ((rpd.Errors?.IsEmpty ?? true) == false) {
                     e.Item.BackColor = Color.Pink;
                 }
             }

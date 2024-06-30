@@ -146,12 +146,12 @@ namespace FosMan {
                                 fos.CompetenceMatrix == null &&
                                 CompetenceMatrix.TestTable(table, out var format) &&
                                 format == ECompetenceMatrixFormat.Fos21) {
-                                if (App.TestForTableOfCompetenceMatrix(table, format, out var matrix, out errors)) {
+                                if (App.TestForTableOfCompetenceMatrix(table, format, out var matrix, out var errorList)) {
                                     fos.CompetenceMatrix = matrix;
                                     fos.TableOfCompetence1 = table;
                                     keepTestTable = false;
                                 }
-                                if (errors.Any()) fos.Errors.AddRange(errors.Select(e => $"Матрица компетенций: {e}"));
+                                if (errorList.Any()) fos.Errors.AddRange(errorList.Select(e => $"Матрица компетенций: {e}"));
                             }
                             //проверка на таблицу 2.2
                             if (keepTestTable &&
@@ -162,8 +162,8 @@ namespace FosMan {
                                 //попытка дополнить таблицу компетенций по второй таблице 2.2
                                 if (CompetenceMatrix.TryParseTable(table, format, fos.CompetenceMatrix)) {
                                     fos.CompetenceMatrix.Check();
-                                    if (fos.CompetenceMatrix.Errors.Any()) {
-                                        fos.Errors.AddRange(fos.CompetenceMatrix.Errors.Select(e => $"Матрица компетенций: {e}"));
+                                    if (!fos.CompetenceMatrix.Errors.IsEmpty) {
+                                        fos.Errors.AddRange(fos.CompetenceMatrix.Errors.Items.Select(e => $"Матрица компетенций: {e}"));
                                     }
                                     fos.TableOfCompetence2 = table;
                                     keepTestTable = false;

@@ -136,5 +136,77 @@ namespace FosMan {
             /// </summary>
             All = 0b1111_1111
         }
+
+        /// <summary>
+        /// Типы ошибок
+        /// </summary>
+        public enum EErrorType {
+            [Description("Ошибка")]
+            Exception,
+            [Description("Не задан тип оценочного средства")]
+            RpdMissingEvalTool,
+            [Description("Не определён тип оценочного средства")]
+            RpdUnknownEvalTool,
+            [Description("Не найдена информация по учебным работам")]
+            RpdMissingEduWork,
+            [Description("Не найдена матрица компетенций")]
+            RpdMissingCompetenceMatrix,
+            [Description("Не удалось обнаружить содержание разделов и тем")]
+            RpdMissingTOC,
+            [Description("Не удалось обнаружить список вопросов к зачету/экзамену")]
+            RpdMissingQuestionList,
+            [Description("Учебные работы обнаружены не по всем формам обучения")]
+            RpdNotFullEduWorks,
+            [Description("Не удалось обнаружить список основной литературы")]
+            RpdMissingReferencesBase,
+            [Description("Не удалось обнаружить список дополнительной литературы")]
+            RpdMissingReferencesExtra,
+            [Description("Не удалось обнаружить таблицу учебных работ")]
+            RpdMissingEduWorkTable,
+            [Description("Не удалось определить название кафедры")]
+            RpdMissingDepartment,
+            [Description("Не удалось определить профиль")]
+            RpdMissingProfile,
+            [Description("Не удалось определить год программы")]
+            RpdMissingYear,
+            [Description("Не удалось определить шифр направления подготовки")]
+            RpdMissingDirectionCode,
+            [Description("Не удалось определить наименование направления подготовки")]
+            RpdMissingDirectionName,
+            [Description("Не удалось определить название дисциплины")]
+            RpdMissingDisciplineName,
+            [Description("В документе не найдено таблиц")]
+            CompetenceMatrixNoTables,
+            [Description("Формат 2.2: в матрице не удалось найти компетенцию")]
+            CompetenceMatrixMissingItem,
+            [Description("Не удалось распарсить текст компетенции")]
+            CompetenceMatrixItemParseError,
+            [Description("Формат 2.2: в матрице не удалось найти достижение")]
+            CompetenceMatrixMissingAchievement,
+            [Description("Не удалось распарсить текст индикатора достижения")]
+            CompetenceMatrixAchievementParseError,
+            [Description("Не удалось распарсить текст результата")]
+            CompetenceMatrixResultParseError,
+            [Description("Не указаны коды результата")]
+            CompetenceMatrixMissingResult,
+            [Description("Не удалось определить номер семестра")]
+            CompetenceMatrixSemesterParseError,
+            [Description("Не указан семестр")]
+            CompetenceMatrixMissingSemester,
+            [Description("Список компетенций не определён")]
+            CompetenceMatrixIsEmpty,
+            [Description("Список индикаторов достижения компетенции не определён")]
+            CompetenceMatrixItemMissingAchievements,
+            [Description("Индикатор достижения компетенции не определён")]
+            CompetenceMatrixItemMissingAchievementCode,
+            [Description("Индикатор достижения не соответствует компетенции")]
+            CompetenceMatrixAchievementCodeMismatch,
+            [Description("Не определён результат индикатора достижения компетенции")]
+            CompetenceMatrixMissingAchievementResult,
+            [Description("Результат индикатора достижения не соответствует компетенции")]
+            CompetenceMatrixResultCodeItemMismatch,
+            [Description("Результат индикатора достижения не соответствует индикатору")]
+            CompetenceMatrixResultCodeAchievementMismatch
+        }
     }
 }

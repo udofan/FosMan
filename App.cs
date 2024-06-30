@@ -393,7 +393,7 @@ namespace FosMan {
             foreach (var rpd in rpdList) {
                 var anchor = $"rpd{idx}";
                 idx++;
-                rpd.ExtraErrors = [];
+                rpd.ExtraErrors = new();
                 var errorCount = 0;
 
                 //var discipName = rpd.DisciplineName;
@@ -402,11 +402,11 @@ namespace FosMan {
                 rep.Append("<div style='padding-left: 30px'>");
                 rep.AddFileLink($"Файл РПД:", rpd.SourceFileName);
                 //ошибки, выявленные при загрузке
-                if (rpd.Errors.Any()) {
+                if (!rpd.Errors.IsEmpty) {
                     errorCount += rpd.Errors.Count;
                     rep.Append("<p />");
                     rep.AddDiv($"<div style='color: red'>Ошибки, выявленные при загрузке РПД ({rpd.Errors.Count} шт.):</div>");
-                    rpd.Errors.ForEach(e => rep.AddError(e));
+                    rpd.Errors.Items.ForEach(e => rep.AddError(e.ToString()));
                 }
                 //ищем Учебные планы
                 var curricula = FindCurricula(rpd);
@@ -500,9 +500,9 @@ namespace FosMan {
                             checkCompetences &= ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Проверка матрицы компетенций в РПД", (eduWork) => {
                                 var result = rpd.CompetenceMatrix?.IsLoaded ?? false;
                                 var msg = result ? "" : $"В РПД не обнаружена матрица компетенций.";
-                                if (result && rpd.CompetenceMatrix.Errors.Any()) {
+                                if (result && !rpd.CompetenceMatrix.Errors.IsEmpty) {
                                     msg = "В матрице обнаружены ошибки:<br />";
-                                    msg += string.Join("<br />", rpd.CompetenceMatrix.Errors);
+                                    msg += string.Join("<br />", rpd.CompetenceMatrix.Errors.Items.Select(e => $"{e}"));
                                     result = false;
                                 }
                                 if (!result) {
@@ -861,9 +861,9 @@ namespace FosMan {
                     var checkCompetences = ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Наличие матрицы компетенций в ФОС", (fos, rpd) => {
                         var result = fos.CompetenceMatrix?.IsLoaded ?? false;
                         var msg = result ? "" : $"В ФОС не обнаружена матрица компетенций.";
-                        if (result && fos.CompetenceMatrix.Errors.Any()) {
+                        if (result && !fos.CompetenceMatrix.Errors.IsEmpty) {
                             msg = "В матрице обнаружены ошибки:<br />";
-                            msg += string.Join("<br />", rpd.CompetenceMatrix.Errors);
+                            msg += string.Join("<br />", rpd.CompetenceMatrix.Errors.Items.Select(e => $"{e}"));
                             result = false;
                         }
                         if (!result) {
@@ -3180,12 +3180,12 @@ namespace FosMan {
                         }
                         maxColCount = lastNumCol + 3;
 
-                        //попытка определить последний ряд топика (в таблице могут быть строки с "зачет/экзамен", а также "курсовая")
+                        //попытка определить последний ряд топика (в таблице могут быть строки с "зачет/экзамен", а также "курсовая", "всего за X семестр")
                         //var nonTopicRowIdx = table.RowCount - 3;
                         for (var row = table.RowCount - 2; row >= startRow; row--) {
                             var topic = table.Rows[row].Cells[startNumCol - 1].GetText();
                             if (!string.IsNullOrEmpty(topic)) {
-                                if (!Regex.IsMatch(topic.ToLower(), @"экзамен|зач[е,ё]т|курсовая")) {
+                                if (!Regex.IsMatch(topic.ToLower(), @"экзамен|зач[е,ё]т|курсовая|всего за")) {
                                     lastRow = row;
                                     break;
                                 }
@@ -3401,15 +3401,15 @@ namespace FosMan {
         public static bool TestForTableOfCompetenceMatrix(Table table, 
                                                           ECompetenceMatrixFormat format, 
                                                           out CompetenceMatrix matrix, 
-                                                          out List<string> errors) {
+                                                          out List<Error> errors) {
             matrix = new CompetenceMatrix() {
                 Items = [],
-                Errors = [],
+                Errors = new(),
             };
             errors = null;
 
             var result = CompetenceMatrix.TryParseTable(table, format, matrix);
-            errors = matrix.Errors?.ToList();
+            errors = matrix.Errors?.GetCopy();
 
             if (!result) {
                 matrix = null;
