@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
+using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
@@ -253,7 +254,11 @@ namespace FosMan {
         /// <param name="cell"></param>
         /// <param name="joinParText"></param>
         /// <returns></returns>
-        static public void SetText(this Cell cell, string text = "") {
+        static public void SetText(this Cell cell, string text = "", bool removeAllParagraphExceptFirstOne = true) {
+            if (removeAllParagraphExceptFirstOne) {
+                cell.Clear();
+            }
+
             var par = cell.Paragraphs.FirstOrDefault();
 
             if (par != null) {
@@ -2244,10 +2249,17 @@ namespace FosMan {
         /// <param name="rpdList"></param>
         internal static void FixRpdFiles(List<Rpd> rpdList, string targetDir, out string htmlReport) {
             var html = new StringBuilder("<html><body><h2>Отчёт по исправлению РПД</h2>");
+            var rep = new StringBuilder("");
             DocX templateDocx = null;
             DocxChapters templateChapters = null;
+            var successFileCount = 0;
+            var failureFileCount = 0;
+            var swMain = Stopwatch.StartNew();
 
             try {
+                System.Windows.Forms.Application.UseWaitCursor = true;
+                System.Windows.Forms.Application.DoEvents();
+
                 var fixByTemplate = false;
                 if (Config.RpdFixByTemplate) {
                     if (File.Exists(Config.RpdFixTemplateFileName)) {
@@ -2257,21 +2269,30 @@ namespace FosMan {
                     }
                 }
 
-                html.Append("<div><b>Режим работы:</b></div><ul>");
+                rep.Append("<div><b>Режим работы:</b></div><ul>");
                 if (Config.RpdFixTableOfCompetences) {
-                    html.Append("<li>Исправление таблицы компетенций</li>");
+                    rep.Append("<li>Исправление таблицы компетенций</li>");
                 }
                 if (Config.RpdFixTableOfEduWorks) {
-                    html.Append("<li>Исправление таблицы учебных работ</li>");
+                    rep.Append("<li>Исправление таблицы учебных работ</li>");
                 }
                 if (Config.RpdFixEduWorkTablesFixTime) {
-                    html.Append("<li>Заполнение таблиц учебных работ для форм обучения</li>");
+                    rep.Append("<li>Заполнение таблиц учебных работ для форм обучения</li>");
                 }
                 if (Config.RpdFixSetPrevAndNextDisciplines) {
-                    html.Append("<li>Заполнение списков предыдущих и последующих дисциплин</li>");
+                    rep.Append("<li>Заполнение списков предыдущих и последующих дисциплин</li>");
                 }
                 if (Config.RpdFixRemoveColorSelections) {
-                    html.Append("<li>Очистка цветных выделений для служебных областей</li>");
+                    rep.Append("<li>Очистка цветных выделений для служебных областей</li>");
+                }
+                if (Config.RpdFixEduWorkTablesFixTime) {
+                    rep.Append("<li>Таблицы содержания дисциплины: автоматическое распределение времен по темам</li>");
+                }
+                if (Config.RpdFixEduWorkTablesFixEvalTools) {
+                    rep.Append("<li>Таблицы содержания дисциплины: автоматическое распределение оценочных средств</li>");
+                }
+                if (Config.RpdFixEduWorkTablesFixCompetenceCodes) {
+                    rep.Append("<li>Таблицы содержания дисциплины: автоматическое распределение результатов компетенций</li>");
                 }
 
                 List<FindAndReplaceItem> findAndReplaceItems = new();
@@ -2279,181 +2300,200 @@ namespace FosMan {
                     findAndReplaceItems = Config.RpdFixFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
                     if (App.Config.RpdFixFindAndReplace && findAndReplaceItems != null && findAndReplaceItems.Any()) {
                         var tdStyle = "style='border: 1px solid;'";
-                        html.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
+                        rep.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
                         foreach (var item in findAndReplaceItems) {
-                            html.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
+                            rep.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
                         }
-                        html.Append("</table></li>");
+                        rep.Append("</table></li>");
                     }
                 }
-                html.Append("</ul>");
+                rep.Append("</ul>");
 
                 foreach (var rpd in rpdList) {
-                    html.Append("<p />");
+                    var sw = Stopwatch.StartNew();
+                    rep.Append("<p />");
                     if (File.Exists(rpd.SourceFileName)) {
-                        html.Append($"<div>Исходный файл: <b>{rpd.SourceFileName}</b></div>");
-                        html.Append($"<div>Дисциплина: <b>{rpd.DisciplineName}</b></div>");
+                        rep.AddFileLink($"Исходный файл:", rpd.SourceFileName);
 
-                        var fixCompetences = Config.RpdFixTableOfCompetences;
-                        var discipline = FindDiscipline(rpd);
-                        if (discipline == null) {
-                            fixCompetences = false;
-                            html.Append($"<div style='color: red'>Не удалось найти дисциплину [{rpd.DisciplineName}] в загруженных учебных планах</div>");
-                        }
-                        var fixEduWorksSummary = Config.RpdFixTableOfEduWorks;
-                        var eduWorks = GetEducationWorks(rpd, out _);
-                        //if (!(eduWorks?.Any() ?? false)) {
-                        //    fixEduWorks = false;
-                        //    html.Append($"<div style='color: red'>Не удалось найти учебные работы для дисциплины [{rpd.DisciplineName}] в загруженных учебных планах</div>");
-                        //}
-                        if (rpd.FormsOfStudy.Count != eduWorks.Count) {
-                            fixEduWorksSummary = false;
-                            foreach (var form in rpd.FormsOfStudy) {
-                                if (!eduWorks.ContainsKey(form)) {
-                                    html.Append($"<div style='color: red'>Учебный план для формы обучения [{form.GetDescription()}] не загружен</div>");
-                                }
+                        try {
+                            rep.Append($"<div>Дисциплина: <b>{rpd.DisciplineName}</b></div>");
+
+                            var fixCompetences = Config.RpdFixTableOfCompetences;
+                            var discipline = FindDiscipline(rpd);
+                            if (discipline == null) {
+                                fixCompetences = false;
+                                rep.Append($"<div style='color: red'>Не удалось найти дисциплину [{rpd.DisciplineName}] в загруженных учебных планах</div>");
                             }
-                        }
-                        var fixEduWorkTables = Config.RpdFixEduWorkTablesFixTime;
-                        var eduWorkTableIsFixed = rpd.FormsOfStudy.ToDictionary(x => x, x => false);
-
-                        var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
-
-                        var setDocProperties = Config.RpdFixDocPropertyList?.Where(i => i.IsChecked).ToList();
-
-                        using (var docx = DocX.Load(rpd.SourceFileName)) {
-                            if (setDocProperties?.Any() ?? false) {
-                                foreach (var item in setDocProperties) {
-                                    ///docx.CoreProperties[item.Name] = item.Value;
-                                    docx.AddCoreProperty(item.Name, item.Value);
-                                }
-                            }
-
-                            EEvaluationTool[] evalTools = null;
-                            string[][] studyResults = null;             //здесь будут формироваться значения для таблиц учебных работ по формам обучения
-
-                            foreach (var table in docx.Tables) {
-                                var backup = table.Xml;
-                                if (fixCompetences && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
-                                    if (RecreateRpdTableOfCompetences(table, discipline, false)) {
-                                        html.Append("<div style='color: green'>Таблица компетенций сформирована по матрице компетенций.</div>");
-                                    }
-                                    else {
-                                        html.Append("<div style='color: red'>Не удалось сформировать обновленную таблицу компетенций.</div>");
-                                        table.Xml = backup;
-                                    }
-                                }
-                                if (fixEduWorksSummary && !eduSummaryTableIsFixed) {
-                                    eduSummaryTableIsFixed |= TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
-                                }
-                                if (fixEduWorkTables) {
-                                    EEduWorkFixType fixType = EEduWorkFixType.Undefined;
-                                    if (Config.RpdFixEduWorkTablesFixTime) fixType |= EEduWorkFixType.Time;
-                                    if (Config.RpdFixEduWorkTablesFixEvalTools) fixType |= EEduWorkFixType.EvalTools;
-                                    if (Config.RpdFixEduWorkTablesFixCompetenceCodes) fixType |= EEduWorkFixType.CompetenceResults;
-                                    //фикс-заполнение таблицы учебных работ для формы обучения
-                                    if (TestForEduWorkTable(table, rpd, PropertyAccess.Set, fixType, ref evalTools, ref studyResults,
-                                                            Config.RpdFixMaxCompetenceResultsCount,
-                                                            Config.RpdFixEduWorkTablesEvalTools1stStageItems,
-                                                            Config.RpdFixEduWorkTablesEvalTools2ndStageItems,
-                                                            out var formOfStudy)) {
-                                        eduWorkTableIsFixed[formOfStudy] = true;
+                            var fixEduWorksSummary = Config.RpdFixTableOfEduWorks;
+                            var eduWorks = GetEducationWorks(rpd, out _);
+                            //if (!(eduWorks?.Any() ?? false)) {
+                            //    fixEduWorks = false;
+                            //    html.Append($"<div style='color: red'>Не удалось найти учебные работы для дисциплины [{rpd.DisciplineName}] в загруженных учебных планах</div>");
+                            //}
+                            if (rpd.FormsOfStudy.Count != eduWorks.Count) {
+                                fixEduWorksSummary = false;
+                                foreach (var form in rpd.FormsOfStudy) {
+                                    if (!eduWorks.ContainsKey(form)) {
+                                        rep.Append($"<div style='color: red'>Учебный план для формы обучения [{form.GetDescription()}] не загружен</div>");
                                     }
                                 }
                             }
-                            if (fixEduWorksSummary) {
-                                if (eduSummaryTableIsFixed) {
-                                    html.Append("<div style='color: green'>Сводная таблица учебных работ заполнена по учебным планам.</div>");
-                                }
-                                else {
-                                    html.Append("<div style='color: red'>Не удалось сформировать сводную таблицу учебных работ.</div>");
-                                    //table.Xml = backup;
-                                }
-                            }
-                            if (fixEduWorkTables) {
-                                foreach (var item in eduWorkTableIsFixed) {
-                                    if (item.Value) {
-                                        html.Append($"<div style='color: green'>Таблица учебных работ для формы обучения [{item.Key.GetDescription()}] успешно заполнена.</div>");
+                            //var fixEduWorkTables = Config.RpdFixEduWorkTablesFixTime || Config.RpdFixEduWorkTablesFixEvalTools || Config.RpdFixEduWorkTablesFixCompetenceCodes;
+                            EEduWorkFixType fixType = EEduWorkFixType.Undefined;
+                            if (Config.RpdFixEduWorkTablesFixTime) fixType |= EEduWorkFixType.Time;
+                            if (Config.RpdFixEduWorkTablesFixEvalTools) fixType |= EEduWorkFixType.EvalTools;
+                            if (Config.RpdFixEduWorkTablesFixCompetenceCodes) fixType |= EEduWorkFixType.CompetenceResults;
+                            var eduWorkTableIsFixed = rpd.FormsOfStudy.ToDictionary(x => x, x => false);
+
+                            var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
+
+                            var setDocProperties = Config.RpdFixDocPropertyList?.Where(i => i.IsChecked).ToList();
+
+                            using (var docx = DocX.Load(rpd.SourceFileName)) {
+                                if (setDocProperties?.Any() ?? false) {
+                                    foreach (var item in setDocProperties) {
+                                        ///docx.CoreProperties[item.Name] = item.Value;
+                                        docx.AddCoreProperty(item.Name, item.Value);
                                     }
-                                    else {
-                                        html.Append($"<div style='color: red'>Таблицу учебных работ для формы обучения [{item.Key.GetDescription()}] не удалось заполнить.</div>");
-                                    }
                                 }
-                            }
 
-                            //обработка "найти и заменить"
-                            var replaceCount = 0;
+                                EEvaluationTool[] evalTools = null;
+                                string[][] studyResults = null;             //здесь будут формироваться значения для таблиц учебных работ по формам обучения
 
-                            //заполнение предыд. и послед. дисциплин осуществим с помощью поиска и замены
-                            List<FindAndReplaceItem> extraReplaceItems = new();
-                            
-                            if (Config.RpdFixSetPrevAndNextDisciplines) {
-                                extraReplaceItems.Add(new FindAndReplaceItem() {
-                                    FindPattern = "{PrevDisciplines}",
-                                    ReplacePattern = rpd.PrevDisciplines
-                                });
-                                extraReplaceItems.Add(new FindAndReplaceItem() {
-                                    FindPattern = "{NextDisciplines}",
-                                    ReplacePattern = rpd.NextDisciplines
-                                });
-                                findAndReplaceItems.AddRange(extraReplaceItems);
-                            }
-
-                            if ((findAndReplaceItems?.Any() ?? false) || App.Config.RpdFixRemoveColorSelections) {
-                                foreach (var par in docx.Paragraphs) {
-                                    //поиск и замена
-                                    if (findAndReplaceItems?.Any() ?? false) {
-                                        foreach (var findItem in findAndReplaceItems) {
-                                            var replaceOptions = new FunctionReplaceTextOptions() {
-                                                FindPattern = findItem.FindPattern,
-                                                ContainerLocation = ReplaceTextContainer.All,
-                                                StopAfterOneReplacement = false,
-                                                RegexMatchHandler = m => findItem.ReplacePattern,
-                                                RegExOptions = RegexOptions.IgnoreCase
-                                            };
-                                            if (par.ReplaceText(replaceOptions)) {
-                                                replaceCount++;
-                                            }
+                                foreach (var table in docx.Tables) {
+                                    var backup = table.Xml;
+                                    if (fixCompetences && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
+                                        if (RecreateRpdTableOfCompetences(table, discipline, false)) {
+                                            rep.Append("<div style='color: green'>Таблица компетенций сформирована по матрице компетенций.</div>");
+                                        }
+                                        else {
+                                            rep.Append("<div style='color: red'>Не удалось сформировать обновленную таблицу компетенций.</div>");
+                                            table.Xml = backup;
                                         }
                                     }
-                                    //очистка цветных выделений
-                                    if (App.Config.RpdFixRemoveColorSelections) {
-                                        par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
-                                        par.Highlight(Highlight.none);
-                                        //par.lis
-                                        //docx.Lists.ForEach(l => l.sele)
+                                    if (fixEduWorksSummary && !eduSummaryTableIsFixed) {
+                                        eduSummaryTableIsFixed |= TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
+                                    }
+                                    if (fixType != EEduWorkFixType.Undefined) {
+                                        //фикс-заполнение таблицы учебных работ для формы обучения
+                                        if (TestForEduWorkTable(table, rpd, PropertyAccess.Set, fixType, ref evalTools, ref studyResults,
+                                                                Config.RpdFixMaxCompetenceResultsCount,
+                                                                Config.RpdFixEduWorkTablesEvalTools1stStageItems,
+                                                                Config.RpdFixEduWorkTablesEvalTools2ndStageItems,
+                                                                out var formOfStudy,
+                                                                out _, out _, out _, out _)) {
+                                            eduWorkTableIsFixed[formOfStudy] = true;
+                                        }
                                     }
                                 }
-                                html.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
-                            }
-                            extraReplaceItems?.ForEach(x => findAndReplaceItems.Remove(x)); //убираем, т.к. это было нужно только для текущего РПД
+                                if (fixEduWorksSummary) {
+                                    if (eduSummaryTableIsFixed) {
+                                        rep.Append("<div style='color: green'>Сводная таблица учебных работ заполнена по учебным планам.</div>");
+                                    }
+                                    else {
+                                        rep.Append("<div style='color: red'>Не удалось сформировать сводную таблицу учебных работ.</div>");
+                                        //table.Xml = backup;
+                                    }
+                                }
+                                if (fixType != EEduWorkFixType.Undefined) {
+                                    foreach (var item in eduWorkTableIsFixed) {
+                                        if (item.Value) {
+                                            rep.Append($"<div style='color: green'>Таблица учебных работ для формы обучения [{item.Key.GetDescription()}] успешно заполнена.</div>");
+                                        }
+                                        else {
+                                            rep.Append($"<div style='color: red'>Таблицу учебных работ для формы обучения [{item.Key.GetDescription()}] не удалось заполнить.</div>");
+                                        }
+                                    }
+                                }
 
-                            //фикс разделов по шаблону
-                            if (fixByTemplate) {
-                                var docxSections = ScanDocxForChapters(docx);
-                            }
+                                //обработка "найти и заменить"
+                                var replaceCount = 0;
 
-                            var fileName = Path.GetFileName(rpd.SourceFileName);
-                            var newFileName = Path.Combine(targetDir, fileName);
-                            if (!Directory.Exists(targetDir)) {
-                                Directory.CreateDirectory(targetDir);
+                                //заполнение предыд. и послед. дисциплин осуществим с помощью поиска и замены
+                                List<FindAndReplaceItem> extraReplaceItems = new();
+
+                                if (Config.RpdFixSetPrevAndNextDisciplines) {
+                                    extraReplaceItems.Add(new FindAndReplaceItem() {
+                                        FindPattern = "{PrevDisciplines}",
+                                        ReplacePattern = rpd.PrevDisciplines
+                                    });
+                                    extraReplaceItems.Add(new FindAndReplaceItem() {
+                                        FindPattern = "{NextDisciplines}",
+                                        ReplacePattern = rpd.NextDisciplines
+                                    });
+                                    findAndReplaceItems.AddRange(extraReplaceItems);
+                                }
+
+                                if ((findAndReplaceItems?.Any() ?? false) || App.Config.RpdFixRemoveColorSelections) {
+                                    foreach (var par in docx.Paragraphs) {
+                                        //поиск и замена
+                                        if (findAndReplaceItems?.Any() ?? false) {
+                                            foreach (var findItem in findAndReplaceItems) {
+                                                var replaceOptions = new FunctionReplaceTextOptions() {
+                                                    FindPattern = findItem.FindPattern,
+                                                    ContainerLocation = ReplaceTextContainer.All,
+                                                    StopAfterOneReplacement = false,
+                                                    RegexMatchHandler = m => findItem.ReplacePattern,
+                                                    RegExOptions = RegexOptions.IgnoreCase
+                                                };
+                                                if (par.ReplaceText(replaceOptions)) {
+                                                    replaceCount++;
+                                                }
+                                            }
+                                        }
+                                        //очистка цветных выделений
+                                        if (App.Config.RpdFixRemoveColorSelections) {
+                                            par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
+                                            par.Highlight(Highlight.none);
+                                            //par.lis
+                                            //docx.Lists.ForEach(l => l.sele)
+                                        }
+                                    }
+                                    rep.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
+                                }
+                                extraReplaceItems?.ForEach(x => findAndReplaceItems.Remove(x)); //убираем, т.к. это было нужно только для текущего РПД
+
+                                //фикс разделов по шаблону
+                                if (fixByTemplate) {
+                                    var docxSections = ScanDocxForChapters(docx);
+                                }
+
+                                var fileName = Path.GetFileName(rpd.SourceFileName);
+                                var newFileName = Path.Combine(targetDir, fileName);
+                                if (!Directory.Exists(targetDir)) {
+                                    Directory.CreateDirectory(targetDir);
+                                }
+                                docx.SaveAs(newFileName);
+                                rep.Append($"<div>Время работы: {sw.Elapsed}</div>");
+                                rep.AddFileLink($"Итоговый файл:", newFileName);
                             }
-                            docx.SaveAs(newFileName);
-                            html.Append($"<div>Итоговый файл: <b>{newFileName}</b></div>");
+                            successFileCount++;
+                        }
+                        catch (Exception e) {
+                            rep.AddError($"При обработке файла возникла ошибка: {e.Message}");
+                            rep.AddError($"Стек: {e.StackTrace}");
+                            failureFileCount++;
                         }
                     }
                     else {
-                        html.Append($"<div style='color:red'>Файл <b>{rpd.SourceFileName}</b> не найден</div>");
+                        rep.Append($"<div style='color:red'>Файл <b>{rpd.SourceFileName}</b> не найден</div>");
+                        failureFileCount++;
                     }
                 }
             }
             catch (Exception ex) {
-                html.Append($"<div>{ex.Message}</div>");
-                html.Append($"<div>{ex.StackTrace}</div>");
+                rep.Append($"<div>{ex.Message}</div>");
+                rep.Append($"<div>{ex.StackTrace}</div>");
             }
             finally {
                 templateDocx?.Dispose();
+                html.AddDiv($"Исправлено файлов: {successFileCount}");
+                html.AddDiv($"Сбойных файлов: {failureFileCount}");
+                html.AddDiv($"Время работы: {swMain.Elapsed}");
+                html.Append("<p />");
+                html.Append(rep);
                 html.Append("</body></html>");
+                System.Windows.Forms.Application.UseWaitCursor = false;
             }
 
             htmlReport = html.ToString();
@@ -2905,62 +2945,67 @@ namespace FosMan {
                                      ref string[][] studyResults,
                                      decimal maxCompetenceResultsCount,
                                      List<EEvaluationTool> evalTools1stStageItems,
-                                     List<EEvaluationTool> evalTools2ndStageItems) {
+                                     List<EEvaluationTool> evalTools2ndStageItems,
+                                     int startRow,
+                                     int startCol,
+                                     int maxColCount,
+                                     int lastRow) {
             var curricula = FindCurricula(rpd);
             if (curricula?.Any() ?? false) {
-                if (table.ColumnCount == 8) {
-                    var seed = rpd.DisciplineName.ToCharArray().Sum(c => c);
-                    var rand = new Random(seed);
+                var seed = rpd.DisciplineName.ToCharArray().Sum(c => c);
+                var rand = new Random(seed);
+                var applyFixTime = startCol == 1 && maxColCount == 8;
+                //int lastRow = table.RowCount - 2;           //за минусом строки с зачетом/экз. и с итого
+                var topicCount = lastRow - startRow + 1;
 
-                    var topicCount = table.RowCount - 5;
+                (int total, int contact, int lecture, int practical, int selfStudy)[] topics = null;
 
-                    (int total, int contact, int lecture, int practical, int selfStudy)[] topics = null;
+                //распределяем время
+                if (fixTypes.HasFlag(EEduWorkFixType.Time) && applyFixTime) {
+                    topics = SplitEduTime(topicCount, rpd.EducationalWorks[formOfStudy], rand);
 
-                    //распределяем время
-                    if (fixTypes.HasFlag(EEduWorkFixType.Time)) {
-                        topics = SplitEduTime(topicCount, rpd.EducationalWorks[formOfStudy], rand);
-
-                        //проверка
-                        if (topics.Sum(t => t.contact) != (rpd.EducationalWorks[formOfStudy].ContactWorkHours ?? 0)) {
-                            throw new Exception("Сумма времени контактной работы по темам не совпадает с итоговой");
-                        }
-                        if (topics.Sum(t => t.total) != (rpd.EducationalWorks[formOfStudy].TotalHours ?? 0) - (rpd.EducationalWorks[formOfStudy].ControlHours ?? 0)) {
-                            throw new Exception("Сумма итогового времени по темам не совпадает с итоговой");
-                        }
-                        if (topics.Sum(t => t.selfStudy) != (rpd.EducationalWorks[formOfStudy].SelfStudyHours ?? 0)) {
-                            throw new Exception("Сумма времени самостоятельной работы не совпадает с итоговой");
-                        }
+                    //проверка
+                    if (topics.Sum(t => t.contact) != (rpd.EducationalWorks[formOfStudy].ContactWorkHours ?? 0)) {
+                        throw new Exception("Сумма времени контактной работы по темам не совпадает с итоговой");
                     }
-
-                    //формирование оценочных средств
-                    if (evalTools == null && fixTypes.HasFlag(EEduWorkFixType.EvalTools)) {
-                        evalTools = GetEvalTools(topicCount, rand, evalTools1stStageItems.ToArray(), evalTools2ndStageItems.ToArray());
+                    if (topics.Sum(t => t.total) != (rpd.EducationalWorks[formOfStudy].TotalHours ?? 0) - (rpd.EducationalWorks[formOfStudy].ControlHours ?? 0)) {
+                        throw new Exception("Сумма итогового времени по темам не совпадает с итоговой");
                     }
-
-                    var resultCodes = rpd.CompetenceMatrix.GetAllResultCodes().ToList();
-
-                    //формирование результатов обучения
-                    if (studyResults == null && fixTypes.HasFlag(EEduWorkFixType.CompetenceResults)) {
-                        studyResults = GetStudyResults(topicCount, resultCodes.ToList(), (int)maxCompetenceResultsCount, rand);
+                    if (topics.Sum(t => t.selfStudy) != (rpd.EducationalWorks[formOfStudy].SelfStudyHours ?? 0)) {
+                        throw new Exception("Сумма времени самостоятельной работы не совпадает с итоговой");
                     }
+                }
 
-                    for (int topic = 0; topic < topicCount; topic++) {
-                        var row = topic + 3;
-                        if (fixTypes.HasFlag(EEduWorkFixType.Time)) {
-                            table.Rows[row].Cells[1].SetText(topics[topic].total.ToString());
-                            table.Rows[row].Cells[2].SetText(topics[topic].contact.ToString());
-                            table.Rows[row].Cells[3].SetText(topics[topic].lecture.ToString());
-                            table.Rows[row].Cells[4].SetText(topics[topic].practical.ToString());
-                            table.Rows[row].Cells[5].SetText(topics[topic].selfStudy.ToString());
-                        }
-                        if (fixTypes.HasFlag(EEduWorkFixType.EvalTools)) {
-                            table.Rows[row].Cells[6].SetText(evalTools[topic].GetDescription());
-                        }
-                        if (fixTypes.HasFlag(EEduWorkFixType.CompetenceResults)) {
-                            var codes = studyResults[topic].ToHashSet().ToList();
-                            codes.Sort((x1, x2) => resultCodes.IndexOf(x1) - resultCodes.IndexOf(x2));
-                            table.Rows[row].Cells[7].SetText(string.Join("\n", codes));
-                        }
+                //формирование оценочных средств
+                if (evalTools == null && fixTypes.HasFlag(EEduWorkFixType.EvalTools)) {
+                    evalTools = GetEvalTools(topicCount, rand, evalTools1stStageItems.ToArray(), evalTools2ndStageItems.ToArray());
+                }
+
+                var resultCodes = rpd.CompetenceMatrix.GetAllResultCodes().ToList();
+
+                //формирование результатов обучения
+                if (studyResults == null && fixTypes.HasFlag(EEduWorkFixType.CompetenceResults)) {
+                    studyResults = GetStudyResults(topicCount, resultCodes.ToList(), (int)maxCompetenceResultsCount, rand);
+                }
+
+                for (int topic = 0; topic < topicCount; topic++) {
+                    var row = topic + startRow;
+                    if (fixTypes.HasFlag(EEduWorkFixType.Time) && applyFixTime) {
+                        table.Rows[row].Cells[1].SetText(topics[topic].total.ToString());
+                        table.Rows[row].Cells[2].SetText(topics[topic].contact.ToString());
+                        table.Rows[row].Cells[3].SetText(topics[topic].lecture.ToString());
+                        table.Rows[row].Cells[4].SetText(topics[topic].practical.ToString());
+                        table.Rows[row].Cells[5].SetText(topics[topic].selfStudy.ToString());
+                    }
+                    if (fixTypes.HasFlag(EEduWorkFixType.EvalTools)) {
+                        table.Rows[row].Cells[maxColCount - 2].SetText(evalTools[topic].GetDescription());
+                        table.Rows[row].Cells[maxColCount - 2].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
+                    }
+                    if (fixTypes.HasFlag(EEduWorkFixType.CompetenceResults)) {
+                        var codes = studyResults[topic].ToHashSet().ToList();
+                        codes.Sort((x1, x2) => resultCodes.IndexOf(x1) - resultCodes.IndexOf(x2));
+                        table.Rows[row].Cells[maxColCount - 1].SetText(string.Join("\n", codes));
+                        table.Rows[row].Cells[maxColCount - 1].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
                     }
                 }
             }
@@ -3073,9 +3118,17 @@ namespace FosMan {
                                                  decimal maxCompetenceResultsCount,
                                                  List<EEvaluationTool> evalTools1stStageItems,
                                                  List<EEvaluationTool> evalTools2ndStageItems,
-                                                 out EFormOfStudy formOfStudy) {
+                                                 out EFormOfStudy formOfStudy,
+                                                 out int startRow,
+                                                 out int startNumCol,
+                                                 out int maxColCount,
+                                                 out int lastRow) {
             var result = false;
             formOfStudy = EFormOfStudy.Unknown;
+            startRow = -1;
+            startNumCol = -1;
+            maxColCount = -1;
+            lastRow = -1;
 
             //проверка на таблицы учебных работ с темами
             var par = table.Paragraphs.FirstOrDefault();
@@ -3091,12 +3144,67 @@ namespace FosMan {
                     if (m_eduWorkTableHeaders.TryGetValue(form, out var regex) &&
                         rpd.EducationalWorks.ContainsKey(form) &&
                         regex.IsMatch(par.Text)) {
+
+                        //определяем начальный значащие ряд и колонку
+                        startRow = 3;
+                        startNumCol = -1;
+                        var firstNumCol = -1;
+                        var lastNumCol = -1;
+                        //var numColCount = 0;    //кол-во числовых ячеек
+                        while (startRow < table.RowCount) {
+                            //numColCount = 0;
+                            firstNumCol = -1;
+                            lastNumCol = -1;
+                            var hasNumCells = false;
+                            for (var col = 0; col < table.Rows[startRow].Cells.Count; col++) {
+                                var cell = table.Rows[startRow].Cells[col];
+                                //if (cell.GridSpan > 0) { //первый ряд, который нам нужен - ряд без объединений ячеек
+                                //    startRow++;
+                                //    continue;
+                                //}
+                                var text = cell.GetText();
+                                if (int.TryParse(text, out _)) {
+                                    hasNumCells = true;
+                                    if (firstNumCol < 0) firstNumCol = col;
+                                    if (col > lastNumCol) lastNumCol = col;
+                                    if (col > 0) {
+                                        if (startNumCol < 0) startNumCol = col;
+                                        //numColCount++;
+                                    }
+                                }
+                            }
+                            if (hasNumCells) {
+                                break;
+                            }
+                            startRow++;
+                        }
+                        maxColCount = lastNumCol + 3;
+
+                        //попытка определить последний ряд топика (в таблице могут быть строки с "зачет/экзамен", а также "курсовая")
+                        //var nonTopicRowIdx = table.RowCount - 3;
+                        for (var row = table.RowCount - 2; row >= startRow; row--) {
+                            var topic = table.Rows[row].Cells[startNumCol - 1].GetText();
+                            if (!string.IsNullOrEmpty(topic)) {
+                                if (!Regex.IsMatch(topic.ToLower(), @"экзамен|зач[е,ё]т|курсовая")) {
+                                    lastRow = row;
+                                    break;
+                                }
+                            }
+                        }
+
                         if (propAccess == PropertyAccess.Get) {
                             rpd.EducationalWorks[form].Table ??= table;
                         }
                         else {
                             //простановка времени по темам
-                            FillEduWorkTable(table, rpd, fixTypes, form, ref evalTools, ref studyResults, maxCompetenceResultsCount, evalTools1stStageItems, evalTools2ndStageItems);
+                            FillEduWorkTable(table, rpd, fixTypes, form, ref evalTools, ref studyResults, 
+                                             maxCompetenceResultsCount, 
+                                             evalTools1stStageItems, 
+                                             evalTools2ndStageItems,
+                                             startRow, 
+                                             startNumCol,
+                                             maxColCount,
+                                             lastRow);
                         }
                         formOfStudy = form;
                         result = true;
@@ -3104,27 +3212,6 @@ namespace FosMan {
                     }
                 }
                 if (result) break;
-                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.FullTime) && 
-                //    rpd.EducationalWorks[EFormOfStudy.FullTime].Table == null && 
-                //    m_regexFullTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[EFormOfStudy.FullTime].Table = table;
-                //    result = true;
-                //    break;
-                //}
-                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.MixedTime) &&
-                //    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table == null && 
-                //    m_regexMixedTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[EFormOfStudy.MixedTime].Table = table;
-                //    result = true;
-                //    break;
-                //}
-                //if (rpd.EducationalWorks.ContainsKey(EFormOfStudy.PartTime) &&
-                //    rpd.EducationalWorks[EFormOfStudy.PartTime].Table == null && 
-                //    m_regexPartTimeTable.IsMatch(par.Text)) {
-                //    rpd.EducationalWorks[EFormOfStudy.PartTime].Table = table;
-                //    result = true;
-                //    break;
-                //}
             }
 
             return result;
@@ -3391,6 +3478,28 @@ namespace FosMan {
             }
 
             return passport != null;
+        }
+
+        /// <summary>
+        /// Удалить РПД из загруженных
+        /// </summary>
+        /// <param name="rpd"></param>
+        internal static void RemoveRpd(Rpd rpd) {
+            if (rpd != null) {
+                m_rpdDic.TryRemove(rpd.SourceFileName, out _);
+            }
+        }
+
+        /// <summary>
+        /// Удалить список РПД из загруженных
+        /// </summary>
+        /// <param name="rpdList"></param>
+        internal static void RemoveRpd(List<Rpd> rpdList) {
+            if (rpdList?.Any() ?? false) {
+                foreach (var rpd in rpdList) {
+                    m_rpdDic.TryRemove(rpd.SourceFileName, out _);
+                }
+            }
         }
     }
 }

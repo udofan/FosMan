@@ -596,53 +596,23 @@ namespace FosMan {
                             string[][] studyResults = null;
                             if (App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, EEduWorkFixType.All, ref evalTools, ref studyResults, 
                                                         0, null, null, /* параметры для режима исправления - здесь они не нужны */
-                                                        out var formOfStudy)) {
+                                                        out var formOfStudy,
+                                                        out int startRow,
+                                                        out int startNumCol,
+                                                        out int maxColCount,
+                                                        out int lastRow)) {
                                 //получим список модулей обучения с оценочными средствами и компетенциями
                                 var eduWork = rpd.EducationalWorks[formOfStudy];
-                                //определяем начальный значащие ряд и колонку
-                                var startRow = 3;
-                                var startCol = -1;
-                                var firstNumCol = -1;
-                                var lastNumCol = -1;
-                                //var numColCount = 0;    //кол-во числовых ячеек
-                                while (startRow < table.RowCount) {
-                                    //numColCount = 0;
-                                    firstNumCol = -1;
-                                    lastNumCol = -1;
-                                    var hasNumCells = false;
-                                    for (var col = 0; col < table.Rows[startRow].Cells.Count; col++) {
-                                        var cell = table.Rows[startRow].Cells[col];
-                                        //if (cell.GridSpan > 0) { //первый ряд, который нам нужен - ряд без объединений ячеек
-                                        //    startRow++;
-                                        //    continue;
-                                        //}
-                                        var text = cell.GetText();
-                                        if (int.TryParse(text, out _)) {
-                                            hasNumCells = true;
-                                            if (firstNumCol < 0) firstNumCol = col;
-                                            if (col > lastNumCol) lastNumCol = col;
-                                            if (col > 0) {
-                                                if (startCol < 0) startCol = col;
-                                                //numColCount++;
-                                            }
-                                        }
-                                    }
-                                    if (hasNumCells) {
-                                        break;
-                                    }
-                                    startRow++;
-                                }
 
                                 eduWork.Modules = [];
                                 var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
 
-                                var maxColCount = lastNumCol + 3;
-                                for (var row = startRow; row < table.RowCount - 2; row++) { //минус ряд с "зачетом", минус ряд с "итого"
+                                for (var row = startRow; row <= lastRow; row++) { //минус ряд с "зачетом", минус ряд с "итого"
                                     var module = new StudyModule();
-                                    var col = startCol - 1;
+                                    var col = startNumCol - 1;
                                     var cellIdx = col;
                                     while (col < maxColCount) {
-                                        if (col == startCol - 1) {
+                                        if (col == startNumCol - 1) {
                                             if (table.Rows[row].Cells.Count <= cellIdx) {
                                                 var tt = 0;
                                             }

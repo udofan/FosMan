@@ -1766,10 +1766,13 @@ namespace FosMan {
         }
 
         private void iconToolStripButtonRpdClear_Click(object sender, EventArgs e) {
-            if (MessageBox.Show("Вы уверены, что хотите очистить список загруженных РПД?",
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                if (MessageBox.Show($"Вы уверены, что хотите удалить из списка выделенные РПД ({rpdList.Count} шт.)?",
                     "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
-                App.RpdList.Clear();
-                fastObjectListViewRpdList.ClearObjects();
+                    App.RemoveRpd(rpdList);
+                    fastObjectListViewRpdList.RemoveObjects(fastObjectListViewRpdList.SelectedObjects);
+                }
             }
         }
 
@@ -2243,6 +2246,11 @@ namespace FosMan {
             buttonAddFindAndReplaceItem.Enabled = checkBoxRpdFixFindAndReplace.Checked;
             buttonRemoveFindAndReplaceItems.Enabled = checkBoxRpdFixFindAndReplace.Checked;
             fastObjectListViewRpdFixFindAndReplaceItems.Enabled = checkBoxRpdFixFindAndReplace.Checked;
+        }
+
+        private void checkBoxRpdFixEduWorkTablesFixComptenceResults_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixEduWorkTablesFixCompetenceCodes = checkBoxRpdFixEduWorkTablesFixComptenceResults.Checked;
+            App.SaveConfig();
         }
     }
 }
