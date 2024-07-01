@@ -597,23 +597,19 @@ namespace FosMan {
                             string[][] studyResults = null;
                             if (App.TestForEduWorkTable(table, rpd, PropertyAccess.Get, EEduWorkFixType.All, ref evalTools, ref studyResults, 
                                                         0, null, null, /* параметры для режима исправления - здесь они не нужны */
-                                                        out var formOfStudy,
-                                                        out int startRow,
-                                                        out int startNumCol,
-                                                        out int maxColCount,
-                                                        out int lastRow)) {
+                                                        out var formOfStudy)) {
                                 //получим список модулей обучения с оценочными средствами и компетенциями
                                 var eduWork = rpd.EducationalWorks[formOfStudy];
 
                                 eduWork.Modules = [];
                                 var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
 
-                                for (var row = startRow; row <= lastRow; row++) { //минус ряд с "зачетом", минус ряд с "итого"
+                                for (var row = eduWork.TableTopicStartRow; row <= eduWork.TableTopicLastRow; row++) { //минус ряд с "зачетом", минус ряд с "итого"
                                     var module = new StudyModule();
-                                    var col = startNumCol - 1;
+                                    var col = eduWork.TableColTopic; // startNumCol - 1;
                                     var cellIdx = col;
-                                    while (col < maxColCount) {
-                                        if (col == startNumCol - 1) {
+                                    while (col < eduWork.TableMaxColCount) {
+                                        if (col == eduWork.TableColTopic) {
                                             if (table.Rows[row].Cells.Count <= cellIdx) {
                                                 var tt = 0;
                                             }
@@ -624,7 +620,7 @@ namespace FosMan {
                                                 var tt = 0;
                                             }
                                         }
-                                        if (col == maxColCount - 2) { //оценочные средства
+                                        if (col == eduWork.TableColEvalTools) { //оценочные средства
                                             module.EvaluationTools = [];
                                             //var counts = table.Rows.Select(r => r.Cells.Count).ToList();
                                             //module.Topic = table.Rows[row].Cells[col].GetText();
@@ -645,7 +641,7 @@ namespace FosMan {
                                                 }
                                             }
                                         }
-                                        if (col == maxColCount - 1) { //результаты обучения - компетенции
+                                        if (col == eduWork.TableColCompetenceResults) { //результаты обучения - компетенции
                                             module.CompetenceResultCodes = table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';').ToHashSet();
                                         }
                                         col += table.Rows[row].Cells[cellIdx].GridSpan + 1; //переход на след. ячейку с учетом объединений

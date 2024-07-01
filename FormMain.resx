@@ -165,6 +165,9 @@
   <metadata name="iconToolStripButtonRpdClear.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>913, 55</value>
   </metadata>
+  <metadata name="iconToolStripButtonRpdFixToFileFixer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>1120, 55</value>
+  </metadata>
   <metadata name="iconToolStripButtonRpdFromDb.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1120, 55</value>
   </metadata>
@@ -254,9 +257,12 @@
     <value>268, 55</value>
   </metadata>
   <metadata name="openFileDialogFosSelect.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>777, 88</value>
+  </metadata>
+  <metadata name="openFileDialogFileFixer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>307, 16</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>100</value>
+    <value>148</value>
   </metadata>
 </root>

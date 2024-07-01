@@ -254,8 +254,8 @@ namespace FosMan {
         /// <param name="cell"></param>
         /// <param name="joinParText"></param>
         /// <returns></returns>
-        static public void SetText(this Cell cell, string text = "", bool removeAllParagraphExceptFirstOne = true) {
-            if (removeAllParagraphExceptFirstOne) {
+        static public void SetText(this Cell cell, string text = "", bool removeAllParagraphsExceptFirstOne = true) {
+            if (removeAllParagraphsExceptFirstOne) {
                 cell.Clear();
             }
 
@@ -269,6 +269,17 @@ namespace FosMan {
                 };
                 par.ReplaceText(replaceTextOptions);
             }
+        }
+
+        /// <summary>
+        /// Установить значение в ячейку
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="value"></param>
+        /// <param name="ifCaseOfZero"></param>
+        static public void SetText(this Cell cell, int value, string ifCaseOfZero = "-", bool removeAllParagraphsExceptFirstOne = true) {
+            var text = value > 0 ? value.ToString() : ifCaseOfZero;
+            SetText(cell, text, removeAllParagraphsExceptFirstOne);
         }
 
         /// <summary>
@@ -2380,8 +2391,7 @@ namespace FosMan {
                                                                 Config.RpdFixMaxCompetenceResultsCount,
                                                                 Config.RpdFixEduWorkTablesEvalTools1stStageItems,
                                                                 Config.RpdFixEduWorkTablesEvalTools2ndStageItems,
-                                                                out var formOfStudy,
-                                                                out _, out _, out _, out _)) {
+                                                                out var formOfStudy)) {
                                             eduWorkTableIsFixed[formOfStudy] = true;
                                         }
                                     }
@@ -2945,33 +2955,29 @@ namespace FosMan {
                                      ref string[][] studyResults,
                                      decimal maxCompetenceResultsCount,
                                      List<EEvaluationTool> evalTools1stStageItems,
-                                     List<EEvaluationTool> evalTools2ndStageItems,
-                                     int startRow,
-                                     int startCol,
-                                     int maxColCount,
-                                     int lastRow) {
+                                     List<EEvaluationTool> evalTools2ndStageItems) {
             var curricula = FindCurricula(rpd);
-            if (curricula?.Any() ?? false) {
+            if ((curricula?.Any() ?? false) && rpd.EducationalWorks.TryGetValue(formOfStudy, out var eduWork)) {
                 var seed = rpd.DisciplineName.ToCharArray().Sum(c => c);
                 var rand = new Random(seed);
-                var applyFixTime = startCol == 1 && maxColCount == 8;
+                var applyFixTime = true; // startCol == 1 && maxColCount == 8;
                 //int lastRow = table.RowCount - 2;           //за минусом строки с зачетом/экз. и с итого
-                var topicCount = lastRow - startRow + 1;
+                var topicCount = eduWork.TableTopicLastRow - eduWork.TableTopicStartRow + 1;
 
                 (int total, int contact, int lecture, int practical, int selfStudy)[] topics = null;
 
                 //распределяем время
                 if (fixTypes.HasFlag(EEduWorkFixType.Time) && applyFixTime) {
-                    topics = SplitEduTime(topicCount, rpd.EducationalWorks[formOfStudy], rand);
+                    topics = SplitEduTime(topicCount, eduWork, rand);
 
                     //проверка
-                    if (topics.Sum(t => t.contact) != (rpd.EducationalWorks[formOfStudy].ContactWorkHours ?? 0)) {
+                    if (topics.Sum(t => t.contact) != (eduWork.ContactWorkHours ?? 0)) {
                         throw new Exception("Сумма времени контактной работы по темам не совпадает с итоговой");
                     }
-                    if (topics.Sum(t => t.total) != (rpd.EducationalWorks[formOfStudy].TotalHours ?? 0) - (rpd.EducationalWorks[formOfStudy].ControlHours ?? 0)) {
+                    if (topics.Sum(t => t.total) != (eduWork.TotalHours ?? 0) - (eduWork.ControlHours ?? 0)) {
                         throw new Exception("Сумма итогового времени по темам не совпадает с итоговой");
                     }
-                    if (topics.Sum(t => t.selfStudy) != (rpd.EducationalWorks[formOfStudy].SelfStudyHours ?? 0)) {
+                    if (topics.Sum(t => t.selfStudy) != (eduWork.SelfStudyHours ?? 0)) {
                         throw new Exception("Сумма времени самостоятельной работы не совпадает с итоговой");
                     }
                 }
@@ -2988,25 +2994,37 @@ namespace FosMan {
                     studyResults = GetStudyResults(topicCount, resultCodes.ToList(), (int)maxCompetenceResultsCount, rand);
                 }
 
+                var colTotal = eduWork.TableStartNumCol;
+                var colSubTotal = eduWork.TableHasContactTimeSubtotal ? colTotal + 1 : colTotal;
+                var colLecture = colSubTotal + 1;
+                var colPractical = colLecture + 1;
+                var colSelfStudy = colPractical + 1;
+
                 for (int topic = 0; topic < topicCount; topic++) {
-                    var row = topic + startRow;
+                    var row = topic + eduWork.TableTopicStartRow;
                     if (fixTypes.HasFlag(EEduWorkFixType.Time) && applyFixTime) {
-                        table.Rows[row].Cells[1].SetText(topics[topic].total.ToString());
-                        table.Rows[row].Cells[2].SetText(topics[topic].contact.ToString());
-                        table.Rows[row].Cells[3].SetText(topics[topic].lecture.ToString());
-                        table.Rows[row].Cells[4].SetText(topics[topic].practical.ToString());
-                        table.Rows[row].Cells[5].SetText(topics[topic].selfStudy.ToString());
+                        table.Rows[row].Cells[colTotal].SetText(topics[topic].total);
+                        if (eduWork.TableHasContactTimeSubtotal) {
+                            table.Rows[row].Cells[colSubTotal].SetText(topics[topic].contact);
+                        }
+                        table.Rows[row].Cells[colLecture].SetText(topics[topic].lecture);
+                        table.Rows[row].Cells[colPractical].SetText(topics[topic].practical);
+                        table.Rows[row].Cells[colSelfStudy].SetText(topics[topic].selfStudy);
                     }
                     if (fixTypes.HasFlag(EEduWorkFixType.EvalTools)) {
-                        table.Rows[row].Cells[maxColCount - 2].SetText(evalTools[topic].GetDescription());
-                        table.Rows[row].Cells[maxColCount - 2].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
+                        table.Rows[row].Cells[eduWork.TableColEvalTools].SetText(evalTools[topic].GetDescription());
+                        table.Rows[row].Cells[eduWork.TableColEvalTools].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
                     }
                     if (fixTypes.HasFlag(EEduWorkFixType.CompetenceResults)) {
                         var codes = studyResults[topic].ToHashSet().ToList();
                         codes.Sort((x1, x2) => resultCodes.IndexOf(x1) - resultCodes.IndexOf(x2));
-                        table.Rows[row].Cells[maxColCount - 1].SetText(string.Join("\n", codes));
-                        table.Rows[row].Cells[maxColCount - 1].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
+                        table.Rows[row].Cells[eduWork.TableColCompetenceResults].SetText(string.Join("\n", codes));
+                        table.Rows[row].Cells[eduWork.TableColCompetenceResults].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
                     }
+                }
+                //фикс значения с контролем
+                if (fixTypes.HasFlag(EEduWorkFixType.Time) && applyFixTime && eduWork.TableControlRow >= 0) {
+                    table.Rows[eduWork.TableControlRow].Cells[colTotal].SetText(eduWork.ControlHours ?? 0);
                 }
             }
         }
@@ -3118,17 +3136,9 @@ namespace FosMan {
                                                  decimal maxCompetenceResultsCount,
                                                  List<EEvaluationTool> evalTools1stStageItems,
                                                  List<EEvaluationTool> evalTools2ndStageItems,
-                                                 out EFormOfStudy formOfStudy,
-                                                 out int startRow,
-                                                 out int startNumCol,
-                                                 out int maxColCount,
-                                                 out int lastRow) {
+                                                 out EFormOfStudy formOfStudy) {
             var result = false;
             formOfStudy = EFormOfStudy.Unknown;
-            startRow = -1;
-            startNumCol = -1;
-            maxColCount = -1;
-            lastRow = -1;
 
             //проверка на таблицы учебных работ с темами
             var par = table.Paragraphs.FirstOrDefault();
@@ -3142,12 +3152,12 @@ namespace FosMan {
                 }
                 foreach (EFormOfStudy form in Enum.GetValues(typeof(EFormOfStudy))) {
                     if (m_eduWorkTableHeaders.TryGetValue(form, out var regex) &&
-                        rpd.EducationalWorks.ContainsKey(form) &&
+                        rpd.EducationalWorks.TryGetValue(form, out var eduWork) &&
                         regex.IsMatch(par.Text)) {
 
                         //определяем начальный значащие ряд и колонку
-                        startRow = 3;
-                        startNumCol = -1;
+                        var startRow = 3;
+                        var startNumCol = -1;
                         var firstNumCol = -1;
                         var lastNumCol = -1;
                         //var numColCount = 0;    //кол-во числовых ячеек
@@ -3178,15 +3188,26 @@ namespace FosMan {
                             }
                             startRow++;
                         }
-                        maxColCount = lastNumCol + 3;
+                        eduWork.TableTopicStartRow = startRow;
+                        eduWork.TableStartNumCol = startNumCol;
+                        eduWork.TableColTopic = startNumCol - 1;
+                        eduWork.TableMaxColCount = lastNumCol + 3;
+                        eduWork.TableColEvalTools = lastNumCol + 1;
+                        eduWork.TableColCompetenceResults = lastNumCol + 2;
+
+                        //тестируем на кол-во ячеек с числовыми значениями: должно быть 4 или 5 (когда есть подитог по КР)
+                        eduWork.TableHasContactTimeSubtotal = lastNumCol - firstNumCol + 1 == 5;
 
                         //попытка определить последний ряд топика (в таблице могут быть строки с "зачет/экзамен", а также "курсовая", "всего за X семестр")
                         //var nonTopicRowIdx = table.RowCount - 3;
                         for (var row = table.RowCount - 2; row >= startRow; row--) {
-                            var topic = table.Rows[row].Cells[startNumCol - 1].GetText();
+                            var topic = table.Rows[row].Cells[eduWork.TableColTopic].GetText();
                             if (!string.IsNullOrEmpty(topic)) {
+                                if (Regex.IsMatch(topic.ToLower(), @"экзамен|зач[е,ё]т")) {
+                                    eduWork.TableControlRow = row;
+                                }
                                 if (!Regex.IsMatch(topic.ToLower(), @"экзамен|зач[е,ё]т|курсовая|всего за")) {
-                                    lastRow = row;
+                                    eduWork.TableTopicLastRow = row;
                                     break;
                                 }
                             }
@@ -3200,11 +3221,7 @@ namespace FosMan {
                             FillEduWorkTable(table, rpd, fixTypes, form, ref evalTools, ref studyResults, 
                                              maxCompetenceResultsCount, 
                                              evalTools1stStageItems, 
-                                             evalTools2ndStageItems,
-                                             startRow, 
-                                             startNumCol,
-                                             maxColCount,
-                                             lastRow);
+                                             evalTools2ndStageItems);
                         }
                         formOfStudy = form;
                         result = true;
@@ -3499,6 +3516,28 @@ namespace FosMan {
                 foreach (var rpd in rpdList) {
                     m_rpdDic.TryRemove(rpd.SourceFileName, out _);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Удалить из списка ряд УП
+        /// </summary>
+        /// <param name="curriculaList"></param>
+        internal static void RemoveCurricula(List<Curriculum> curriculaList) {
+            if (curriculaList?.Any() ?? false) {
+                foreach (var curriculum in curriculaList) {
+                    m_curriculumDic.TryRemove(curriculum.SourceFileName, out _);
+                }
+            } 
+        }
+
+        /// <summary>
+        /// Удалить из списка УП
+        /// </summary>
+        /// <param name="curriculaList"></param>
+        internal static void RemoveCurriculum(Curriculum curriculum) {
+            if (curriculum != null) {
+                m_curriculumDic.TryRemove(curriculum.SourceFileName, out _);
             }
         }
     }

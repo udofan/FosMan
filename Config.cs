@@ -196,6 +196,11 @@ namespace FosMan {
         [JsonInclude]
         public List<DocProperty> FosFixDocPropertyList { get; set; }
         /// <summary>
+        /// Последняя директория, откуда добавлялись файлы в режим коррекции файлов
+        /// </summary>
+        [JsonInclude]
+        public string FileFixerLastDirectory { get; set; }
+        /// <summary>
         /// Список описаний кафедр
         /// </summary>
         [JsonInclude]

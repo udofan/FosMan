@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -73,6 +74,33 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public List<StudyModule> Modules { get; set; }
+        [JsonIgnore]
+        public int TableStartNumCol { get; set; } = -1;
+        [JsonIgnore]
+        public int TableTopicStartRow { get; set; } = -1;
+        [JsonIgnore]
+        public int TableTopicLastRow { get; set; } = -1;
+        /// <summary>
+        /// Таблица: кол-во колонок
+        /// </summary>
+        [JsonIgnore]
+        public int TableMaxColCount { get; set; } = -1;
+        /// <summary>
+        /// Таблица: в таблице есть колонка подитога по контактным работам
+        /// </summary>
+        [JsonIgnore]
+        public bool TableHasContactTimeSubtotal { get; set; } = false;
+        /// <summary>
+        /// Таблица: номер ряда с контролем (зачет/экзамен)
+        /// </summary>
+        [JsonIgnore]
+        public int TableControlRow { get; set; } = -1;
+        [JsonIgnore]
+        public int TableColTopic { get; set; } = -1;
+        [JsonIgnore]
+        public int TableColEvalTools { get; set; } = -1;
+        [JsonIgnore]
+        public int TableColCompetenceResults { get; set; } = -1;
 
         /// <summary>
         /// Получить значение свойства по имени

@@ -509,6 +509,24 @@ namespace FosMan {
             list.Columns.Add(olvColValue);
         }
 
+        void TuneFileFixerFileList(FastObjectListView list) {
+            var olvColumnDir = new OLVColumn("Директория", "DirectoryName") {
+                Width = 300,
+                IsEditable = false//, 
+                //GroupKeyGetter = x => ((FileFixerItem)x).DirectoryName
+            };
+            list.Columns.Add(olvColumnDir);
+            list.Columns.Add(new OLVColumn("Файл", "FileName") {
+                Width = 300,
+                FillsFreeSpace = true,
+                IsEditable = false
+            });
+            //list.AlwaysGroupByColumn = olvColumnDir;
+            list.ShowGroups = false;
+            list.PrimarySortColumn = olvColumnDir;
+            //list.group
+        }
+
         private void FormMain_Load(object sender, EventArgs e) {
             Xceed.Words.NET.Licenser.LicenseKey = "WDN30-W7F00-6RL0S-ERHA";
 
@@ -525,6 +543,7 @@ namespace FosMan {
             TuneFindAndReplaceList(fastObjectListViewFosFixFindAndReplace);
             TuneDocPropertiesList(fastObjectListViewRpdFixDocProperties);
             TuneDocPropertiesList(fastObjectListViewFosFixDocProperties);
+            TuneFileFixerFileList(fastObjectListViewFileFixerFiles);
 
             //список шаблонов
             var templateDir = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES);
@@ -1095,7 +1114,7 @@ namespace FosMan {
                 AddReport("Проверка РПД", report);
             }
             else {
-                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Исправление РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Коррекция РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -1435,10 +1454,10 @@ namespace FosMan {
                 }
                 App.FixRpdFiles(rpdList, targetDir, out var htmlReport);
 
-                AddReport("Исправление РПД", htmlReport);
+                AddReport("Коррекция РПД", htmlReport);
             }
             else {
-                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Исправление РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Коррекция РПД", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -1905,10 +1924,13 @@ namespace FosMan {
         }
 
         private void iconToolStripButtonCurriculaClear_Click(object sender, EventArgs e) {
-            if (MessageBox.Show("Вы уверены, что хотите очистить список загруженных учебных планов?",
+            var curriculaList = fastObjectListViewCurricula.SelectedObjects?.Cast<Curriculum>().ToList();
+            if (curriculaList.Any()) {
+                if (MessageBox.Show($"Вы уверены, что хотите удалить из списка выделенные Учебные планы ({curriculaList.Count} шт.)?",
                 "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
-                App.Curricula.Clear();
-                fastObjectListViewCurricula.ClearObjects();
+                    App.RemoveCurricula(curriculaList);
+                    fastObjectListViewCurricula.RemoveObjects(fastObjectListViewCurricula.SelectedObjects);
+                }
             }
         }
 
@@ -2193,10 +2215,10 @@ namespace FosMan {
                 }
                 App.FixFosFiles(fosList, targetDir, out var htmlReport);
 
-                AddReport("Исправление ФОС", htmlReport);
+                AddReport("Коррекция ФОС", htmlReport);
             }
             else {
-                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Исправление ФОС", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show("Необходимо выделить файлы, которые требуется исправить.", "Коррекция ФОС", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -2251,6 +2273,45 @@ namespace FosMan {
         private void checkBoxRpdFixEduWorkTablesFixComptenceResults_CheckedChanged(object sender, EventArgs e) {
             App.Config.RpdFixEduWorkTablesFixCompetenceCodes = checkBoxRpdFixEduWorkTablesFixComptenceResults.Checked;
             App.SaveConfig();
+        }
+
+        /// <summary>
+        /// Добавить файлы в режим универсальной файловой коррекции
+        /// </summary>
+        /// <param name="files"></param>
+        void AddFilesToFileFixerMode(IEnumerable<string> files) {
+            var oldFiles = fastObjectListViewFileFixerFiles.Objects.Cast<FileFixerItem>().Select(f => f.FullFileName).ToHashSet();
+            var newFiles = files.Where(f => !oldFiles.Contains(f) && File.Exists(f));
+
+            if (newFiles.Any()) {
+                fastObjectListViewFileFixerFiles.BeginUpdate();
+                fastObjectListViewFileFixerFiles.AddObjects(newFiles.Select(f => new FileFixerItem(f)).ToList());
+                fastObjectListViewFileFixerFiles.EndUpdate();
+            }
+        }
+
+        private void iconToolStripButtonFileFixerOpen_Click(object sender, EventArgs e) {
+            openFileDialogFileFixer.InitialDirectory = App.Config.FileFixerLastDirectory ?? Environment.CurrentDirectory;
+
+            if (openFileDialogFileFixer.ShowDialog(this) == DialogResult.OK) {
+                var files = openFileDialogFileFixer.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
+
+                if (openFileDialogFileFixer.FileNames.Length > 0) {
+                    App.Config.FileFixerLastDirectory = Path.GetDirectoryName(openFileDialogFileFixer.FileNames[0]);
+                    App.SaveConfig();
+                }
+                AddFilesToFileFixerMode(files);
+            }
+        }
+
+        private void iconToolStripButtonFileFixerDelete_Click(object sender, EventArgs e) {
+            var files = fastObjectListViewFileFixerFiles.SelectedObjects?.Cast<FileFixerItem>()?.ToList();
+            if (files?.Any() ?? false) {
+                if (MessageBox.Show($"Вы уверены, что хотите удалить из списка выделенные файлы ({files.Count} шт.)?", "Внимание", 
+                    MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                    fastObjectListViewFileFixerFiles.RemoveObjects(fastObjectListViewFileFixerFiles.SelectedObjects);
+                }
+            }
         }
     }
 }
