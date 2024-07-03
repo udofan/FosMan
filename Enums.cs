@@ -54,7 +54,9 @@ namespace FosMan {
             [Description("Мини-кейсы")]
             MiniCases,
             [Description("Деловая игра")]
-            BusinessGame
+            BusinessGame,
+            [Description("Курсовая работа")]
+            CourseWork
         }
 
         /// <summary>

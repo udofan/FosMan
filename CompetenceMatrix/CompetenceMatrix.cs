@@ -177,7 +177,7 @@ namespace FosMan {
                                     matrix.Errors.Add(EErrorType.CompetenceMatrixSemesterParseError, $"значение [{stage}] (ряд {rowIdx}, колонка 2)");
                                 }
                             }
-                            else {
+                            else if (currItem.Semester < 0) {
                                 matrix.Errors.Add(EErrorType.CompetenceMatrixMissingSemester, $"(ряд {rowIdx}, колонка 2)");
                             }
                         }

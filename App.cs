@@ -1708,7 +1708,7 @@ namespace FosMan {
             if (table.ColumnCount < 3) {
                 return false;
             }
-            var topRowIdxToRemove = recreateHeaders ? 0 : 1;
+            var topRowIdxToRemove = 1; // recreateHeaders ? 0 : 1;
             for (var rowIdx = table.RowCount - 1; rowIdx >= topRowIdxToRemove; rowIdx--) {
                 table.RemoveRow(rowIdx);
             }
@@ -1815,9 +1815,10 @@ namespace FosMan {
                                     double? fontSize = 12, 
                                     float lineSpacing = 12, 
                                     Alignment alignment = Alignment.center,
-                                    Xceed.Document.NET.VerticalAlignment verticalAlignment = Xceed.Document.NET.VerticalAlignment.Center) {
+                                    Xceed.Document.NET.VerticalAlignment verticalAlignment = Xceed.Document.NET.VerticalAlignment.Center,
+                                    string fontFamily = "Times New Roman") {
             var result = false;
-            var format = new Formatting() { Bold = bold, Size = fontSize };
+            var format = new Formatting() { Bold = bold, Size = fontSize, FontFamily = new Xceed.Document.NET.Font(fontFamily) };
 
             if (table.RowCount > 0 && (captions?.Any() ?? false)) {
                 //if (table.RowCount == 0) {
@@ -1849,10 +1850,12 @@ namespace FosMan {
                                 //cellPar = newPar; // cellPar.InsertParagraphAfterSelf(line, false, formatting: format);
                             }
                             cellPar.SetLineSpacing(LineSpacingType.Line, lineSpacing);
+                            cellPar.SetLineSpacing(LineSpacingType.Before, 0);
+                            cellPar.SetLineSpacing(LineSpacingType.After, 0);
                             cellPar.Alignment = alignment;
                             cellPar.IndentationFirstLine = 0.1f;
-                            cellPar.LineSpacingAfter = 0.1f;
-                            cellPar.LineSpacingBefore = 0.1f;
+                            //cellPar.LineSpacingAfter = 0.1f;
+                            //cellPar.LineSpacingBefore = 0.1f;
                             firstLine = false;
                         }
                         cell.VerticalAlignment = verticalAlignment;
@@ -1873,14 +1876,14 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="discipline"></param>
         /// <returns></returns>
-        static bool RecreateFosTableOfCompetences1(Table table, Rpd rpd, bool recreateHeaders, double? fontSize = 12, float lineSpacing = 12) {
+        static bool RecreateFosTableOfCompetences1(Table table, Rpd rpd, bool recreateHeaders, double fontSize = 12, float lineSpacing = 12) {
             var result = false;
 
             //очистка таблицы
             if (table.ColumnCount < 3) {
                 return false;
             }
-            var topRowIdxToRemove = recreateHeaders ? 0 : 1;
+            var topRowIdxToRemove = 1; // recreateHeaders ? 0 : 1;
             for (var rowIdx = table.RowCount - 1; rowIdx >= topRowIdxToRemove; rowIdx--) {
                 table.RemoveRow(rowIdx);
             }
@@ -1892,34 +1895,11 @@ namespace FosMan {
                                          "Этапы формирования компетенций (семестр)" ],
                                          fontSize: fontSize,
                                          lineSpacing: lineSpacing);
-                //var format = new Formatting() { Bold = true, Size = fontSize };
-                //var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
-                //header0.InsertText("Код и наименование", false, formatting: format);
-                //header0.Alignment = Alignment.center;
-                //header0.IndentationFirstLine = 0.1f;
-                //var header02 = header0.InsertParagraphAfterSelf("компетенций", false, formatting: format);
-                //header02.Alignment = Alignment.center;
-                //header02.IndentationFirstLine = 0.1f;
-
-                //var header1 = table.Rows[0].Cells[1].Paragraphs.FirstOrDefault();
-                //header1.InsertText("Коды и индикаторы", formatting: new Formatting() { Bold = true });
-                //header1.Alignment = Alignment.center;
-                //header1.IndentationFirstLine = 0.1f;
-                //var header12 = header1.InsertParagraphAfterSelf("достижения компетенций", false, formatting: format);
-                //header12.Alignment = Alignment.center;
-                //header12.IndentationFirstLine = 0.1f;
-
-                //var header2 = table.Rows[0].Cells[2].Paragraphs.FirstOrDefault();
-                //header2.InsertText("Этапы формирования компетенций (семестр)", formatting: format);
-                //header2.Alignment = Alignment.center;
-                //header2.IndentationFirstLine = 0.1f;
             }
 
             var discipline = FindDiscipline(rpd);
 
             //ряды матрицы
-            //var appliedIndicatorCount = 0;
-            //var items = rpd.CompetenceMatrix.GetItems(discipline.CompetenceList); //отбор строк матрицы по списку индикаторов
             foreach (var item in rpd.CompetenceMatrix.Items) {
                 var competenceStartRow = table.RowCount;
 
@@ -1930,74 +1910,34 @@ namespace FosMan {
                     if (resRowIdx == competenceStartRow) {
                         //ячейка компетенции
                         var cellCompetence = newRow.Cells[0].Paragraphs.FirstOrDefault();
+                        //cellCompetence.SetTextFormatted()
                         cellCompetence.SetLineSpacing(LineSpacingType.Line, lineSpacing);
+                        cellCompetence.SetLineSpacing(LineSpacingType.Before, 0);
+                        cellCompetence.SetLineSpacing(LineSpacingType.After, 0);
                         cellCompetence.Alignment = Alignment.both;
-                        cellCompetence.InsertText($"{item.Code}.", formatting: new Formatting() { Bold = true, Size = fontSize });
-                        cellCompetence.InsertText($" {item.Title}", formatting: new Formatting() { Bold = false, Size = fontSize });
+                        cellCompetence.InsertText($"{item.Code}.", formatting: new Formatting() { Bold = true, Size = fontSize, FontFamily = new("Times New Roman") });
+                        cellCompetence.InsertText($" {item.Title}", formatting: new Formatting() { Bold = false, Size = fontSize, FontFamily = new("Times New Roman") });
                         cellCompetence.IndentationFirstLine = 0.1f;
                         //ячейка этапа
-                        var cellStages = newRow.Cells[2].Paragraphs.FirstOrDefault();
+                        var cellStages = newRow.Cells[2];
                         var stages = "";
                         for (var sem = discipline.StartSemesterIdx + 1; sem <= discipline.LastSemesterIdx + 1; sem++) {
                             if (stages.Length > 0) stages += ", ";
                             stages += $"{sem}";
                         }
-                        cellStages.InsertText(stages, formatting: new Formatting() { Bold = false, Size = fontSize });
-                        cellStages.IndentationFirstLine = 0.1f;
-                        cellStages.Alignment = Alignment.center;
-                        newRow.Cells[2].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
+                        cellStages.SetTextFormatted(stages, fontSize: fontSize, alignment: Alignment.center, verticalAlignment: Xceed.Document.NET.VerticalAlignment.Center);
                     }
 
                     //ячейка индикатора
-                    var cellIndicator = newRow.Cells[1].Paragraphs.FirstOrDefault();
-                    cellIndicator.Alignment = Alignment.both;
-                    cellIndicator.SetLineSpacing(LineSpacingType.Line, lineSpacing);
-                    cellIndicator.InsertText($"{achi.Code}. {achi.Indicator}", formatting: new Formatting() { Bold = false, Size = fontSize });
-                    cellIndicator.IndentationFirstLine = 0.1f;
-
-                    //if (!discipline.CompetenceList.Contains(achi.Code)) { //доп. фильтрация только по нужным индикаторам
-                    //    continue;
-                    //}
-                    //appliedIndicatorCount++;
-
-                    //var achiStartRow = table.RowCount;
-
-                    //foreach (var res in achi.Results) {
-                    //    var resRowIdx = table.RowCount;
-                    //    var newRow = table.InsertRow();
-                    //    if (resRowIdx == competenceStartRow) {
-                    //        //ячейка компетенции
-                    //        var cellCompetence = newRow.Cells[0].Paragraphs.FirstOrDefault();
-                    //        //table.MergeCellsInColumn(0, firstRowIdx, firstRowIdx + rowSpan - 1);
-                    //        cellCompetence.InsertText($"{item.Code}.", formatting: new Formatting() { Bold = true });
-                    //        cellCompetence.InsertText($" {item.Title}", formatting: new Formatting() { Bold = false });
-                    //        cellCompetence.IndentationFirstLine = 0.1f;
-                    //    }
-                    //    if (resRowIdx == achiStartRow) {
-                    //        //ячейка индикатора
-                    //        var cellIndicator = newRow.Cells[1].Paragraphs.FirstOrDefault();
-                    //        cellIndicator.InsertText($"{achi.Code}. {achi.Indicator}", formatting: new Formatting() { Bold = false });
-                    //        cellIndicator.IndentationFirstLine = 0.1f;
-                    //    }
-
-                    //    //ячейка результата
-                    //    var cellResult = newRow.Cells[2].Paragraphs.FirstOrDefault();
-                    //    cellResult.InsertText($"{res.Code}:", formatting: new Formatting() { Bold = false });
-                    //    cellResult.IndentationFirstLine = 0.1f;
-                    //    var cellResult2 = cellResult.InsertParagraphAfterSelf($"{res.Description}", false, formatting: new Formatting() { Bold = false });
-                    //    cellResult2.IndentationFirstLine = 0.1f;
-                    //}
-
-                    //if (table.RowCount - 1 > achiStartRow) {
-                    //    table.MergeCellsInColumn(1, achiStartRow, table.RowCount - 1);
-                    //}
+                    var cellIndicator = newRow.Cells[1];
+                    cellIndicator.SetTextFormatted($"{achi.Code}.\n{achi.Indicator}", fontSize: fontSize, alignment: Alignment.both);
                 }
                 if (table.RowCount - 1 > competenceStartRow) {
                     table.MergeCellsInColumn(0, competenceStartRow, table.RowCount - 1);
                     table.MergeCellsInColumn(2, competenceStartRow, table.RowCount - 1);
                 }
             }
-            result = true; // appliedIndicatorCount == discipline.CompetenceList.Count;
+            result = true;
 
             return result;
         }
@@ -2020,9 +1960,11 @@ namespace FosMan {
             var par = cell.Paragraphs.FirstOrDefault();
 
             par.SetLineSpacing(LineSpacingType.Line, lineSpacing);
+            par.SetLineSpacing(LineSpacingType.Before, 0);
+            par.SetLineSpacing(LineSpacingType.After, 0);
             par.IndentationFirstLine = 0.1f;
             par.Alignment = alignment;
-            par.InsertText($"{text}", formatting: new Formatting() { Bold = fontBold, Size = fontSize });
+            par.InsertText($"{text}", formatting: new Formatting() { Bold = fontBold, Size = fontSize, FontFamily = new Xceed.Document.NET.Font("Times New Roman") });
             cell.VerticalAlignment = verticalAlignment;
         }
 
@@ -2053,7 +1995,7 @@ namespace FosMan {
         /// </summary>
         /// <param name="table">таблица</param>
         /// <param name="discipline"></param>
-        static bool RecreateFosTableOfCompetences2(Table table, Rpd rpd, bool recreateHeaders, double? fontSize = 12, float lineSpacing = 12) {
+        static bool RecreateFosTableOfCompetences2(Table table, Rpd rpd, bool recreateHeaders, double fontSize = 12, float lineSpacing = 12) {
             var result = false;
 
             //очистка таблицы
@@ -2070,38 +2012,10 @@ namespace FosMan {
                                          "Коды и индикаторы\r\nдостижения\r\nкомпетенций",
                                          "Коды и результаты обучения" ], 
                                 fontSize: fontSize, lineSpacing: lineSpacing);
-                //заголовок
-                //var format = new Formatting() { Bold = true, Size = fontSize };
-                //var header0 = table.Rows[0].Cells[0].Paragraphs.FirstOrDefault();
-                //header0.InsertText("Код", false, formatting: format);
-                //header0.Alignment = Alignment.center;
-                //header0.IndentationFirstLine = 0.1f;
-                //var header02 = header0.InsertParagraphAfterSelf("компетенции", false, formatting: format);
-                //header02.Alignment = Alignment.center;
-                //header02.IndentationFirstLine = 0.1f;
-                //table.Rows[0].Cells[0].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
-
-                //var header1 = table.Rows[0].Cells[1].Paragraphs.FirstOrDefault();
-                //header1.InsertText("Коды и индикаторы", formatting: format);
-                //header1.Alignment = Alignment.center;
-                //header1.IndentationFirstLine = 0.1f;
-                //var header12 = header1.InsertParagraphAfterSelf("достижения", false, formatting: format);
-                //header12.Alignment = Alignment.center;
-                //header12.IndentationFirstLine = 0.1f;
-                //var header13 = header1.InsertParagraphAfterSelf("компетенций", false, formatting: format);
-                //header13.Alignment = Alignment.center;
-                //header13.IndentationFirstLine = 0.1f;
-                //table.Rows[0].Cells[1].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
-
-                //var header2 = table.Rows[0].Cells[2].Paragraphs.FirstOrDefault();
-                //header2.InsertText("Коды и результаты обучения", formatting: format);
-                //header2.Alignment = Alignment.center;
-                //header2.IndentationFirstLine = 0.1f;
-                //table.Rows[0].Cells[2].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
             }
 
-            var boldFormat = new Formatting() { Bold = true, Size = fontSize };
-            var defFormat = new Formatting() { Bold = false, Size = fontSize };
+            //var boldFormat = new Formatting() { Bold = true, Size = fontSize };
+            var defFormat = new Formatting() { Bold = false, Size = fontSize, FontFamily = new("Times New Roman") };
 
             //ряды матрицы
             foreach (var item in rpd.CompetenceMatrix.Items) {
@@ -2114,31 +2028,38 @@ namespace FosMan {
                         var newRow = table.InsertRow();
                         if (resRowIdx == competenceStartRow) {
                             //ячейка компетенции
-                            var cellCompetence = newRow.Cells[0].Paragraphs.FirstOrDefault();
-                            cellCompetence.SetLineSpacing(LineSpacingType.Line, lineSpacing);
-                            cellCompetence.Alignment = Alignment.center;
-                            cellCompetence.InsertText($"{item.Code}", formatting: boldFormat);
-                            cellCompetence.IndentationFirstLine = 0.1f;
-                            newRow.Cells[0].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
+                            var cellCompetence = newRow.Cells[0];//.Paragraphs.FirstOrDefault();
+                            cellCompetence.SetTextFormatted($"{item.Code}", fontSize: fontSize, fontBold: true, alignment: Alignment.center, lineSpacing: lineSpacing);
+                            //cellCompetence.SetLineSpacing(LineSpacingType.Line, lineSpacing);
+                            //cellCompetence.Alignment = Alignment.center;
+                            //cellCompetence.InsertText($"{item.Code}", formatting: boldFormat);
+                            //cellCompetence.IndentationFirstLine = 0.1f;
+                            //newRow.Cells[0].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
+
                         }
                         if (resRowIdx == achiStartRow) {
                             //ячейка индикатора
-                            var cellIndicator = newRow.Cells[1].Paragraphs.FirstOrDefault();
-                            cellIndicator.SetLineSpacing(LineSpacingType.Line, lineSpacing);
-                            cellIndicator.Alignment = Alignment.center;
-                            cellIndicator.InsertText($"{achi.Code}", formatting: defFormat);
-                            cellIndicator.IndentationFirstLine = 0.1f;
-                            newRow.Cells[1].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
+                            var cellIndicator = newRow.Cells[1]; //.Paragraphs.FirstOrDefault();
+                            cellIndicator.SetTextFormatted($"{achi.Code}", fontSize: fontSize, fontBold: false, alignment: Alignment.center, lineSpacing: lineSpacing);
+                            //cellIndicator.SetLineSpacing(LineSpacingType.Line, lineSpacing);
+                            //cellIndicator.Alignment = Alignment.center;
+                            //cellIndicator.InsertText($"{achi.Code}", formatting: defFormat);
+                            //cellIndicator.IndentationFirstLine = 0.1f;
+                            //newRow.Cells[1].VerticalAlignment = Xceed.Document.NET.VerticalAlignment.Center;
                         }
 
                         //ячейка результата
                         var cellResult = newRow.Cells[2].Paragraphs.FirstOrDefault();
                         cellResult.SetLineSpacing(LineSpacingType.Line, lineSpacing);
+                        cellResult.SetLineSpacing(LineSpacingType.Before, 0);
+                        cellResult.SetLineSpacing(LineSpacingType.After, 0);
                         cellResult.Alignment = Alignment.left;
                         cellResult.InsertText($"{res.Code}:", formatting: defFormat);
                         cellResult.IndentationFirstLine = 0.1f;
                         var cellResult2 = cellResult.InsertParagraphAfterSelf($"{res.Description}", false, formatting: defFormat);
                         cellResult2.SetLineSpacing(LineSpacingType.Line, lineSpacing);
+                        cellResult2.SetLineSpacing(LineSpacingType.Before, 0);
+                        cellResult2.SetLineSpacing(LineSpacingType.After, 0);
                         cellResult2.Alignment = Alignment.both;
                         cellResult2.IndentationFirstLine = 0.1f;
                     }
@@ -2547,215 +2468,234 @@ namespace FosMan {
         /// <param name="fosList"></param>
         internal static void FixFosFiles(List<Fos> fosList, string targetDir, out string htmlReport) {
             var html = new StringBuilder("<html><body><h2>Отчёт по исправлению ФОС</h2>");
+            var rep = new StringBuilder("");
             DocX templateDocx = null;
             DocxChapters templateChapters = null;
+            var successFileCount = 0;
+            var failureFileCount = 0;
+            var swMain = Stopwatch.StartNew();
 
             try {
-                html.Append("<div><b>Режим работы:</b></div><ul>");
+                rep.Append("<div><b>Режим работы:</b></div><ul>");
                 if (Config.FosFixCompetenceTable1) {
-                    html.Append("<li>Исправление таблицы компетенций #1 (п.2.1)</li>");
+                    rep.Append("<li>Исправление таблицы компетенций #1 (п.2.1)</li>");
                 }
                 if (Config.FosFixCompetenceTable2) {
-                    html.Append("<li>Исправление таблицы компетенций #2 (п.2.2)</li>");
+                    rep.Append("<li>Исправление таблицы компетенций #2 (п.2.2)</li>");
                 }
                 if (Config.FosFixPassportTable) {
-                    html.Append("<li>Исправление таблицы паспорта</li>");
+                    rep.Append("<li>Исправление таблицы паспорта</li>");
                 }
                 if (Config.FosFixResetSelection) {
-                    html.Append("<li>Очистка цветных выделений для служебных областей</li>");
+                    rep.Append("<li>Очистка цветных выделений для служебных областей</li>");
                 }
                 var findAndReplaceItems = Config.FosFixFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
                 if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
                     var tdStyle = "style='border: 1px solid;'";
-                    html.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
+                    rep.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
                     foreach (var item in findAndReplaceItems) {
-                        html.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
+                        rep.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
                     }
-                    html.Append("</table></li>");
+                    rep.Append("</table></li>");
                 }
-                html.Append("</ul>");
+                rep.Append("</ul>");
 
                 foreach (var fos in fosList) {
-                    html.Append("<p />");
+                    var sw = Stopwatch.StartNew();
+                    rep.Append("<p />");
                     if (File.Exists(fos.SourceFileName)) {
-                        html.AddFileLink("Исходный файл:", fos.SourceFileName);
-                        //html.Append($"<div>Исходный файл: <b>{fos.SourceFileName}</b></div>");
-                        //html.AddFileLink("Дисциплина:", fos.DisciplineName);
-                        html.Append($"<div>Дисциплина: <b>{fos.DisciplineName}</b></div>");
+                        rep.AddFileLink("Исходный файл:", fos.SourceFileName);
 
-                        var fixCompetences1 = Config.FosFixCompetenceTable1;
-                        var fixCompetences2 = Config.FosFixCompetenceTable2;
-                        var fixPassport = Config.FosFixPassportTable;
+                        try {
+                            rep.Append($"<div>Дисциплина: <b>{fos.DisciplineName}</b></div>");
 
-                        CurriculumDiscipline discipline = null;
-                        var rpd = FindRpd(fos);
-                        if (rpd == null) {
-                            html.AddError($"Не удалось найти РПД");
-                            fixPassport = false;
-                            fixCompetences1 = false;
-                            fixCompetences2 = false;
-                        }
-                        else {
-                            discipline = FindDiscipline(rpd);
-                            if (discipline == null) {
+                            var fixCompetences1 = Config.FosFixCompetenceTable1;
+                            var fixCompetences2 = Config.FosFixCompetenceTable2;
+                            var fixPassport = Config.FosFixPassportTable;
+
+                            CurriculumDiscipline discipline = null;
+                            var rpd = FindRpd(fos);
+                            if (rpd == null) {
+                                rep.AddError($"Не удалось найти РПД");
+                                fixPassport = false;
                                 fixCompetences1 = false;
-                                html.AddError($"Не удалось найти дисциплину [{fos.DisciplineName}] в загруженных учебных планах");
+                                fixCompetences2 = false;
                             }
-                        }
-
-
-                        //var fixEduWorksSummary = Config.RpdFixTableOfEduWorks;
-                        //var eduWorks = GetEducationWorks(fos, out _);
-                        //if (!(eduWorks?.Any() ?? false)) {
-                        //    fixEduWorks = false;
-                        //    html.Append($"<div style='color: red'>Не удалось найти учебные работы для дисциплины [{rpd.DisciplineName}] в загруженных учебных планах</div>");
-                        //}
-                        //if (fos.FormsOfStudy.Count != eduWorks.Count) {
-                        //    fixEduWorksSummary = false;
-                        //    foreach (var form in fos.FormsOfStudy) {
-                        //        if (!eduWorks.ContainsKey(form)) {
-                        //            html.Append($"<div style='color: red'>Учебный план для формы обучения [{form.GetDescription()}] не загружен</div>");
-                        //        }
-                        //    }
-                        //}
-                        //var fixEduWorkTables = Config.RpdFixFillEduWorkTables;
-                        //var eduWorkTableIsFixed = fos.FormsOfStudy.ToDictionary(x => x, x => false);
-
-                        //var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
-
-                        var setDocProperties = Config.FosFixDocPropertyList?.Where(i => i.IsChecked).ToList();
-
-                        using (var docx = DocX.Load(fos.SourceFileName)) {
-                            if (setDocProperties?.Any() ?? false) {
-                                foreach (var item in setDocProperties) {
-                                    ///docx.CoreProperties[item.Name] = item.Value;
-                                    docx.AddCoreProperty(item.Name, item.Value);
+                            else {
+                                discipline = FindDiscipline(rpd);
+                                if (discipline == null) {
+                                    fixCompetences1 = false;
+                                    rep.AddError($"Не удалось найти дисциплину [{fos.DisciplineName}] в загруженных учебных планах");
                                 }
                             }
 
-                            foreach (var table in docx.Tables) {
-                                var backup = table.Xml;
-                                if (fixCompetences1 && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Fos21) {
-                                    if (RecreateFosTableOfCompetences1(table, rpd, false)) {
-                                        html.Append("<div style='color: green'>Таблица компетенций #1 сформирована по матрице компетенций РПД.</div>");
-                                    }
-                                    else {
-                                        html.AddError("Не удалось сформировать обновленную таблицу компетенций #1.");
-                                        table.Xml = backup;
-                                    }
-                                }
-                                if (fixCompetences2 && CompetenceMatrix.TestTable(table, out format) && format == ECompetenceMatrixFormat.Fos22) {
-                                    if (RecreateFosTableOfCompetences2(table, rpd, false)) {
-                                        html.Append("<div style='color: green'>Таблица компетенций #2 сформирована по матрице компетенций РПД.</div>");
-                                    }
-                                    else {
-                                        html.AddError("Не удалось сформировать обновленную таблицу компетенций #2.");
-                                        table.Xml = backup;
-                                    }
-                                }
-                                if (fixPassport && TestTableForFosPassport(table, out _, out _)) {
-                                    RecreateFosTableOfPassport(table, rpd, true);
-                                }
-                            }
-                            
 
-                            //foreach (var table in docx.Tables) {
-                            //    var backup = table.Xml;
-                            //    if (fixCompetences && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
-                            //        if (RecreateTableOfCompetences(table, discipline, false)) {
-                            //            html.Append("<div style='color: green'>Таблица компетенций сформирована по матрице компетенций.</div>");
-                            //        }
-                            //        else {
-                            //            html.Append("<div style='color: red'>Не удалось сформировать обновленную таблицу компетенций.</div>");
-                            //            table.Xml = backup;
-                            //        }
-                            //    }
-                            //    if (fixEduWorksSummary && !eduSummaryTableIsFixed) {
-                            //        eduSummaryTableIsFixed |= TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
-                            //    }
-                            //    if (fixEduWorkTables) {
-                            //        //фикс-заполнение таблицы учебных работ для формы обучения
-                            //        if (TestForEduWorkTable(table, fos, PropertyAccess.Set, ref evalTools, ref studyResults, out var formOfStudy)) {
-                            //            eduWorkTableIsFixed[formOfStudy] = true;
+                            //var fixEduWorksSummary = Config.RpdFixTableOfEduWorks;
+                            //var eduWorks = GetEducationWorks(fos, out _);
+                            //if (!(eduWorks?.Any() ?? false)) {
+                            //    fixEduWorks = false;
+                            //    html.Append($"<div style='color: red'>Не удалось найти учебные работы для дисциплины [{rpd.DisciplineName}] в загруженных учебных планах</div>");
+                            //}
+                            //if (fos.FormsOfStudy.Count != eduWorks.Count) {
+                            //    fixEduWorksSummary = false;
+                            //    foreach (var form in fos.FormsOfStudy) {
+                            //        if (!eduWorks.ContainsKey(form)) {
+                            //            html.Append($"<div style='color: red'>Учебный план для формы обучения [{form.GetDescription()}] не загружен</div>");
                             //        }
                             //    }
                             //}
-                            //if (fixEduWorksSummary) {
-                            //    if (eduSummaryTableIsFixed) {
-                            //        html.Append("<div style='color: green'>Сводная таблица учебных работ заполнена по учебным планам.</div>");
-                            //    }
-                            //    else {
-                            //        html.Append("<div style='color: red'>Не удалось сформировать сводную таблицу учебных работ.</div>");
-                            //        //table.Xml = backup;
-                            //    }
-                            //}
-                            //if (fixEduWorkTables) {
-                            //    foreach (var item in eduWorkTableIsFixed) {
-                            //        if (item.Value) {
-                            //            html.Append($"<div style='color: green'>Таблица учебных работ для формы обучения [{item.Key.GetDescription()}] успешно заполнена.</div>");
-                            //        }
-                            //        else {
-                            //            html.Append($"<div style='color: red'>Таблицу учебных работ для формы обучения [{item.Key.GetDescription()}] не удалось заполнить.</div>");
-                            //        }
-                            //    }
-                            //}
+                            //var fixEduWorkTables = Config.RpdFixFillEduWorkTables;
+                            //var eduWorkTableIsFixed = fos.FormsOfStudy.ToDictionary(x => x, x => false);
 
-                            //обработка "найти и заменить"
-                            var replaceCount = 0;
+                            //var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
 
-                            if ((findAndReplaceItems?.Any() ?? false) || App.Config.FosFixResetSelection) {
-                                foreach (var par in docx.Paragraphs) {
-                                    //поиск и замена
-                                    if (findAndReplaceItems?.Any() ?? false) {
-                                        foreach (var findItem in findAndReplaceItems) {
-                                            var replaceOptions = new FunctionReplaceTextOptions() {
-                                                FindPattern = findItem.FindPattern,
-                                                ContainerLocation = ReplaceTextContainer.All,
-                                                StopAfterOneReplacement = false,
-                                                RegexMatchHandler = m => findItem.ReplacePattern,
-                                                RegExOptions = RegexOptions.IgnoreCase
-                                            };
-                                            if (par.ReplaceText(replaceOptions)) {
-                                                replaceCount++;
-                                            }
+                            var setDocProperties = Config.FosFixDocPropertyList?.Where(i => i.IsChecked).ToList();
+
+                            using (var docx = DocX.Load(fos.SourceFileName)) {
+                                if (setDocProperties?.Any() ?? false) {
+                                    foreach (var item in setDocProperties) {
+                                        ///docx.CoreProperties[item.Name] = item.Value;
+                                        docx.AddCoreProperty(item.Name, item.Value);
+                                    }
+                                }
+
+                                foreach (var table in docx.Tables) {
+                                    var backup = table.Xml;
+                                    if (fixCompetences1 && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Fos21) {
+                                        if (RecreateFosTableOfCompetences1(table, rpd, true)) {
+                                            rep.Append("<div style='color: green'>Таблица компетенций #1 сформирована по матрице компетенций РПД.</div>");
+                                        }
+                                        else {
+                                            rep.AddError("Не удалось сформировать обновленную таблицу компетенций #1.");
+                                            table.Xml = backup;
                                         }
                                     }
-                                    //очистка цветных выделений
-                                    if (App.Config.FosFixResetSelection) {
-                                        par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
-                                        par.Highlight(Highlight.none);
+                                    if (fixCompetences2 && CompetenceMatrix.TestTable(table, out format) && format == ECompetenceMatrixFormat.Fos22) {
+                                        if (RecreateFosTableOfCompetences2(table, rpd, true)) {
+                                            rep.Append("<div style='color: green'>Таблица компетенций #2 сформирована по матрице компетенций РПД.</div>");
+                                        }
+                                        else {
+                                            rep.AddError("Не удалось сформировать обновленную таблицу компетенций #2.");
+                                            table.Xml = backup;
+                                        }
+                                    }
+                                    if (fixPassport && TestTableForFosPassport(table, out _, out _)) {
+                                        RecreateFosTableOfPassport(table, rpd, true);
                                     }
                                 }
-                                html.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
-                            }
-                            //extraReplaceItems?.ForEach(x => findAndReplaceItems.Remove(x)); //убираем, т.к. это было нужно только для текущего РПД
 
-                            //фикс разделов по шаблону
-                            //if (fixByTemplate) {
-                            //    var docxSections = ScanDocxForChapters(docx);
-                            //}
 
-                            var fileName = Path.GetFileName(fos.SourceFileName);
-                            var newFileName = Path.Combine(targetDir, fileName);
-                            if (!Directory.Exists(targetDir)) {
-                                Directory.CreateDirectory(targetDir);
+                                //foreach (var table in docx.Tables) {
+                                //    var backup = table.Xml;
+                                //    if (fixCompetences && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Rpd) {
+                                //        if (RecreateTableOfCompetences(table, discipline, false)) {
+                                //            html.Append("<div style='color: green'>Таблица компетенций сформирована по матрице компетенций.</div>");
+                                //        }
+                                //        else {
+                                //            html.Append("<div style='color: red'>Не удалось сформировать обновленную таблицу компетенций.</div>");
+                                //            table.Xml = backup;
+                                //        }
+                                //    }
+                                //    if (fixEduWorksSummary && !eduSummaryTableIsFixed) {
+                                //        eduSummaryTableIsFixed |= TestForSummaryTableForEducationalWorks(table, eduWorks, PropertyAccess.Set /*установка значений в таблицу*/);
+                                //    }
+                                //    if (fixEduWorkTables) {
+                                //        //фикс-заполнение таблицы учебных работ для формы обучения
+                                //        if (TestForEduWorkTable(table, fos, PropertyAccess.Set, ref evalTools, ref studyResults, out var formOfStudy)) {
+                                //            eduWorkTableIsFixed[formOfStudy] = true;
+                                //        }
+                                //    }
+                                //}
+                                //if (fixEduWorksSummary) {
+                                //    if (eduSummaryTableIsFixed) {
+                                //        html.Append("<div style='color: green'>Сводная таблица учебных работ заполнена по учебным планам.</div>");
+                                //    }
+                                //    else {
+                                //        html.Append("<div style='color: red'>Не удалось сформировать сводную таблицу учебных работ.</div>");
+                                //        //table.Xml = backup;
+                                //    }
+                                //}
+                                //if (fixEduWorkTables) {
+                                //    foreach (var item in eduWorkTableIsFixed) {
+                                //        if (item.Value) {
+                                //            html.Append($"<div style='color: green'>Таблица учебных работ для формы обучения [{item.Key.GetDescription()}] успешно заполнена.</div>");
+                                //        }
+                                //        else {
+                                //            html.Append($"<div style='color: red'>Таблицу учебных работ для формы обучения [{item.Key.GetDescription()}] не удалось заполнить.</div>");
+                                //        }
+                                //    }
+                                //}
+
+                                //обработка "найти и заменить"
+                                var replaceCount = 0;
+
+                                if ((findAndReplaceItems?.Any() ?? false) || App.Config.FosFixResetSelection) {
+                                    foreach (var par in docx.Paragraphs) {
+                                        //поиск и замена
+                                        if (findAndReplaceItems?.Any() ?? false) {
+                                            foreach (var findItem in findAndReplaceItems) {
+                                                var replaceOptions = new FunctionReplaceTextOptions() {
+                                                    FindPattern = findItem.FindPattern,
+                                                    ContainerLocation = ReplaceTextContainer.All,
+                                                    StopAfterOneReplacement = false,
+                                                    RegexMatchHandler = m => findItem.ReplacePattern,
+                                                    RegExOptions = RegexOptions.IgnoreCase
+                                                };
+                                                if (par.ReplaceText(replaceOptions)) {
+                                                    replaceCount++;
+                                                }
+                                            }
+                                        }
+                                        //очистка цветных выделений
+                                        if (App.Config.FosFixResetSelection) {
+                                            par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
+                                            par.Highlight(Highlight.none);
+                                        }
+                                    }
+                                    rep.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
+                                }
+                                //extraReplaceItems?.ForEach(x => findAndReplaceItems.Remove(x)); //убираем, т.к. это было нужно только для текущего РПД
+
+                                //фикс разделов по шаблону
+                                //if (fixByTemplate) {
+                                //    var docxSections = ScanDocxForChapters(docx);
+                                //}
+
+                                var fileName = Path.GetFileName(fos.SourceFileName);
+                                var newFileName = Path.Combine(targetDir, fileName);
+                                if (!Directory.Exists(targetDir)) {
+                                    Directory.CreateDirectory(targetDir);
+                                }
+                                docx.SaveAs(newFileName);
+                                rep.Append($"<div>Время работы: {sw.Elapsed}</div>");
+                                rep.AddFileLink("Итоговый файл:", newFileName);
+                                //html.Append($"<div>Итоговый файл: <b>{newFileName}</b></div>");
                             }
-                            docx.SaveAs(newFileName);
-                            html.AddFileLink("Итоговый файл:", newFileName);
-                            //html.Append($"<div>Итоговый файл: <b>{newFileName}</b></div>");
+                            successFileCount++;
+                        }
+                        catch (Exception e) {
+                            rep.AddError($"При обработке файла возникла ошибка: {e.Message}");
+                            rep.AddError($"Стек: {e.StackTrace}");
+                            failureFileCount++;
                         }
                     }
                     else {
-                        html.Append($"<div style='color:red'>Файл <b>{fos.SourceFileName}</b> не найден</div>");
+                        rep.Append($"<div style='color:red'>Файл <b>{fos.SourceFileName}</b> не найден</div>");
+                        failureFileCount++;
                     }
                 }
             }
             catch (Exception ex) {
-                html.Append($"<div>{ex.Message}</div>");
-                html.Append($"<div>{ex.StackTrace}</div>");
+                rep.Append($"<div>{ex.Message}</div>");
+                rep.Append($"<div>{ex.StackTrace}</div>");
             }
             finally {
                 templateDocx?.Dispose();
+                html.AddDiv($"Исправлено файлов: {successFileCount}");
+                html.AddDiv($"Сбойных файлов: {failureFileCount}");
+                html.AddDiv($"Время работы: {swMain.Elapsed}");
+                html.Append("<p />");
+                html.Append(rep);
                 html.Append("</body></html>");
             }
 
@@ -3567,7 +3507,7 @@ namespace FosMan {
             try {
                 //ожидаем колонки
                 //№ п/п	- Контролируемые модули, разделы (темы) дисциплины - Код контролируемого индикатора достижения компетенции - Наименование оценочного средства
-                if (table.RowCount > 2 && table.ColumnCount >= 4) {
+                if (table.RowCount > 2 && table.Rows[0].Cells.Count >= 4) {
                     var headerRow = table.Rows[0];
                     var header1 = headerRow.Cells[1].GetText(); //Контролируемые модули, разделы (темы) дисциплины?
                     var header2 = headerRow.Cells[2].GetText(); //Код контролируемого индикатора достижения компетенции?
