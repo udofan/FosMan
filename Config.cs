@@ -9,6 +9,8 @@ using static FosMan.Enums;
 
 namespace FosMan {
     internal class Config {
+        bool m_rpdFixEduWorkTablesFullRecreate = false;
+
         [JsonInclude]
         public string YaOAuthToken { get; set; }
         [JsonInclude]
@@ -89,6 +91,21 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public decimal RpdFixMaxCompetenceResultsCount { get; set; } = 3;
+        /// <summary>
+        /// Флаг полного перестроения таблицы содержания дисциплины
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixEduWorkTablesFullRecreate {
+            get => m_rpdFixEduWorkTablesFullRecreate;
+            set {
+                m_rpdFixEduWorkTablesFullRecreate = value;
+                if (value) {
+                    RpdFixEduWorkTablesFixCompetenceCodes = true;
+                    RpdFixEduWorkTablesFixEvalTools = true;
+                    RpdFixEduWorkTablesFixTime = true;
+                }
+            }
+        }
         /// <summary>
         /// Список оценочных средств, выдаваемых первым темам при их расстановке
         /// </summary>

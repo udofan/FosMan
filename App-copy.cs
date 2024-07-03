@@ -35,6 +35,7 @@ using System.Windows.Controls;
 //using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using Xceed.Document.NET;
+using Xceed.Pdf.Layout.Table;
 using Xceed.Words.NET;
 using static FosMan.Enums;
 using static System.Resources.ResXFileRef;
@@ -292,7 +293,7 @@ namespace FosMan {
                 FindPattern = @"^.*$",
                 ContainerLocation = ReplaceTextContainer.All,
                 RegexMatchHandler = m => string.Empty,
-                RemoveEmptyParagraph = true, 
+                RemoveEmptyParagraph = true,
                 TrackChanges = true
             };
             cell.ReplaceText(replaceTextOptions);
@@ -373,7 +374,7 @@ namespace FosMan {
         /// <param name="discipline"></param>
         /// <param name="repTable"></param>
         static bool ApplyFosCheck(Fos fos, Rpd rpd, StringBuilder repTable,
-                                  ref int pos, ref int errorCount, string description, 
+                                  ref int pos, ref int errorCount, string description,
                                   Func<Fos, Rpd, (bool result, string msg)> func) {
             pos++;
             (bool result, string msg) ret = (false, "?");
@@ -486,20 +487,19 @@ namespace FosMan {
                                 });
                                 //проверка итогового контроля
                                 ApplyDisciplineCheck(curriculum.Key, rpd, discipline, table, ref checkPos, ref errorCount, "Итоговый контроль", (eduWork) => {
+                                    var error = false;
                                     var msg = "";
                                     if (discipline.EducationalWork.ControlForm == EControlForm.Unknown) {
                                         msg = "Не определен тип контроля.";
                                     }
-                                    if (eduWork.ControlForm == EControlForm.Unknown) {
-                                        if (msg.Length > 0) msg += "<br />";
-                                        msg += $"В УП не определен тип контроля."; // [{eduWork.ControlForm.GetDescription()}] в УП не определено значение.";
+                                    else if (eduWork.ControlForm == EControlForm.Unknown) {
+                                        msg = $"В УП не определен тип контроля."; // [{eduWork.ControlForm.GetDescription()}] в УП не определено значение.";
                                     }
-                                    if (discipline.EducationalWork.ControlForm != eduWork.ControlForm) {
-                                        if (msg.Length > 0) msg += "<br />";
+                                    else if (discipline.EducationalWork.ControlForm != eduWork.ControlForm) {
                                         msg = $"Тип контроля [{discipline.EducationalWork.ControlForm.GetDescription()}] не соответствует " +
                                               $"типу контроля из УП - [{eduWork.ControlForm.GetDescription()}]";
                                     }
-                                    return (string.IsNullOrEmpty(msg), msg);
+                                    return (!error, msg);
                                 });
                             }
 
@@ -859,7 +859,7 @@ namespace FosMan {
                     });
                     ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Формы обучения", (fos, rpd) => {
                         var result = !fos.FormsOfStudy.Except(rpd.FormsOfStudy).Any() && !rpd.FormsOfStudy.Except(fos.FormsOfStudy).Any();
-                        var msg = result ? "": $"Обнаружено различие в формах обучения " +
+                        var msg = result ? "" : $"Обнаружено различие в формах обучения " +
                                                $"[ФОС: <b>{string.Join(", ", fos.FormsOfStudy.Select(f => f.GetDescription()))}</b>], " +
                                                $"[РПД: <b>{string.Join(", ", rpd.FormsOfStudy.Select(f => f.GetDescription()))}</b>]";
                         return (result, msg);
@@ -1022,7 +1022,7 @@ namespace FosMan {
             StringBuilder html = new("<html><body><h2>Отчёт по проверке РПД</h2>");
             StringBuilder toc = new("<div><ul>");
             StringBuilder rep = new("<div>");
-            
+
             var idx = 0;
             var anchors = new Dictionary<string, string>();
             foreach (var curriculum in curricula) {
@@ -1809,11 +1809,11 @@ namespace FosMan {
         /// <param name="lineSpacing"></param>
         /// <param name="alignment"></param>
         /// <returns></returns>
-        static bool SetTableHeaders(Table table, 
-                                    string[] captions, 
-                                    bool? bold = true, 
-                                    double? fontSize = 12, 
-                                    float lineSpacing = 12, 
+        static bool SetTableHeaders(Table table,
+                                    string[] captions,
+                                    bool? bold = true,
+                                    double? fontSize = 12,
+                                    float lineSpacing = 12,
                                     Alignment alignment = Alignment.center,
                                     Xceed.Document.NET.VerticalAlignment verticalAlignment = Xceed.Document.NET.VerticalAlignment.Center) {
             var result = false;
@@ -1887,8 +1887,8 @@ namespace FosMan {
 
             if (recreateHeaders) {
                 //заголовок
-                SetTableHeaders(table, [ "Код и наименование\r\nкомпетенций", 
-                                         "Коды и индикаторы\r\nдостижения компетенций", 
+                SetTableHeaders(table, [ "Код и наименование\r\nкомпетенций",
+                                         "Коды и индикаторы\r\nдостижения компетенций",
                                          "Этапы формирования компетенций (семестр)" ],
                                          fontSize: fontSize,
                                          lineSpacing: lineSpacing);
@@ -2012,7 +2012,7 @@ namespace FosMan {
         /// <param name="alignment"></param>
         /// <param name="verticalAlignment"></param>
         public static void SetTextFormatted(this Cell cell, string text,
-                                            bool fontBold = false, 
+                                            bool fontBold = false,
                                             double fontSize = 12,
                                             float lineSpacing = 12,
                                             Alignment alignment = Alignment.left,
@@ -2066,9 +2066,9 @@ namespace FosMan {
             }
 
             if (recreateHeaders) {
-                SetTableHeaders(table, [ "Код\r\nкомпетенции", 
+                SetTableHeaders(table, [ "Код\r\nкомпетенции",
                                          "Коды и индикаторы\r\nдостижения\r\nкомпетенций",
-                                         "Коды и результаты обучения" ], 
+                                         "Коды и результаты обучения" ],
                                 fontSize: fontSize, lineSpacing: lineSpacing);
                 //заголовок
                 //var format = new Formatting() { Bold = true, Size = fontSize };
@@ -2168,7 +2168,7 @@ namespace FosMan {
             if (table.ColumnCount < 4) {
                 return false;
             }
-            
+
             //очистка таблицы
             var topRowIdxToRemove = 1;
             for (var rowIdx = table.RowCount - 1; rowIdx >= topRowIdxToRemove; rowIdx--) {
@@ -2239,7 +2239,7 @@ namespace FosMan {
         public static bool TryDeserialize<T>(string json, out T obj) {
             var result = false;
             obj = default;
-            
+
             try {
                 obj = JsonSerializer.Deserialize<T>(json, m_jsonOptions);
                 result = true;
@@ -2657,7 +2657,7 @@ namespace FosMan {
                                     RecreateFosTableOfPassport(table, rpd, true);
                                 }
                             }
-                            
+
 
                             //foreach (var table in docx.Tables) {
                             //    var backup = table.Xml;
@@ -2872,9 +2872,9 @@ namespace FosMan {
         /// <param name="luckyNumbers"></param>
         /// <param name="useOddHours">можно использовать нечетное кол-во часов</param>
         /// <returns></returns>
-        static int[] SplitTime(int total, int count, Random rand, 
-                               out HashSet<int> luckyNumbers, 
-                               HashSet<int> includeNumbers = null, 
+        static int[] SplitTime(int total, int count, Random rand,
+                               out HashSet<int> luckyNumbers,
+                               HashSet<int> includeNumbers = null,
                                HashSet<int> excludeNumbers = null,
                                bool useOddHours = false) {
             var items = new int[count];
@@ -2955,7 +2955,7 @@ namespace FosMan {
             for (var i = 0; i < topicCount; i++) {
                 if (!luckyNumbers.Contains(i)) includeNumbers.Add(i);
             }
-            
+
             var practicalItems = SplitTime(eduWork.PracticalHours.Value, topicCount, rand, out var luckyNumbers2, includeNumbers: includeNumbers);
             var superLuckyNumbers = luckyNumbers.Intersect(luckyNumbers2).ToHashSet();
 
@@ -2973,22 +2973,23 @@ namespace FosMan {
 
             return topics;
         }
-        
+
         /// <summary>
         /// Заполнение таблицы учебных работ по заданной форме обучения
         /// </summary>
         /// <param name="workTable"></param>
         /// <param name="rpd"></param>
         /// <param name="formOfStudy"></param>
-        static void FillEduWorkTable(DocX docX, Table table, Rpd rpd, 
+        static void FillEduWorkTable(DocX docX, Table table, Rpd rpd,
                                      EEduWorkFixType fixTypes,
-                                     EFormOfStudy formOfStudy, 
+                                     EFormOfStudy formOfStudy,
                                      ref EEvaluationTool[] evalTools,
                                      ref string[][] studyResults,
                                      decimal maxCompetenceResultsCount,
                                      List<EEvaluationTool> evalTools1stStageItems,
                                      List<EEvaluationTool> evalTools2ndStageItems) {
             var curricula = FindCurricula(rpd);
+
             if ((curricula?.Any() ?? false) && rpd.EducationalWorks.TryGetValue(formOfStudy, out var eduWork)) {
                 var seed = rpd.DisciplineName.ToCharArray().Sum(c => c);
                 var rand = new Random(seed);
@@ -3018,34 +3019,34 @@ namespace FosMan {
                     workTable.Design = TableDesign.TableGrid;
 
                     parForNewTable = table.Paragraphs.FirstOrDefault().PreviousParagraph;
-                        //prevPar.InsertTableAfterSelf(workTable);
+                    //prevPar.InsertTableAfterSelf(workTable);
                     //workTable.Design = TableDesign.LightShading;
 
-                        //prevPar.InsertParagraphAfterSelf("fuck");
-                        //prevPar.InsertParagraphAfterSelf("fuck2");
-                        //table.Remove();
-                        //var table2 = newTable;
-                        //table2.Rows[5].Cells[0].SetText("table<=");
-                        //workTable.Rows[6].Cells[0].SetText("newTable<=");
-                        //}
-                        /*
-                        //удаление всех строк ниже заголовка
-                        //1. выявим крайний ряд заголовков (в каких-то РПД бывает пустой промежуточный ряд между заголовками и рядами с темами)
-                        var headerLastRow = 0;
-                        for (var row = 2; row < eduWork.TableTopicStartRow; row++) {
-                            if (table.Rows[row].Cells.Any(c => !string.IsNullOrEmpty(c.GetText()))) {
-                                headerLastRow = row;
-                            }
-                            else {
-                                break;
-                            }
+                    //prevPar.InsertParagraphAfterSelf("fuck");
+                    //prevPar.InsertParagraphAfterSelf("fuck2");
+                    //table.Remove();
+                    //var table2 = newTable;
+                    //table2.Rows[5].Cells[0].SetText("table<=");
+                    //workTable.Rows[6].Cells[0].SetText("newTable<=");
+                    //}
+                    /*
+                    //удаление всех строк ниже заголовка
+                    //1. выявим крайний ряд заголовков (в каких-то РПД бывает пустой промежуточный ряд между заголовками и рядами с темами)
+                    var headerLastRow = 0;
+                    for (var row = 2; row < eduWork.TableTopicStartRow; row++) {
+                        if (table.Rows[row].Cells.Any(c => !string.IsNullOrEmpty(c.GetText()))) {
+                            headerLastRow = row;
                         }
-                        //2. удаление всех рядов ниже заголовка
-                        while (table.RowCount != headerLastRow + 1) {
-                            table.RemoveRow();
+                        else {
+                            break;
                         }
-                        */
-                        //добавление новых рядов для тем и двух рядов для контроля и итого
+                    }
+                    //2. удаление всех рядов ниже заголовка
+                    while (table.RowCount != headerLastRow + 1) {
+                        table.RemoveRow();
+                    }
+                    */
+                    //добавление новых рядов для тем и двух рядов для контроля и итого
 
                     //}
                 }
@@ -3117,18 +3118,18 @@ namespace FosMan {
                 }
                 //фикс значения с контролем
                 if (fixTypes.HasFlag(EEduWorkFixType.Time) && applyFixTime && eduWork.TableControlRow >= 0) {
-                    workTable.Rows[eduWork.TableControlRow].Cells[colTotal].SetTextFormatted(eduWork.ControlHours ?? 0, fontSize: 11, alignment: Alignment.center);
+                    workTable.Rows[eduWork.TableControlRow].Cells[colTotal].SetTextFormatted(eduWork.ControlHours ?? 0, fontSize: 11);
                 }
                 //формирование итоговой строки
                 if (fixTypes.HasFlag(EEduWorkFixType.Time) && applyFixTime) {
                     var totalRow = eduWork.TableControlRow + 1;
-                    workTable.Rows[totalRow].Cells[colTotal].SetTextFormatted(eduWork.TotalHours ?? 0, fontBold: true, fontSize: 11, alignment: Alignment.center);
+                    workTable.Rows[totalRow].Cells[colTotal].SetTextFormatted(eduWork.TotalHours, fontSize: 11, alignment: Alignment.center);
                     if (eduWork.TableHasContactTimeSubtotal) {
-                        workTable.Rows[totalRow].Cells[colSubTotal].SetTextFormatted(eduWork.ContactWorkHours ?? 0, fontBold: true, fontSize: 11, alignment: Alignment.center);
+                        workTable.Rows[totalRow].Cells[colSubTotal].SetTextFormatted(eduWork.ContactWorkHours, fontSize: 11, alignment: Alignment.center);
                     }
-                    workTable.Rows[totalRow].Cells[colLecture].SetTextFormatted(eduWork.LectureHours ?? 0, fontBold: true, fontSize: 11, alignment: Alignment.center);
-                    workTable.Rows[totalRow].Cells[colPractical].SetTextFormatted(eduWork.PracticalHours ?? 0, fontBold: true, fontSize: 11, alignment: Alignment.center);
-                    workTable.Rows[totalRow].Cells[colSelfStudy].SetTextFormatted(eduWork.SelfStudyHours ?? 0, fontBold: true, fontSize: 11, alignment: Alignment.center);
+                    workTable.Rows[totalRow].Cells[colLecture].SetTextFormatted(eduWork.LectureHours, fontSize: 11, alignment: Alignment.center);
+                    workTable.Rows[totalRow].Cells[colPractical].SetTextFormatted(eduWork.PracticalHours, fontSize: 11, alignment: Alignment.center);
+                    workTable.Rows[totalRow].Cells[colSelfStudy].SetTextFormatted(eduWork.SelfStudyHours, fontSize: 11, alignment: Alignment.center);
                 }
                 if (fixTypes.HasFlag(EEduWorkFixType.FullRecreate)) {
                     workTable.Rows[eduWork.TableControlRow].Cells[eduWork.TableColTopic].SetTextFormatted(eduWork.ControlForm.GetDescription(), fontSize: 11);
@@ -3244,7 +3245,7 @@ namespace FosMan {
         /// <param name="table"></param>
         /// <param name="rpd"></param>
         /// <returns></returns>
-        internal static bool TestForEduWorkTable(DocX docX, Table table, Rpd rpd, PropertyAccess propAccess, 
+        internal static bool TestForEduWorkTable(DocX docX, Table table, Rpd rpd, PropertyAccess propAccess,
                                                  EEduWorkFixType fixTypes,
                                                  ref EEvaluationTool[] evalTools,
                                                  ref string[][] studyResults,
@@ -3333,9 +3334,9 @@ namespace FosMan {
                         }
                         else {
                             //простановка времени по темам
-                            FillEduWorkTable(docX, table, rpd, fixTypes, form, ref evalTools, ref studyResults, 
-                                             maxCompetenceResultsCount, 
-                                             evalTools1stStageItems, 
+                            FillEduWorkTable(docX, table, rpd, fixTypes, form, ref evalTools, ref studyResults,
+                                             maxCompetenceResultsCount,
+                                             evalTools1stStageItems,
                                              evalTools2ndStageItems);
                         }
                         formOfStudy = form;
@@ -3364,8 +3365,8 @@ namespace FosMan {
                 var disc = curr.FindDiscipline(rpd.DisciplineName);
                 if (disc != null && disc.StartSemesterIdx >= 0) {
                     //ищем все дисциплины, которые стартуют раньше нужной или одновременно
-                    discList = curr.Disciplines.Values.Where(d => d != disc && 
-                                                                  d.StartSemesterIdx <= disc.StartSemesterIdx && 
+                    discList = curr.Disciplines.Values.Where(d => d != disc &&
+                                                                  d.StartSemesterIdx <= disc.StartSemesterIdx &&
                                                                   d.Type != EDisciplineType.Optional).ToList();
                 }
             }
@@ -3403,7 +3404,7 @@ namespace FosMan {
                 var disc = curr.FindDiscipline(rpd.DisciplineName);
                 if (disc != null && disc.LastSemesterIdx >= 0) {
                     //ищем все дисциплины, которые стартуют раньше нужной или одновременно
-                    discList = curr.Disciplines.Values.Where(d => d != disc && 
+                    discList = curr.Disciplines.Values.Where(d => d != disc &&
                                                                   d.LastSemesterIdx >= disc.LastSemesterIdx &&
                                                                   d.Type != EDisciplineType.Optional).ToList();
                 }
@@ -3530,9 +3531,9 @@ namespace FosMan {
         /// </summary>
         /// <param name="table"></param>
         /// <param name="rpd"></param>
-        public static bool TestForTableOfCompetenceMatrix(Table table, 
-                                                          ECompetenceMatrixFormat format, 
-                                                          out CompetenceMatrix matrix, 
+        public static bool TestForTableOfCompetenceMatrix(Table table,
+                                                          ECompetenceMatrixFormat format,
+                                                          out CompetenceMatrix matrix,
                                                           out List<Error> errors) {
             matrix = new CompetenceMatrix() {
                 Items = [],
@@ -3587,8 +3588,8 @@ namespace FosMan {
                             foreach (var t in table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';')) {
                                 //убираем лишние пробелы
                                 if (evalToolDic.TryGetValue(NormalizeText(t), out var tool)) {
-                                 //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
-                                //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
+                                    //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
+                                    //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
                                     tools.Add(tool);
                                 }
                                 else {
@@ -3643,7 +3644,7 @@ namespace FosMan {
                 foreach (var curriculum in curriculaList) {
                     m_curriculumDic.TryRemove(curriculum.SourceFileName, out _);
                 }
-            } 
+            }
         }
 
         /// <summary>

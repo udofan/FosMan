@@ -132,6 +132,10 @@ namespace FosMan {
             /// </summary>
             CompetenceResults = 0b0000_0100,
             /// <summary>
+            /// Полное перестроение
+            /// </summary>
+            FullRecreate = 0b0000_1000,
+            /// <summary>
             /// Все виды фиксов
             /// </summary>
             All = 0b1111_1111

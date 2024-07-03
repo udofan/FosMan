@@ -16,9 +16,9 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FosMan {
     public partial class FormMain : Form {
-        const string DIR_TEMPLATES = "Templates";
-        const string DIR_REPORTS = "Reports";
-        const string DIR_LOGS = "Logs";
+        public const string DIR_TEMPLATES = "Templates";
+        public const string DIR_REPORTS = "Reports";
+        public const string DIR_LOGS = "Logs";
 
         string m_matrixFileName = null;
 
@@ -546,9 +546,9 @@ namespace FosMan {
             TuneFileFixerFileList(fastObjectListViewFileFixerFiles);
 
             //список шаблонов
-            var templateDir = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES);
-            if (Directory.Exists(templateDir)) {
-                var files = Directory.GetFiles(templateDir, "*.docx");
+            //var templateDir = Path.Combine(Environment.CurrentDirectory, DIR_TEMPLATES);
+            if (Templates.Items?.Any() ?? false) {
+                var files = Templates.Items.Values;
                 var newTemplates = files.Select(f => Path.GetFileName(f)).Except(comboBoxRpdGenTemplates.Items.Cast<string>());
                 if (newTemplates.Any()) {
                     comboBoxRpdGenTemplates.Items.AddRange(newTemplates.ToArray());
@@ -581,6 +581,7 @@ namespace FosMan {
             checkBoxRpdFixSetPrevAndNextDisciplines.Checked = App.Config.RpdFixSetPrevAndNextDisciplines;
             checkBoxRpdFixRemoveColorSelection.Checked = App.Config.RpdFixRemoveColorSelections;
             checkBoxRpdFixFindAndReplace.Checked = App.Config.RpdFixFindAndReplace;
+            checkBoxRpdFixEduWorkTablesFullRecreate.Checked = App.Config.RpdFixEduWorkTablesFullRecreate;
 
             checkBoxFosFixCompetenceTable1.Checked = App.Config.FosFixCompetenceTable1;
             checkBoxFosFixCompetenceTable2.Checked = App.Config.FosFixCompetenceTable2;
@@ -1414,9 +1415,9 @@ namespace FosMan {
             Rectangle r = tabControlReports.GetTabRect(tabControlReports.SelectedIndex);
             Rectangle closeButton = new Rectangle(r.Right - 22, r.Top + 3, 15, 9);
             if (closeButton.Contains(e.Location)) {
-                if (MessageBox.Show("Закрыть вкладку?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                //if (MessageBox.Show("Закрыть вкладку?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
                     tabControlReports.TabPages.Remove(tabControlReports.SelectedTab);
-                }
+                //}
             }
         }
 
@@ -2307,10 +2308,21 @@ namespace FosMan {
         private void iconToolStripButtonFileFixerDelete_Click(object sender, EventArgs e) {
             var files = fastObjectListViewFileFixerFiles.SelectedObjects?.Cast<FileFixerItem>()?.ToList();
             if (files?.Any() ?? false) {
-                if (MessageBox.Show($"Вы уверены, что хотите удалить из списка выделенные файлы ({files.Count} шт.)?", "Внимание", 
+                if (MessageBox.Show($"Вы уверены, что хотите удалить из списка выделенные файлы ({files.Count} шт.)?", "Внимание",
                     MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
                     fastObjectListViewFileFixerFiles.RemoveObjects(fastObjectListViewFileFixerFiles.SelectedObjects);
                 }
+            }
+        }
+
+        private void checkBoxRpdFixEduWorkTablesFullRecreate_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixEduWorkTablesFullRecreate = checkBoxRpdFixEduWorkTablesFullRecreate.Checked;
+            App.SaveConfig();
+
+            if (App.Config.RpdFixEduWorkTablesFullRecreate) {
+                checkBoxRpdFixEduWorkTablesFixTime.Checked = true;
+                checkBoxRpdFixEduWorkTablesFixEvalTools.Checked = true;
+                checkBoxRpdFixEduWorkTablesFixComptenceResults.Checked = true;
             }
         }
     }

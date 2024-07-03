@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="App-copy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ExcelDataReader" Version="3.7.0" />
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.7.0" />
     <PackageReference Include="FastMemberMT" Version="8.0.0" />
@@ -21,6 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Templates\РПД_таблица_содержания_дисциплины.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Templates\РПД_шаблон_бакалавр_2024.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

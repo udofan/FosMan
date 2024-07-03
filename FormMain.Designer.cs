@@ -75,6 +75,7 @@
             linkLabelRpdFixGenerateNextDisciplines = new LinkLabel();
             linkLabelRpdFixSelectFilesToFix = new LinkLabel();
             groupBox1 = new GroupBox();
+            checkBoxRpdFixEduWorkTablesFullRecreate = new CheckBox();
             label21 = new Label();
             label20 = new Label();
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems = new CheckedListBox();
@@ -742,7 +743,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 681);
+            splitContainerRpd.Size = new Size(1251, 638);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -779,19 +780,18 @@
             groupBox8.Controls.Add(linkLabelRpdFixGenerateNextDisciplines);
             groupBox8.Controls.Add(linkLabelRpdFixSelectFilesToFix);
             groupBox8.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            groupBox8.Location = new Point(480, 21);
+            groupBox8.Location = new Point(1035, 17);
             groupBox8.Name = "groupBox8";
-            groupBox8.Size = new Size(509, 73);
+            groupBox8.Size = new Size(195, 198);
             groupBox8.TabIndex = 25;
             groupBox8.TabStop = false;
             groupBox8.Text = "Доп. средства";
             // 
             // linkLabelRpdFixGeneratePrevDisciplines
             // 
-            linkLabelRpdFixGeneratePrevDisciplines.AutoSize = true;
             linkLabelRpdFixGeneratePrevDisciplines.Location = new Point(15, 18);
             linkLabelRpdFixGeneratePrevDisciplines.Name = "linkLabelRpdFixGeneratePrevDisciplines";
-            linkLabelRpdFixGeneratePrevDisciplines.Size = new Size(266, 14);
+            linkLabelRpdFixGeneratePrevDisciplines.Size = new Size(146, 31);
             linkLabelRpdFixGeneratePrevDisciplines.TabIndex = 21;
             linkLabelRpdFixGeneratePrevDisciplines.TabStop = true;
             linkLabelRpdFixGeneratePrevDisciplines.Text = "Генерация значения предыдущих дисциплин";
@@ -800,10 +800,9 @@
             // 
             // linkLabelRpdFixGenerateNextDisciplines
             // 
-            linkLabelRpdFixGenerateNextDisciplines.AutoSize = true;
-            linkLabelRpdFixGenerateNextDisciplines.Location = new Point(15, 45);
+            linkLabelRpdFixGenerateNextDisciplines.Location = new Point(15, 71);
             linkLabelRpdFixGenerateNextDisciplines.Name = "linkLabelRpdFixGenerateNextDisciplines";
-            linkLabelRpdFixGenerateNextDisciplines.Size = new Size(273, 14);
+            linkLabelRpdFixGenerateNextDisciplines.Size = new Size(155, 31);
             linkLabelRpdFixGenerateNextDisciplines.TabIndex = 22;
             linkLabelRpdFixGenerateNextDisciplines.TabStop = true;
             linkLabelRpdFixGenerateNextDisciplines.Text = "Генерация значения последующих дисциплин";
@@ -813,7 +812,7 @@
             // linkLabelRpdFixSelectFilesToFix
             // 
             linkLabelRpdFixSelectFilesToFix.ActiveLinkColor = Color.Blue;
-            linkLabelRpdFixSelectFilesToFix.Location = new Point(328, 18);
+            linkLabelRpdFixSelectFilesToFix.Location = new Point(15, 135);
             linkLabelRpdFixSelectFilesToFix.Name = "linkLabelRpdFixSelectFilesToFix";
             linkLabelRpdFixSelectFilesToFix.Size = new Size(175, 37);
             linkLabelRpdFixSelectFilesToFix.TabIndex = 6;
@@ -824,6 +823,7 @@
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(checkBoxRpdFixEduWorkTablesFullRecreate);
             groupBox1.Controls.Add(label21);
             groupBox1.Controls.Add(label20);
             groupBox1.Controls.Add(checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems);
@@ -835,17 +835,30 @@
             groupBox1.Controls.Add(checkBoxRpdFixEduWorkTablesFixEvalTools);
             groupBox1.Controls.Add(checkBoxRpdFixEduWorkTablesFixTime);
             groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            groupBox1.Location = new Point(480, 100);
+            groupBox1.Location = new Point(480, 17);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(509, 303);
+            groupBox1.Size = new Size(509, 386);
             groupBox1.TabIndex = 24;
             groupBox1.TabStop = false;
             groupBox1.Text = "Фикс таблиц содержания дисциплины (разделы и темы)";
             // 
+            // checkBoxRpdFixEduWorkTablesFullRecreate
+            // 
+            checkBoxRpdFixEduWorkTablesFullRecreate.AutoSize = true;
+            checkBoxRpdFixEduWorkTablesFullRecreate.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            checkBoxRpdFixEduWorkTablesFullRecreate.Location = new Point(14, 28);
+            checkBoxRpdFixEduWorkTablesFullRecreate.Name = "checkBoxRpdFixEduWorkTablesFullRecreate";
+            checkBoxRpdFixEduWorkTablesFullRecreate.Size = new Size(161, 18);
+            checkBoxRpdFixEduWorkTablesFullRecreate.TabIndex = 27;
+            checkBoxRpdFixEduWorkTablesFullRecreate.Text = "Перестроение таблицы";
+            toolTip1.SetToolTip(checkBoxRpdFixEduWorkTablesFullRecreate, "Полное перестроение таблицы (рекомендуется).\r\nВ данный момент перестраиваются только ряды тем\r\nс сохранением заголовков.");
+            checkBoxRpdFixEduWorkTablesFullRecreate.UseVisualStyleBackColor = true;
+            checkBoxRpdFixEduWorkTablesFullRecreate.CheckedChanged += checkBoxRpdFixEduWorkTablesFullRecreate_CheckedChanged;
+            // 
             // label21
             // 
             label21.AutoSize = true;
-            label21.Location = new Point(256, 122);
+            label21.Location = new Point(255, 148);
             label21.Name = "label21";
             label21.Size = new Size(116, 14);
             label21.TabIndex = 26;
@@ -854,7 +867,7 @@
             // label20
             // 
             label20.AutoSize = true;
-            label20.Location = new Point(34, 122);
+            label20.Location = new Point(33, 148);
             label20.Name = "label20";
             label20.Size = new Size(117, 14);
             label20.TabIndex = 26;
@@ -864,7 +877,7 @@
             // 
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.CheckOnClick = true;
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.FormattingEnabled = true;
-            checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Location = new Point(256, 139);
+            checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Location = new Point(255, 165);
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Name = "checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems";
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Size = new Size(200, 157);
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.TabIndex = 25;
@@ -874,7 +887,7 @@
             // 
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.CheckOnClick = true;
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.FormattingEnabled = true;
-            checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Location = new Point(33, 139);
+            checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Location = new Point(32, 165);
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Name = "checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems";
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Size = new Size(200, 157);
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.TabIndex = 25;
@@ -883,7 +896,7 @@
             // label19
             // 
             label19.AutoSize = true;
-            label19.Location = new Point(386, 71);
+            label19.Location = new Point(385, 97);
             label19.Name = "label19";
             label19.Size = new Size(96, 14);
             label19.TabIndex = 24;
@@ -892,7 +905,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(33, 71);
+            label2.Location = new Point(32, 97);
             label2.Name = "label2";
             label2.Size = new Size(300, 14);
             label2.TabIndex = 23;
@@ -900,7 +913,7 @@
             // 
             // numericUpDownRpdFixMaxCompetenceResultsCount
             // 
-            numericUpDownRpdFixMaxCompetenceResultsCount.Location = new Point(338, 69);
+            numericUpDownRpdFixMaxCompetenceResultsCount.Location = new Point(337, 95);
             numericUpDownRpdFixMaxCompetenceResultsCount.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numericUpDownRpdFixMaxCompetenceResultsCount.Name = "numericUpDownRpdFixMaxCompetenceResultsCount";
             numericUpDownRpdFixMaxCompetenceResultsCount.Size = new Size(42, 22);
@@ -912,7 +925,7 @@
             // 
             checkBoxRpdFixEduWorkTablesFixComptenceResults.AutoSize = true;
             checkBoxRpdFixEduWorkTablesFixComptenceResults.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            checkBoxRpdFixEduWorkTablesFixComptenceResults.Location = new Point(15, 50);
+            checkBoxRpdFixEduWorkTablesFixComptenceResults.Location = new Point(14, 76);
             checkBoxRpdFixEduWorkTablesFixComptenceResults.Name = "checkBoxRpdFixEduWorkTablesFixComptenceResults";
             checkBoxRpdFixEduWorkTablesFixComptenceResults.Size = new Size(366, 18);
             checkBoxRpdFixEduWorkTablesFixComptenceResults.TabIndex = 21;
@@ -925,7 +938,7 @@
             // 
             checkBoxRpdFixEduWorkTablesFixEvalTools.AutoSize = true;
             checkBoxRpdFixEduWorkTablesFixEvalTools.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            checkBoxRpdFixEduWorkTablesFixEvalTools.Location = new Point(15, 97);
+            checkBoxRpdFixEduWorkTablesFixEvalTools.Location = new Point(14, 123);
             checkBoxRpdFixEduWorkTablesFixEvalTools.Name = "checkBoxRpdFixEduWorkTablesFixEvalTools";
             checkBoxRpdFixEduWorkTablesFixEvalTools.Size = new Size(329, 18);
             checkBoxRpdFixEduWorkTablesFixEvalTools.TabIndex = 20;
@@ -938,7 +951,7 @@
             // 
             checkBoxRpdFixEduWorkTablesFixTime.AutoSize = true;
             checkBoxRpdFixEduWorkTablesFixTime.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            checkBoxRpdFixEduWorkTablesFixTime.Location = new Point(15, 26);
+            checkBoxRpdFixEduWorkTablesFixTime.Location = new Point(14, 52);
             checkBoxRpdFixEduWorkTablesFixTime.Name = "checkBoxRpdFixEduWorkTablesFixTime";
             checkBoxRpdFixEduWorkTablesFixTime.Size = new Size(323, 18);
             checkBoxRpdFixEduWorkTablesFixTime.TabIndex = 19;
@@ -1169,7 +1182,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 237);
+            fastObjectListViewRpdList.Size = new Size(1251, 194);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -2482,7 +2495,6 @@
             groupBox4.ResumeLayout(false);
             groupBox4.PerformLayout();
             groupBox8.ResumeLayout(false);
-            groupBox8.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownRpdFixMaxCompetenceResultsCount).EndInit();
@@ -2734,5 +2746,6 @@
         private OpenFileDialog openFileDialogFileFixer;
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdFixToFileFixer;
         private ToolStripSeparator toolStripSeparator19;
+        private CheckBox checkBoxRpdFixEduWorkTablesFullRecreate;
     }
 }
