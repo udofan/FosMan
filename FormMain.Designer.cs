@@ -75,6 +75,7 @@
             linkLabelRpdFixGenerateNextDisciplines = new LinkLabel();
             linkLabelRpdFixSelectFilesToFix = new LinkLabel();
             groupBox1 = new GroupBox();
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos = new CheckBox();
             checkBoxRpdFixEduWorkTablesFullRecreate = new CheckBox();
             label21 = new Label();
             label20 = new Label();
@@ -220,6 +221,8 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             openFileDialogFosSelect = new OpenFileDialog();
             openFileDialogFileFixer = new OpenFileDialog();
+            toolStripLabelRpdFosIndicator = new ToolStripLabel();
+            toolStripLabelFosRpdIndicator = new ToolStripLabel();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
             toolStripCompetenceMatrix.SuspendLayout();
@@ -378,10 +381,10 @@
             tabPageСurriculum.Controls.Add(toolStrip1);
             tabPageСurriculum.Controls.Add(groupBoxDisciplines);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
-            tabPageСurriculum.Location = new Point(4, 24);
+            tabPageСurriculum.Location = new Point(4, 23);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1257, 676);
+            tabPageСurriculum.Size = new Size(1257, 677);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "  Учебные планы  ";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -509,7 +512,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(6, 389);
+            groupBoxDisciplines.Location = new Point(6, 390);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(1245, 308);
             groupBoxDisciplines.TabIndex = 3;
@@ -545,7 +548,7 @@
             fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1245, 346);
+            fastObjectListViewCurricula.Size = new Size(1245, 347);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -576,7 +579,7 @@
             // 
             toolStripRpd.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             toolStripRpd.ImageScalingSize = new Size(24, 24);
-            toolStripRpd.Items.AddRange(new ToolStripItem[] { iconToolStripButtonRpdOpen, iconToolStripButtonRpdReload, toolStripSeparator1, iconToolStripButtonRpdClear, toolStripSeparator2, iconToolStripButtonRpdFixToFileFixer, toolStripSeparator19, iconToolStripButtonRpdFromDb, iconToolStripButtonRpdToDb, toolStripSeparator3, iconToolStripButtonRpdRememberList, toolStripSeparator5, iconToolStripButtonRpdCheck, toolStripSeparator4, iconToolStripButtonRpdFixMode });
+            toolStripRpd.Items.AddRange(new ToolStripItem[] { iconToolStripButtonRpdOpen, iconToolStripButtonRpdReload, toolStripSeparator1, iconToolStripButtonRpdClear, toolStripSeparator2, iconToolStripButtonRpdFixToFileFixer, toolStripSeparator19, iconToolStripButtonRpdFromDb, iconToolStripButtonRpdToDb, toolStripSeparator3, iconToolStripButtonRpdRememberList, toolStripSeparator5, iconToolStripButtonRpdCheck, toolStripSeparator4, iconToolStripButtonRpdFixMode, toolStripLabelRpdFosIndicator });
             toolStripRpd.Location = new Point(3, 3);
             toolStripRpd.Name = "toolStripRpd";
             toolStripRpd.Size = new Size(1251, 31);
@@ -743,7 +746,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 639);
+            splitContainerRpd.Size = new Size(1251, 645);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -823,6 +826,7 @@
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(checkBoxRpdFixEduWorksEvalToolsTakeFromFos);
             groupBox1.Controls.Add(checkBoxRpdFixEduWorkTablesFullRecreate);
             groupBox1.Controls.Add(label21);
             groupBox1.Controls.Add(label20);
@@ -841,6 +845,19 @@
             groupBox1.TabIndex = 24;
             groupBox1.TabStop = false;
             groupBox1.Text = "Фикс таблиц содержания дисциплины (разделы и темы)";
+            // 
+            // checkBoxRpdFixEduWorksEvalToolsTakeFromFos
+            // 
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.AutoSize = true;
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Location = new Point(32, 345);
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Name = "checkBoxRpdFixEduWorksEvalToolsTakeFromFos";
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Size = new Size(227, 18);
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.TabIndex = 28;
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Text = "Брать оценочные средства из ФОС";
+            toolTip1.SetToolTip(checkBoxRpdFixEduWorksEvalToolsTakeFromFos, "Использовать набор оценочных средств из ФОС (если таковой загружен)");
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.UseVisualStyleBackColor = true;
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.CheckedChanged += checkBoxRpdFixEduWorksEvalToolsTakeFromFos_CheckedChanged;
             // 
             // checkBoxRpdFixEduWorkTablesFullRecreate
             // 
@@ -879,7 +896,7 @@
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.FormattingEnabled = true;
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Location = new Point(255, 165);
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Name = "checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems";
-            checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Size = new Size(200, 157);
+            checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Size = new Size(200, 174);
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.TabIndex = 25;
             checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.SelectedIndexChanged += checkedListBoxRpdFixEduWorkTablesEvalToolsAllItems_SelectedIndexChanged;
             // 
@@ -889,7 +906,7 @@
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.FormattingEnabled = true;
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Location = new Point(32, 165);
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Name = "checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems";
-            checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Size = new Size(200, 157);
+            checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.Size = new Size(200, 174);
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.TabIndex = 25;
             checkedListBoxRpdFixEduWorkTablesEvalTools1stStageItems.SelectedIndexChanged += checkedListBoxRpdFixEduWorkTablesEvalToolsFirstItems_SelectedIndexChanged;
             // 
@@ -1182,7 +1199,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 195);
+            fastObjectListViewRpdList.Size = new Size(1251, 201);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1199,10 +1216,10 @@
             // 
             tabPageFos.Controls.Add(splitContainerFos);
             tabPageFos.Controls.Add(toolStrip2);
-            tabPageFos.Location = new Point(4, 24);
+            tabPageFos.Location = new Point(4, 23);
             tabPageFos.Name = "tabPageFos";
             tabPageFos.Padding = new Padding(3);
-            tabPageFos.Size = new Size(1257, 676);
+            tabPageFos.Size = new Size(1257, 677);
             tabPageFos.TabIndex = 1;
             tabPageFos.Text = "   ФОС   ";
             tabPageFos.UseVisualStyleBackColor = true;
@@ -1224,7 +1241,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(1251, 670);
+            splitContainerFos.Size = new Size(1251, 638);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             splitContainerFos.Tag = "280";
@@ -1482,7 +1499,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(1251, 386);
+            fastObjectListViewFosList.Size = new Size(1251, 354);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -1499,7 +1516,7 @@
             // 
             toolStrip2.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             toolStrip2.ImageScalingSize = new Size(24, 24);
-            toolStrip2.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFosOpen, iconToolStripButtonFosReload, toolStripSeparator10, iconToolStripButtonFosClear, toolStripSeparator11, iconToolStripButtonFosFromDb, iconToolStripButtonFosToDb, toolStripSeparator12, iconToolStripButtonForRememberList, toolStripSeparator13, iconToolStripButtonFosCheck, toolStripSeparator14, iconToolStripButtonFosFixMode });
+            toolStrip2.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFosOpen, iconToolStripButtonFosReload, toolStripSeparator10, iconToolStripButtonFosClear, toolStripSeparator11, iconToolStripButtonFosFromDb, iconToolStripButtonFosToDb, toolStripSeparator12, iconToolStripButtonForRememberList, toolStripSeparator13, iconToolStripButtonFosCheck, toolStripSeparator14, iconToolStripButtonFosFixMode, toolStripLabelFosRpdIndicator });
             toolStrip2.Location = new Point(3, 3);
             toolStrip2.Name = "toolStrip2";
             toolStrip2.Size = new Size(1251, 31);
@@ -2458,6 +2475,22 @@
             openFileDialogFileFixer.Filter = "Word-файлы|*.docx|Все файлы|*.*";
             openFileDialogFileFixer.Multiselect = true;
             // 
+            // toolStripLabelRpdFosIndicator
+            // 
+            toolStripLabelRpdFosIndicator.Alignment = ToolStripItemAlignment.Right;
+            toolStripLabelRpdFosIndicator.Name = "toolStripLabelRpdFosIndicator";
+            toolStripLabelRpdFosIndicator.Size = new Size(37, 28);
+            toolStripLabelRpdFosIndicator.Text = "ФОС ";
+            toolStripLabelRpdFosIndicator.ToolTipText = "Индикатор соотвествия профилю и направленности загруженных ФОС";
+            // 
+            // toolStripLabelFosRpdIndicator
+            // 
+            toolStripLabelFosRpdIndicator.Alignment = ToolStripItemAlignment.Right;
+            toolStripLabelFosRpdIndicator.Name = "toolStripLabelFosRpdIndicator";
+            toolStripLabelFosRpdIndicator.Size = new Size(30, 28);
+            toolStripLabelFosRpdIndicator.Text = "РПД";
+            toolStripLabelFosRpdIndicator.ToolTipText = "Индикатор соотвествия профилю и направленности загруженных РПД";
+            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
@@ -2747,5 +2780,8 @@
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdFixToFileFixer;
         private ToolStripSeparator toolStripSeparator19;
         private CheckBox checkBoxRpdFixEduWorkTablesFullRecreate;
+        private CheckBox checkBoxRpdFixEduWorksEvalToolsTakeFromFos;
+        private ToolStripLabel toolStripLabelRpdFosIndicator;
+        private ToolStripLabel toolStripLabelFosRpdIndicator;
     }
 }

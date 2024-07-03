@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Xceed.Document.NET;
 using static FosMan.Enums;
 
 namespace FosMan {
@@ -18,7 +19,7 @@ namespace FosMan {
         ];
         public List<Regex> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null;
-        public Action<Fos, Match, string> Action { get; set; } = (fos, match, text) => {
+        public Action<Fos, Match, string, Paragraph> Action { get; set; } = (fos, match, text, par) => {
             var items = match.Groups[1].Value.Split(',', StringSplitOptions.TrimEntries);
             foreach (var item in items) {
                 switch (item.Trim().ToLower()) {
@@ -37,6 +38,7 @@ namespace FosMan {
                 }
             }
         };
+        public bool MultyApply { get; set; } = false;
 
         public bool Equals<T>(IDocParseRule<T>? other) {
             throw new NotImplementedException();

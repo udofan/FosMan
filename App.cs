@@ -1404,6 +1404,13 @@ namespace FosMan {
         public static Rpd? FindRpd(Fos fos) => m_rpdDic.Values.FirstOrDefault(d => d.Key.Equals(fos.Key));
 
         /// <summary>
+        /// Поиск ФОС по РПД
+        /// </summary>
+        /// <param name="rpd"></param>
+        /// <returns></returns>
+        public static Fos? FindFos(Rpd rpd) => m_fosDic.Values.FirstOrDefault(f => f.Key.Equals(rpd.Key));
+
+        /// <summary>
         /// Попытка обработать специальное поле
         /// </summary>
         /// <param name="propName"></param>
@@ -2249,6 +2256,9 @@ namespace FosMan {
                 }
                 if (Config.RpdFixEduWorkTablesFixEvalTools) {
                     rep.Append("<li>Таблицы содержания дисциплины: автоматическое распределение оценочных средств</li>");
+                    if (Config.RpdFixEduWorkTablesTakeEvalToolsFromFos) {
+                        rep.Append("<li>Таблицы содержания дисциплины: брать оценочные средства из ФОС по-возможности</li>");
+                    }
                 }
                 if (Config.RpdFixEduWorkTablesFixCompetenceCodes) {
                     rep.Append("<li>Таблицы содержания дисциплины: автоматическое распределение результатов компетенций</li>");
@@ -2307,6 +2317,7 @@ namespace FosMan {
                                 if (Config.RpdFixEduWorkTablesFixEvalTools) fixType |= EEduWorkFixType.EvalTools;
                                 if (Config.RpdFixEduWorkTablesFixCompetenceCodes) fixType |= EEduWorkFixType.CompetenceResults;
                             }
+                            if (Config.RpdFixEduWorkTablesTakeEvalToolsFromFos) fixType |= EEduWorkFixType.TakeEvalToolsFromFos;
                             var eduWorkTableIsFixed = rpd.FormsOfStudy.ToDictionary(x => x, x => false);
 
                             var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
@@ -3010,7 +3021,17 @@ namespace FosMan {
 
                 //формирование оценочных средств
                 if (evalTools == null && fixTypes.HasFlag(EEduWorkFixType.EvalTools)) {
-                    evalTools = GetEvalTools(topicCount, rand, evalTools1stStageItems.ToArray(), evalTools2ndStageItems.ToArray());
+                    if (fixTypes.HasFlag(EEduWorkFixType.TakeEvalToolsFromFos)) {
+                        //получим ФОС
+                        var fos = FindFos(rpd);
+                        if (fos == null || (!(fos.EvalTools?.Any() ?? false))) {
+                            throw new Exception("При заданном параметре \"Брать оценочные средства из ФОС\" ФОС не обнаружен или у него не определены оценочные средства");
+                        }
+                        evalTools = GetEvalTools(topicCount, rand, Array.Empty<EEvaluationTool>(), fos.EvalTools.ToArray());
+                    }
+                    else {
+                        evalTools = GetEvalTools(topicCount, rand, evalTools1stStageItems.ToArray(), evalTools2ndStageItems.ToArray());
+                    }
                 }
 
                 var resultCodes = rpd.CompetenceMatrix.GetAllResultCodes().ToList();
@@ -3158,8 +3179,8 @@ namespace FosMan {
                 }
                 tools[i + firstStageTools.Length] = secondStageTools[num];
             }
-            //третья и последующая порция
-            var thirdTools = firstStageTools.Concat(secondStageTools).ToArray(); //Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToArray();
+            //третья и последующая порция (с исключением однократных средств)
+            var thirdTools = firstStageTools.Concat(secondStageTools).Where(t => (t.GetAttribute<EvaluationToolAttribute>()?.SingleUse ?? false) == false).ToArray(); //Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToArray();
             var topicIdx = firstStageTools.Length + secondStageTools.Length;
             usedNumbers.Clear();
 
@@ -3519,14 +3540,14 @@ namespace FosMan {
                         passport = [];
 
                         //нормализуем список оценочных средств
-                        var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
+                        //var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
 
                         for (var row = 1; row < table.RowCount; row++) {
                             //var evalTools = table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';');
                             HashSet<EEvaluationTool> tools = [];
                             foreach (var t in table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';')) {
                                 //убираем лишние пробелы
-                                if (evalToolDic.TryGetValue(NormalizeText(t), out var tool)) {
+                                if (Enums.EvalToolDic.TryGetValue(NormalizeText(t), out var tool)) {
                                  //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
                                 //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
                                     tools.Add(tool);
@@ -3594,6 +3615,18 @@ namespace FosMan {
             if (curriculum != null) {
                 m_curriculumDic.TryRemove(curriculum.SourceFileName, out _);
             }
+        }
+
+        /// <summary>
+        /// Получение значения атрибута enum'а
+        /// </summary>
+        /// <typeparam name="TAttribute"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static TAttribute GetAttribute<TAttribute>(this Enum value) where TAttribute : Attribute {
+            var enumType = value.GetType();
+            var name = Enum.GetName(enumType, value);
+            return enumType.GetField(name).GetCustomAttributes(false).OfType<TAttribute>().SingleOrDefault();
         }
     }
 }

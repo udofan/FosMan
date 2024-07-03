@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Xceed.Document.NET;
 
 namespace FosMan {
     public interface IDocParseRule<T> {
@@ -34,7 +35,17 @@ namespace FosMan {
         /// Список символов, по которым надо оттриммить полученную строку
         /// </summary>
         char[] TrimChars { get; set; }
-        Action<T, Match, string> Action { get; set; }
+        /// <summary>
+        /// Доп. действие (исп. при незаданном PropertyName)
+        /// </summary>
+        Action<T, Match, string, Paragraph> Action { get; set; }
+        /// <summary>
+        /// Правило с многократным применением
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        bool MultyApply { get; set; }
 
         bool Equals<T>(IDocParseRule<T>? other);
         bool Equals(object? obj);

@@ -81,6 +81,11 @@ namespace FosMan {
         [JsonInclude]
         public List<StudyModule> Passport { get; set; }
         /// <summary>
+        /// Оценочные средства
+        /// </summary>
+        [JsonInclude]
+        public HashSet<EEvaluationTool> EvalTools { get; set; }
+        /// <summary>
         /// Выявленные ошибки
         /// </summary>
         [JsonIgnore]
@@ -105,6 +110,11 @@ namespace FosMan {
         /// </summary>
         [JsonIgnore]
         public Table TableOfPassport{ get; set; }
+        /// <summary>
+        /// Таблицы со списками вопросов по типам оценочных средств
+        /// </summary>
+        [JsonIgnore]
+        public Dictionary<EEvaluationTool, (Table table, int colIdx)> EvalToolTables { get; set; }
 
         /// <summary>
         /// Загрузка ФОС из файла

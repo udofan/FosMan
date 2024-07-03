@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Xceed.Document.NET;
 using Xceed.Words.NET;
 using static FosMan.Enums;
 
@@ -62,7 +63,7 @@ namespace FosMan {
                                 }
                                 var stopCatch = catchingRule.StopMarkers.Any(r => r.IsMatch(text));
                                 if (stopCatch) {
-                                    ApplyValue(catchingRule, null, targetObj, catchingValue.ToString(), errors);
+                                    ApplyValue(catchingRule, null, targetObj, catchingValue.ToString(), par, errors);
                                     catchingValue.Clear();
                                     catchingRule = null; //сброс правила-ловца строк
                                 }
@@ -80,10 +81,12 @@ namespace FosMan {
                                 foreach (var rule in activeRules.ToHashSet()) {
                                     (Regex regex, Match match, int idx) m = rule.StartMarkers.Select(x => (x.marker, x.marker.Match(text), x.inlineGroupIdx)).FirstOrDefault(x => x.Item2.Success);
                                     if (m.match != null) {
-                                        activeRules.Remove(rule);   //правило сработало - отключаем
+                                        if (!rule.MultyApply) {
+                                            activeRules.Remove(rule);   //правило сработало - отключаем
+                                        }
                                         //инлайн поиск значения
                                         if (rule.Type == EParseType.Inline) {
-                                            ApplyValue(rule, m, targetObj, null, errors);
+                                            ApplyValue(rule, m, targetObj, null, par, errors);
                                         }
                                         else if (rule.Type == EParseType.Multiline) {
                                             catchingRule = rule;
@@ -116,6 +119,7 @@ namespace FosMan {
                                          (Regex regex, Match match, int groupIdx)? ruleMatch,
                                          T targetObj,
                                          string value,
+                                         Paragraph par,
                                          List<string> errors) where T : BaseObj {
             if (!string.IsNullOrEmpty(rule.PropertyName)) {
                 if (ruleMatch.HasValue) {
@@ -134,7 +138,7 @@ namespace FosMan {
                 targetObj.SetProperty(rule.PropertyName, null, value);
             }
             else if (rule.Action != null) {
-                rule.Action.Invoke(targetObj, ruleMatch.Value.match, value);
+                rule.Action.Invoke(targetObj, ruleMatch.Value.match, value, par);
             }
         }
     }

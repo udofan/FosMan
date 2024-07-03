@@ -582,6 +582,7 @@ namespace FosMan {
             checkBoxRpdFixRemoveColorSelection.Checked = App.Config.RpdFixRemoveColorSelections;
             checkBoxRpdFixFindAndReplace.Checked = App.Config.RpdFixFindAndReplace;
             checkBoxRpdFixEduWorkTablesFullRecreate.Checked = App.Config.RpdFixEduWorkTablesFullRecreate;
+            checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Checked = App.Config.RpdFixEduWorkTablesTakeEvalToolsFromFos;
 
             checkBoxFosFixCompetenceTable1.Checked = App.Config.FosFixCompetenceTable1;
             checkBoxFosFixCompetenceTable2.Checked = App.Config.FosFixCompetenceTable2;
@@ -1416,7 +1417,7 @@ namespace FosMan {
             Rectangle closeButton = new Rectangle(r.Right - 22, r.Top + 3, 15, 9);
             if (closeButton.Contains(e.Location)) {
                 //if (MessageBox.Show("Закрыть вкладку?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
-                    tabControlReports.TabPages.Remove(tabControlReports.SelectedTab);
+                tabControlReports.TabPages.Remove(tabControlReports.SelectedTab);
                 //}
             }
         }
@@ -2324,6 +2325,11 @@ namespace FosMan {
                 checkBoxRpdFixEduWorkTablesFixEvalTools.Checked = true;
                 checkBoxRpdFixEduWorkTablesFixComptenceResults.Checked = true;
             }
+        }
+
+        private void checkBoxRpdFixEduWorksEvalToolsTakeFromFos_CheckedChanged(object sender, EventArgs e) {
+            App.Config.RpdFixEduWorkTablesTakeEvalToolsFromFos = checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Checked;
+            App.SaveConfig();
         }
     }
 }

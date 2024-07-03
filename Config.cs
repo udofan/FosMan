@@ -137,6 +137,11 @@ namespace FosMan {
         [JsonInclude]
         public List<DocProperty> RpdFixDocPropertyList { get; set; }
         /// <summary>
+        /// Коррекция РПД: брать оценочные средства из ФОС
+        /// </summary>
+        [JsonInclude]
+        public bool RpdFixEduWorkTablesTakeEvalToolsFromFos { get; set; }
+        /// <summary>
         /// Флаг сохранения списка загруженных УП
         /// </summary>
         [JsonInclude]

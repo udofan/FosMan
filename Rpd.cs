@@ -602,7 +602,7 @@ namespace FosMan {
                                 var eduWork = rpd.EducationalWorks[formOfStudy];
 
                                 eduWork.Modules = [];
-                                var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
+                                //var evalToolDic = Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
 
                                 for (var row = eduWork.TableTopicStartRow; row <= eduWork.TableTopicLastRow; row++) { //минус ряд с "зачетом", минус ряд с "итого"
                                     var module = new StudyModule();
@@ -626,7 +626,7 @@ namespace FosMan {
                                             //module.Topic = table.Rows[row].Cells[col].GetText();
                                             foreach (var t in table.Rows[row].Cells[cellIdx].GetText().Split(',', '\n', ';')) {
                                                 //убираем лишние пробелы
-                                                if (evalToolDic.TryGetValue(normalizeText(t), out var tool)) {
+                                                if (Enums.EvalToolDic.TryGetValue(normalizeText(t), out var tool)) {
                                                     //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
                                                     //if (Enum.TryParse(normalizedText, true, out EEvaluationTool tool)) {
                                                     module.EvaluationTools.Add(tool);

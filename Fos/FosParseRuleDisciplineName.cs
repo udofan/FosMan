@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Xceed.Document.NET;
 
 namespace FosMan {
     internal class FosParseRuleDisciplineName : IDocParseRule<Fos> {
@@ -19,7 +20,8 @@ namespace FosMan {
             new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase) //пустая строка
         ];
         public char[] TrimChars { get; set; } = [' ', '«', '»', '"', '“', '”'];
-        public Action<Fos, Match, string> Action { get; set; } = null;
+        public Action<Fos, Match, string, Paragraph> Action { get; set; } = null;
+        public bool MultyApply { get; set; } = false;
 
         public bool Equals<T>(IDocParseRule<T>? other) {
             throw new NotImplementedException();

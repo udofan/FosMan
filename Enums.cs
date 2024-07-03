@@ -6,7 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace FosMan {
-    public class Enums {
+    public class EvaluationToolAttribute : Attribute {
+        /// <summary>
+        /// Флаг однократного применение оценочного средства
+        /// </summary>
+        public bool SingleUse { get; set; }
+    }
+
+    public static class Enums {
         /// <summary>
         /// Форма обучения
         /// </summary>
@@ -56,6 +63,7 @@ namespace FosMan {
             [Description("Деловая игра")]
             BusinessGame,
             [Description("Курсовая работа")]
+            [EvaluationTool(SingleUse = true)]
             CourseWork
         }
 
@@ -122,25 +130,29 @@ namespace FosMan {
             /// </summary>
             Undefined = 0,
             /// <summary>
-            /// Время (всего, лекции, практика, самоподготовка)
+            /// Фикс: Время (всего, лекции, практика, самоподготовка)
             /// </summary>
             Time = 0b0000_0001,
             /// <summary>
-            /// Оценочные средства
+            /// Фиск: Оценочные средства
             /// </summary>
             EvalTools = 0b0000_0010,
             /// <summary>
-            /// Результаты компетенций
+            /// Фиск: Результаты компетенций
             /// </summary>
             CompetenceResults = 0b0000_0100,
             /// <summary>
-            /// Полное перестроение
+            /// Фиск: Полное перестроение
             /// </summary>
             FullRecreate = 0b0000_1000,
             /// <summary>
+            /// Опция: Брать оценочные средства из ФОС (по-возможности)
+            /// </summary>
+            TakeEvalToolsFromFos = 0b0001_0000,
+            /// <summary>
             /// Все виды фиксов
             /// </summary>
-            All = 0b1111_1111
+            All = 0b0000_1111
         }
 
         /// <summary>
@@ -213,6 +225,19 @@ namespace FosMan {
             CompetenceMatrixResultCodeItemMismatch,
             [Description("Результат индикатора достижения не соответствует индикатору")]
             CompetenceMatrixResultCodeAchievementMismatch
+        }
+
+        static Dictionary<string, EEvaluationTool> m_evalToolDic = null;
+
+        /// <summary>
+        /// Словарь видов оценочных средств
+        /// </summary>
+        public static Dictionary<string, EEvaluationTool> EvalToolDic {
+            get {
+                m_evalToolDic ??= Enum.GetValues(typeof(EEvaluationTool)).Cast<EEvaluationTool>().ToDictionary(x => x.GetDescription().ToUpper(), x => x);
+
+                return m_evalToolDic;
+            }
         }
     }
 }
