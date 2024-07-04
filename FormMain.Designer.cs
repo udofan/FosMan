@@ -68,6 +68,7 @@
             iconToolStripButtonRpdCheck = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator4 = new ToolStripSeparator();
             iconToolStripButtonRpdFixMode = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripLabelRpdFosIndicator = new ToolStripLabel();
             splitContainerRpd = new SplitContainer();
             groupBox4 = new GroupBox();
             groupBox8 = new GroupBox();
@@ -141,6 +142,7 @@
             iconToolStripButtonFosCheck = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator14 = new ToolStripSeparator();
             iconToolStripButtonFosFixMode = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripLabelFosRpdIndicator = new ToolStripLabel();
             tabPageReports = new TabPage();
             buttonSaveRpdReport = new Button();
             tabControlReports = new TabControl();
@@ -221,8 +223,6 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             openFileDialogFosSelect = new OpenFileDialog();
             openFileDialogFileFixer = new OpenFileDialog();
-            toolStripLabelRpdFosIndicator = new ToolStripLabel();
-            toolStripLabelFosRpdIndicator = new ToolStripLabel();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
             toolStripCompetenceMatrix.SuspendLayout();
@@ -372,7 +372,7 @@
             webView21.DefaultBackgroundColor = Color.White;
             webView21.Location = new Point(8, 37);
             webView21.Name = "webView21";
-            webView21.Size = new Size(985, 633);
+            webView21.Size = new Size(1240, 633);
             webView21.TabIndex = 4;
             webView21.ZoomFactor = 1D;
             // 
@@ -381,10 +381,10 @@
             tabPageСurriculum.Controls.Add(toolStrip1);
             tabPageСurriculum.Controls.Add(groupBoxDisciplines);
             tabPageСurriculum.Controls.Add(fastObjectListViewCurricula);
-            tabPageСurriculum.Location = new Point(4, 23);
+            tabPageСurriculum.Location = new Point(4, 24);
             tabPageСurriculum.Name = "tabPageСurriculum";
             tabPageСurriculum.Padding = new Padding(3);
-            tabPageСurriculum.Size = new Size(1257, 677);
+            tabPageСurriculum.Size = new Size(1257, 676);
             tabPageСurriculum.TabIndex = 3;
             tabPageСurriculum.Text = "  Учебные планы  ";
             tabPageСurriculum.UseVisualStyleBackColor = true;
@@ -437,8 +437,8 @@
             iconToolStripButtonCurriculaClear.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonCurriculaClear.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonCurriculaClear.Name = "iconToolStripButtonCurriculaClear";
-            iconToolStripButtonCurriculaClear.Size = new Size(93, 28);
-            iconToolStripButtonCurriculaClear.Text = "Удалить...";
+            iconToolStripButtonCurriculaClear.Size = new Size(86, 28);
+            iconToolStripButtonCurriculaClear.Text = "Убрать...";
             iconToolStripButtonCurriculaClear.ToolTipText = "Удалить из списка выделенные файлы";
             iconToolStripButtonCurriculaClear.Click += iconToolStripButtonCurriculaClear_Click;
             // 
@@ -512,7 +512,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(6, 390);
+            groupBoxDisciplines.Location = new Point(6, 392);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(1245, 308);
             groupBoxDisciplines.TabIndex = 3;
@@ -548,7 +548,7 @@
             fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1245, 347);
+            fastObjectListViewCurricula.Size = new Size(1245, 349);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -623,8 +623,8 @@
             iconToolStripButtonRpdClear.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonRpdClear.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonRpdClear.Name = "iconToolStripButtonRpdClear";
-            iconToolStripButtonRpdClear.Size = new Size(93, 28);
-            iconToolStripButtonRpdClear.Text = "Удалить...";
+            iconToolStripButtonRpdClear.Size = new Size(86, 28);
+            iconToolStripButtonRpdClear.Text = "Убрать...";
             iconToolStripButtonRpdClear.ToolTipText = "Убрать из списка выделенные файлы";
             iconToolStripButtonRpdClear.Click += iconToolStripButtonRpdClear_Click;
             // 
@@ -729,6 +729,15 @@
             iconToolStripButtonRpdFixMode.ToolTipText = "Показать/Скрыть режим коррекции";
             iconToolStripButtonRpdFixMode.Click += iconToolStripButtonRpdFixMode_Click;
             // 
+            // toolStripLabelRpdFosIndicator
+            // 
+            toolStripLabelRpdFosIndicator.Alignment = ToolStripItemAlignment.Right;
+            toolStripLabelRpdFosIndicator.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            toolStripLabelRpdFosIndicator.Name = "toolStripLabelRpdFosIndicator";
+            toolStripLabelRpdFosIndicator.Size = new Size(39, 28);
+            toolStripLabelRpdFosIndicator.Text = "ФОС ";
+            toolStripLabelRpdFosIndicator.ToolTipText = "Индикатор соотвествия профилю и направленности загруженных ФОС";
+            // 
             // splitContainerRpd
             // 
             splitContainerRpd.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -746,7 +755,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 645);
+            splitContainerRpd.Size = new Size(1251, 654);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -1199,7 +1208,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 201);
+            fastObjectListViewRpdList.Size = new Size(1251, 210);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1216,10 +1225,10 @@
             // 
             tabPageFos.Controls.Add(splitContainerFos);
             tabPageFos.Controls.Add(toolStrip2);
-            tabPageFos.Location = new Point(4, 23);
+            tabPageFos.Location = new Point(4, 24);
             tabPageFos.Name = "tabPageFos";
             tabPageFos.Padding = new Padding(3);
-            tabPageFos.Size = new Size(1257, 677);
+            tabPageFos.Size = new Size(1257, 676);
             tabPageFos.TabIndex = 1;
             tabPageFos.Text = "   ФОС   ";
             tabPageFos.UseVisualStyleBackColor = true;
@@ -1241,7 +1250,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(1251, 638);
+            splitContainerFos.Size = new Size(1251, 643);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             splitContainerFos.Tag = "280";
@@ -1499,7 +1508,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(1251, 354);
+            fastObjectListViewFosList.Size = new Size(1251, 359);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -1555,14 +1564,14 @@
             // 
             // iconToolStripButtonFosClear
             // 
-            iconToolStripButtonFosClear.IconChar = FontAwesome.Sharp.IconChar.TrashCan;
+            iconToolStripButtonFosClear.IconChar = FontAwesome.Sharp.IconChar.XmarkCircle;
             iconToolStripButtonFosClear.IconColor = Color.DarkBlue;
             iconToolStripButtonFosClear.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonFosClear.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonFosClear.Name = "iconToolStripButtonFosClear";
-            iconToolStripButtonFosClear.Size = new Size(101, 28);
-            iconToolStripButtonFosClear.Text = "Очистить...";
-            iconToolStripButtonFosClear.ToolTipText = "Очистить список";
+            iconToolStripButtonFosClear.Size = new Size(86, 28);
+            iconToolStripButtonFosClear.Text = "Убрать...";
+            iconToolStripButtonFosClear.ToolTipText = "Убрать из списка выделенные ФОС";
             iconToolStripButtonFosClear.Click += iconToolStripButtonFosClear_Click;
             // 
             // toolStripSeparator11
@@ -1649,6 +1658,15 @@
             iconToolStripButtonFosFixMode.Text = "Режим исправлений";
             iconToolStripButtonFosFixMode.ToolTipText = "Показать/Скрыть режим исправлений";
             iconToolStripButtonFosFixMode.Click += iconToolStripButtonFosFixMode_Click;
+            // 
+            // toolStripLabelFosRpdIndicator
+            // 
+            toolStripLabelFosRpdIndicator.Alignment = ToolStripItemAlignment.Right;
+            toolStripLabelFosRpdIndicator.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            toolStripLabelFosRpdIndicator.Name = "toolStripLabelFosRpdIndicator";
+            toolStripLabelFosRpdIndicator.Size = new Size(34, 28);
+            toolStripLabelFosRpdIndicator.Text = "РПД";
+            toolStripLabelFosRpdIndicator.ToolTipText = "Индикатор соотвествия профилю и направленности загруженных РПД";
             // 
             // tabPageReports
             // 
@@ -2474,22 +2492,6 @@
             // 
             openFileDialogFileFixer.Filter = "Word-файлы|*.docx|Все файлы|*.*";
             openFileDialogFileFixer.Multiselect = true;
-            // 
-            // toolStripLabelRpdFosIndicator
-            // 
-            toolStripLabelRpdFosIndicator.Alignment = ToolStripItemAlignment.Right;
-            toolStripLabelRpdFosIndicator.Name = "toolStripLabelRpdFosIndicator";
-            toolStripLabelRpdFosIndicator.Size = new Size(37, 28);
-            toolStripLabelRpdFosIndicator.Text = "ФОС ";
-            toolStripLabelRpdFosIndicator.ToolTipText = "Индикатор соотвествия профилю и направленности загруженных ФОС";
-            // 
-            // toolStripLabelFosRpdIndicator
-            // 
-            toolStripLabelFosRpdIndicator.Alignment = ToolStripItemAlignment.Right;
-            toolStripLabelFosRpdIndicator.Name = "toolStripLabelFosRpdIndicator";
-            toolStripLabelFosRpdIndicator.Size = new Size(30, 28);
-            toolStripLabelFosRpdIndicator.Text = "РПД";
-            toolStripLabelFosRpdIndicator.ToolTipText = "Индикатор соотвествия профилю и направленности загруженных РПД";
             // 
             // FormMain
             // 

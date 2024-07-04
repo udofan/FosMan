@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.DirectoryServices.ActiveDirectory;
@@ -393,6 +394,27 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Проверка, что РПД и ФОС подходящие
+        /// </summary>
+        /// <returns></returns>
+        public static bool? AreRpdAndFosFilesMatchable() {
+            bool? result = null;
+
+            if (RpdList.Any() && FosList.Any()) {
+                var rpdKeys = RpdList.Select(rpd => $"{rpd.Value.DirectionCode}-{rpd.Value.Profile}").ToHashSet();
+                var fosKeys = FosList.Select(fos => $"{fos.Value.DirectionCode}-{fos.Value.Profile}").ToHashSet();
+                if (rpdKeys.Count == 1 && fosKeys.Count == 1) {
+                    result = rpdKeys.First().Equals(fosKeys.First());
+                }
+                else {
+                    result = false;
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Проверить список РПД
         /// </summary>
         public static void CheckRdp(List<Rpd> rpdList, out string htmlReport) {
@@ -401,6 +423,8 @@ namespace FosMan {
             StringBuilder html = new("<html><body><h2>Отчёт по проверке РПД</h2>");
             StringBuilder toc = new("<div><ul>");
             StringBuilder rep = new("<div>");
+            var sw = Stopwatch.StartNew();
+
             var idx = 0;
             foreach (var rpd in rpdList) {
                 var anchor = $"rpd{idx}";
@@ -788,6 +812,11 @@ namespace FosMan {
             }
             rep.Append("</div>");
             toc.Append("</ul></div>");
+            html.AddDiv($"Дата проверки: {DateTime.Now}");
+            html.AddDiv($"Проверено РПД: {rpdList.Count}");
+            html.AddDiv($"Время работы: {sw.Elapsed}");
+            html.Append("<p />");
+            html.AddDiv($"<b>Список дисциплин:</b>");
             html.Append(toc).Append(rep).Append("</body></html>");
 
             htmlReport = html.ToString();
@@ -3114,14 +3143,29 @@ namespace FosMan {
         private static string[][] GetStudyResults(int topicCount, List<string> codeList, int maxCount, Random rand) {
             var results = new string[topicCount][];
 
+            if (codeList.Count > topicCount * maxCount) {
+                throw new Exception($"Требуется увеличить значение для максимального количества результатов для темы (текущего значения [{maxCount}] недостаточно)");
+            }
+
             var codesToDistrib = codeList.ToList();
 
             while (codesToDistrib.Any()) {
                 var usedNumbers = new HashSet<int>();
-                for (var i = 0; i < topicCount; i++) {
+                for (var t = 0; t < topicCount; t++) {
                     var max = rand.Next(maxCount) + 1;
-                    results[i] = new string[max];
-                    for (var r = 0; r < max; r++) {
+                    var startIdx = 0;
+                    if (results[t] == null) {
+                        results[t] = new string[max];
+                    }
+                    else {
+                        startIdx = results[t].Length;
+                        if (startIdx == maxCount) {
+                            continue; //next t - текущий топик уже заполнен на maxCount
+                        }
+                        max = rand.Next(maxCount - startIdx) + startIdx + 1;
+                        Array.Resize(ref results[t], max);
+                    }
+                    for (var r = startIdx; r < max; r++) {
                         var num = 0;
                         while (true) {
                             if (usedNumbers.Count == codesToDistrib.Count) {
@@ -3130,7 +3174,8 @@ namespace FosMan {
                             num = rand.Next(codesToDistrib.Count);
                             if (usedNumbers.Add(num)) break;
                         }
-                        results[i][r] = codesToDistrib[num];
+                        results[t][r] = codesToDistrib[num];
+                        //codesToDistrib.RemoveAt(num);
                     }
                 }
                 var usedCodes = new List<string>();
@@ -3595,6 +3640,27 @@ namespace FosMan {
             }
         }
 
+        /// <summary>
+        /// Удалить ФОС из загруженных
+        /// </summary>
+        /// <param name="fos"></param>
+        internal static void RemoveFos(Fos fos) {
+            if (fos != null) {
+                m_fosDic.TryRemove(fos.SourceFileName, out _);
+            }
+        }
+
+        /// <summary>
+        /// Удалить список ФОС из загруженных
+        /// </summary>
+        /// <param name="fosList"></param>
+        internal static void RemoveFos(List<Fos> fosList) {
+            if (fosList?.Any() ?? false) {
+                foreach (var fos in fosList) {
+                    m_fosDic.TryRemove(fos.SourceFileName, out _);
+                }
+            }
+        }
         /// <summary>
         /// Удалить из списка ряд УП
         /// </summary>

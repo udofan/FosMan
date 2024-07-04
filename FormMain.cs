@@ -980,6 +980,8 @@ namespace FosMan {
                             fastObjectListViewRpdList.SelectedObjects = selectedObjects;
                             fastObjectListViewRpdList.EndUpdate();
 
+                            this.UpdateRpdFosMatchIndicators();
+
                             var msg = $"Загрузка файлов ({idx} из {files.Length})...";
                             //labelLoadRpd.Text = msg;
                             StatusMessage(msg);
@@ -1010,6 +1012,17 @@ namespace FosMan {
 
             Application.UseWaitCursor = false;
             Application.DoEvents();
+        }
+
+        void UpdateRpdFosMatchIndicators() {
+            var rpdAndFosAreMatched = App.AreRpdAndFosFilesMatchable();
+            Color color = rpdAndFosAreMatched switch {
+                true => Color.Green,
+                false => Color.Red,
+                _ => Color.Black
+            };
+            toolStripLabelRpdFosIndicator.ForeColor = color;
+            toolStripLabelFosRpdIndicator.ForeColor = color;
         }
 
         /// <summary>
@@ -1053,6 +1066,8 @@ namespace FosMan {
                             selectedObjects.Add(fos);
                             fastObjectListViewFosList.SelectedObjects = selectedObjects;
                             fastObjectListViewFosList.EndUpdate();
+
+                            this.UpdateRpdFosMatchIndicators();
 
                             var msg = $"Загрузка файлов ({idx} из {files.Length})...";
                             //labelLoadRpd.Text = msg;
@@ -1417,7 +1432,12 @@ namespace FosMan {
             Rectangle closeButton = new Rectangle(r.Right - 22, r.Top + 3, 15, 9);
             if (closeButton.Contains(e.Location)) {
                 //if (MessageBox.Show("Закрыть вкладку?", "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                var currIdx = tabControlReports.SelectedIndex;
                 tabControlReports.TabPages.Remove(tabControlReports.SelectedTab);
+                if (currIdx >= tabControlReports.TabPages.Count) {
+                    currIdx = tabControlReports.TabPages.Count - 1;
+                }
+                tabControlReports.SelectedIndex = currIdx;
                 //}
             }
         }
@@ -1426,7 +1446,7 @@ namespace FosMan {
             //NativeMethods.TCHITTESTINFO HTI = new NativeMethods.TCHITTESTINFO(tabControl.PointToClient(Cursor.Position));
             //int tabID = NativeMethods.SendMessage(tabControl.Handle, NativeMethods.TCM_HITTEST, IntPtr.Zero, ref HTI);
             //return tabID == -1 ? null : tabControl.TabPages[tabID];
-
+            if (tabControlReports.TabPages.Count == 0) return;
             Rectangle r = tabControlReports.GetTabRect(tabControlReports.SelectedIndex);
             Rectangle closeButton = new Rectangle(r.Right - 22, r.Top + 3, 15, 9);
             if (closeButton.Contains(e.Location)) {
@@ -1792,6 +1812,7 @@ namespace FosMan {
                 if (MessageBox.Show($"Вы уверены, что хотите удалить из списка выделенные РПД ({rpdList.Count} шт.)?",
                     "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
                     App.RemoveRpd(rpdList);
+                    this.UpdateRpdFosMatchIndicators();
                     fastObjectListViewRpdList.RemoveObjects(fastObjectListViewRpdList.SelectedObjects);
                 }
             }
@@ -2120,10 +2141,14 @@ namespace FosMan {
         }
 
         private void iconToolStripButtonFosClear_Click(object sender, EventArgs e) {
-            if (MessageBox.Show("Вы уверены, что хотите очистить список загруженных ФОС?",
+            var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
+            if (fosList.Any()) {
+                if (MessageBox.Show($"Вы уверены, что хотите удалить из списка выделенные ФОС ({fosList.Count} шт.)?",
                     "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
-                App.FosList.Clear();
-                fastObjectListViewFosList.ClearObjects();
+                    App.RemoveFos(fosList);
+                    this.UpdateRpdFosMatchIndicators();
+                    fastObjectListViewFosList.RemoveObjects(fastObjectListViewFosList.SelectedObjects);
+                }
             }
         }
 
