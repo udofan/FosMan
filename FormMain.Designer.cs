@@ -111,7 +111,7 @@
             groupBoxFosFix = new GroupBox();
             checkBoxFosFixResetSelection = new CheckBox();
             checkBoxFosFixPassportTable = new CheckBox();
-            checkBox3 = new CheckBox();
+            checkBoxFosFixCompetenceIndicators = new CheckBox();
             groupBox6 = new GroupBox();
             fastObjectListViewFosFixDocProperties = new BrightIdeasSoftware.FastObjectListView();
             checkBox4 = new CheckBox();
@@ -512,7 +512,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(6, 392);
+            groupBoxDisciplines.Location = new Point(6, 393);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(1245, 308);
             groupBoxDisciplines.TabIndex = 3;
@@ -548,7 +548,7 @@
             fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1245, 349);
+            fastObjectListViewCurricula.Size = new Size(1245, 350);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -567,10 +567,10 @@
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainerRpd);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1257, 677);
+            tabPageRpd.Size = new Size(1257, 676);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "  РПД  ";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -755,7 +755,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 654);
+            splitContainerRpd.Size = new Size(1251, 655);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -1208,7 +1208,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 210);
+            fastObjectListViewRpdList.Size = new Size(1251, 211);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1225,10 +1225,10 @@
             // 
             tabPageFos.Controls.Add(splitContainerFos);
             tabPageFos.Controls.Add(toolStrip2);
-            tabPageFos.Location = new Point(4, 24);
+            tabPageFos.Location = new Point(4, 23);
             tabPageFos.Name = "tabPageFos";
             tabPageFos.Padding = new Padding(3);
-            tabPageFos.Size = new Size(1257, 676);
+            tabPageFos.Size = new Size(1257, 677);
             tabPageFos.TabIndex = 1;
             tabPageFos.Text = "   ФОС   ";
             tabPageFos.UseVisualStyleBackColor = true;
@@ -1250,7 +1250,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(1251, 643);
+            splitContainerFos.Size = new Size(1251, 646);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             splitContainerFos.Tag = "280";
@@ -1260,7 +1260,7 @@
             groupBoxFosFix.BackColor = Color.WhiteSmoke;
             groupBoxFosFix.Controls.Add(checkBoxFosFixResetSelection);
             groupBoxFosFix.Controls.Add(checkBoxFosFixPassportTable);
-            groupBoxFosFix.Controls.Add(checkBox3);
+            groupBoxFosFix.Controls.Add(checkBoxFosFixCompetenceIndicators);
             groupBoxFosFix.Controls.Add(groupBox6);
             groupBoxFosFix.Controls.Add(checkBox4);
             groupBoxFosFix.Controls.Add(textBox1);
@@ -1281,7 +1281,7 @@
             groupBoxFosFix.Size = new Size(1251, 280);
             groupBoxFosFix.TabIndex = 0;
             groupBoxFosFix.TabStop = false;
-            groupBoxFosFix.Text = "Режим исправлений ФОС";
+            groupBoxFosFix.Text = "Режим коррекции ФОС";
             // 
             // checkBoxFosFixResetSelection
             // 
@@ -1308,18 +1308,18 @@
             checkBoxFosFixPassportTable.UseVisualStyleBackColor = true;
             checkBoxFosFixPassportTable.CheckedChanged += checkBoxFosFixPassportTable_CheckedChanged;
             // 
-            // checkBox3
+            // checkBoxFosFixCompetenceIndicators
             // 
-            checkBox3.AutoSize = true;
-            checkBox3.Enabled = false;
-            checkBox3.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            checkBox3.Location = new Point(237, 52);
-            checkBox3.Name = "checkBox3";
-            checkBox3.Size = new Size(353, 18);
-            checkBox3.TabIndex = 19;
-            checkBox3.Text = "Заполнить таблицы учебных работ по формам обучения";
-            toolTip1.SetToolTip(checkBox3, "Формирование значений в колонках \"Виды учебной работы и\r\nтрудоемкость (в часах)\", \"Оценочные средства\" и \"Результаты обучения\"");
-            checkBox3.UseVisualStyleBackColor = true;
+            checkBoxFosFixCompetenceIndicators.AutoSize = true;
+            checkBoxFosFixCompetenceIndicators.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            checkBoxFosFixCompetenceIndicators.Location = new Point(237, 52);
+            checkBoxFosFixCompetenceIndicators.Name = "checkBoxFosFixCompetenceIndicators";
+            checkBoxFosFixCompetenceIndicators.Size = new Size(212, 18);
+            checkBoxFosFixCompetenceIndicators.TabIndex = 19;
+            checkBoxFosFixCompetenceIndicators.Text = "Коды индикаторов компетенций";
+            toolTip1.SetToolTip(checkBoxFosFixCompetenceIndicators, "Коррекция кодов индикаторов компетенций в таблицах описания оценочных средств");
+            checkBoxFosFixCompetenceIndicators.UseVisualStyleBackColor = true;
+            checkBoxFosFixCompetenceIndicators.CheckedChanged += checkBoxFosFixCompetenceIndicators_CheckedChanged;
             // 
             // groupBox6
             // 
@@ -1508,7 +1508,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(1251, 359);
+            fastObjectListViewFosList.Size = new Size(1251, 362);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -1654,9 +1654,9 @@
             iconToolStripButtonFosFixMode.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonFosFixMode.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonFosFixMode.Name = "iconToolStripButtonFosFixMode";
-            iconToolStripButtonFosFixMode.Size = new Size(152, 28);
-            iconToolStripButtonFosFixMode.Text = "Режим исправлений";
-            iconToolStripButtonFosFixMode.ToolTipText = "Показать/Скрыть режим исправлений";
+            iconToolStripButtonFosFixMode.Size = new Size(139, 28);
+            iconToolStripButtonFosFixMode.Text = "Режим коррекции";
+            iconToolStripButtonFosFixMode.ToolTipText = "Показать/Скрыть режим коррекции";
             iconToolStripButtonFosFixMode.Click += iconToolStripButtonFosFixMode_Click;
             // 
             // toolStripLabelFosRpdIndicator
@@ -2208,7 +2208,7 @@
             groupBoxFileFixerFiles.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFileFixerFiles.Location = new Point(3, 230);
             groupBoxFileFixerFiles.Name = "groupBoxFileFixerFiles";
-            groupBoxFileFixerFiles.Size = new Size(1251, 455);
+            groupBoxFileFixerFiles.Size = new Size(1251, 456);
             groupBoxFileFixerFiles.TabIndex = 18;
             groupBoxFileFixerFiles.TabStop = false;
             groupBoxFileFixerFiles.Text = "Файлы";
@@ -2222,7 +2222,7 @@
             fastObjectListViewFileFixerFiles.Location = new Point(3, 18);
             fastObjectListViewFileFixerFiles.Name = "fastObjectListViewFileFixerFiles";
             fastObjectListViewFileFixerFiles.ShowGroups = false;
-            fastObjectListViewFileFixerFiles.Size = new Size(1245, 434);
+            fastObjectListViewFileFixerFiles.Size = new Size(1245, 435);
             fastObjectListViewFileFixerFiles.TabIndex = 2;
             fastObjectListViewFileFixerFiles.UseFilterIndicator = true;
             fastObjectListViewFileFixerFiles.UseFiltering = true;
@@ -2725,7 +2725,7 @@
         private GroupBox groupBoxFosFix;
         private CheckBox checkBoxFosFixResetSelection;
         private CheckBox checkBoxFosFixPassportTable;
-        private CheckBox checkBox3;
+        private CheckBox checkBoxFosFixCompetenceIndicators;
         private GroupBox groupBox6;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewFosFixDocProperties;
         private CheckBox checkBox4;

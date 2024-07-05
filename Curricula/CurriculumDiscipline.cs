@@ -162,13 +162,13 @@ namespace FosMan {
         /// </summary>
         //public List<EControlForm> ControlForms { get; set; }
         [JsonInclude]
-        public int? ControlFormExamHours { get; set; }
+        public string? ControlFormExamSemester { get; set; }
         [JsonInclude]
-        public int? ControlFormTestHours { get; set; }
+        public string? ControlFormTestSemester { get; set; }
         [JsonInclude]
-        public int? ControlFormTestWithAGradeHours { get; set; }
+        public string? ControlFormTestWithAGradeSemester { get; set; }
         [JsonInclude]
-        public int? ControlFormControlWorkHours { get; set; }
+        public string? ControlFormCourseWorkSemester { get; set; }
         /// <summary>
         /// Итого акад.часов: по плану
         /// </summary>
@@ -233,16 +233,16 @@ namespace FosMan {
                     SelfStudyHours = TotalSelfStudyHours,
                     TotalHours = TotalByPlanHours
                 };
-                if (ControlFormExamHours.HasValue && ControlFormExamHours.Value > 0) {
+                if (!string.IsNullOrEmpty(ControlFormExamSemester)) {
                     m_eduWork.ControlForm = EControlForm.Exam;
                 }
-                else if (ControlFormTestHours.HasValue && ControlFormTestHours.Value > 0) {
+                else if (!string.IsNullOrEmpty(ControlFormTestSemester)) {
                     m_eduWork.ControlForm = EControlForm.Test;
                 }
-                else if (ControlFormTestWithAGradeHours.HasValue && ControlFormTestWithAGradeHours.Value > 0) {
+                else if (!string.IsNullOrEmpty(ControlFormTestWithAGradeSemester)) {
                     m_eduWork.ControlForm = EControlForm.TestWithAGrade;
                 }
-                else if (ControlFormControlWorkHours.HasValue && ControlFormControlWorkHours.Value > 0) {
+                else if (!string.IsNullOrEmpty(ControlFormCourseWorkSemester)) {
                     m_eduWork.ControlForm = EControlForm.CourseWork;
                 }
                 

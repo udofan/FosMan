@@ -243,10 +243,19 @@ namespace FosMan {
         /// <param name="joinParText"></param>
         /// <returns></returns>
         static public string GetText(this Cell cell, string joinParText = " ", bool applyTrim = true) {
-            var text = string.Join(joinParText, cell.Paragraphs.Select(p => p.Text));
-            if (applyTrim) {
-                return text.Trim();
-            }
+            var text = string.Join(joinParText, cell.Paragraphs.Select(p => {
+                var text = p.Text;
+                if (applyTrim) {
+                    text = text.Trim(); //
+                }// p.Text.Trim() : p.Text));
+                if (p.IsListItem && p.ListItemType == ListItemType.Numbered) {
+                    text = $"{p.GetListItemNumber()} {text}";
+                }
+                return text;
+            }));
+            //if (applyTrim) {
+                //return text.Trim();
+            //}
             return text;
         }
 
@@ -520,8 +529,8 @@ namespace FosMan {
                                     }
                                     if (discipline.EducationalWork.ControlForm != eduWork.ControlForm) {
                                         if (msg.Length > 0) msg += "<br />";
-                                        msg = $"Тип контроля [{discipline.EducationalWork.ControlForm.GetDescription()}] не соответствует " +
-                                              $"типу контроля из УП - [{eduWork.ControlForm.GetDescription()}]";
+                                        msg = $"Тип контроля [{eduWork.ControlForm.GetDescription()}] не соответствует " +
+                                              $"типу контроля из УП - [{discipline.EducationalWork.ControlForm.GetDescription()}]";
                                     }
                                     return (string.IsNullOrEmpty(msg), msg);
                                 });
@@ -897,6 +906,26 @@ namespace FosMan {
                         var result = string.Compare(fos.Year, rpd.Year, true) == 0;
                         var msg = result ? "" : $"Обнаружено различие в годах [ФОС: <b>{fos.Year}</b>, РПД: <b>{rpd.Year}</b>]";
                         return (result, msg);
+                    });
+                    ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Проверка оценочных средств", (fos, rpd) => {
+                        var msg = "";// var result = string.Compare(fos.Year, rpd.Year, true) == 0;
+                        if (fos.EvalTools == null || fos.EvalTools.Count == 0) {
+                            if (msg.Length > 0) msg += ", ";
+                            msg += "Описание оценочных средств не обнаружено.";
+                        }
+                        else {
+                            foreach (var item in fos.EvalTools) {
+                                foreach (var tool in item.Value) {
+                                    if ((tool.ListItems?.Count ?? 0) == 0 &&
+                                        (tool.TestingItems?.Count ?? 0) == 0 &&
+                                        (tool.XmlTestingItems?.Count ?? 0) == 0) {
+                                        if (msg.Length > 0) msg += "<br />";
+                                        msg += $"Для оценочного средства [{item.Key.GetDescription()}] не определён список вопросов (раздел {tool.ChapterNum})";
+                                    }
+                                }
+                            }
+                        }
+                        return (string.IsNullOrEmpty(msg), msg);
                     });
 
                     //проверяем ФОС на наличие матрицы компетенций
@@ -2263,10 +2292,10 @@ namespace FosMan {
 
                 rep.Append("<div><b>Режим работы:</b></div><ul>");
                 if (Config.RpdFixTableOfCompetences) {
-                    rep.Append("<li>Исправление таблицы компетенций</li>");
+                    rep.Append("<li>Коррекция таблицы компетенций</li>");
                 }
                 if (Config.RpdFixTableOfEduWorks) {
-                    rep.Append("<li>Исправление таблицы учебных работ</li>");
+                    rep.Append("<li>Коррекция таблицы учебных работ</li>");
                 }
                 if (Config.RpdFixEduWorkTablesFixTime) {
                     rep.Append("<li>Заполнение таблиц учебных работ для форм обучения</li>");
@@ -2518,13 +2547,16 @@ namespace FosMan {
             try {
                 rep.Append("<div><b>Режим работы:</b></div><ul>");
                 if (Config.FosFixCompetenceTable1) {
-                    rep.Append("<li>Исправление таблицы компетенций #1 (п.2.1)</li>");
+                    rep.Append("<li>Коррекция таблицы компетенций #1 (п.2.1)</li>");
                 }
                 if (Config.FosFixCompetenceTable2) {
-                    rep.Append("<li>Исправление таблицы компетенций #2 (п.2.2)</li>");
+                    rep.Append("<li>Коррекция таблицы компетенций #2 (п.2.2)</li>");
                 }
                 if (Config.FosFixPassportTable) {
-                    rep.Append("<li>Исправление таблицы паспорта</li>");
+                    rep.Append("<li>Коррекция таблицы паспорта</li>");
+                }
+                if (Config.FosFixCompetenceIndicators) {
+                    rep.Append("<li>Коррекция кодов индикаторов компетенций в таблицах описания оценочных средств</li>");
                 }
                 if (Config.FosFixResetSelection) {
                     rep.Append("<li>Очистка цветных выделений для служебных областей</li>");
@@ -2599,6 +2631,18 @@ namespace FosMan {
                                     }
                                 }
 
+                                var evalToolTables = new Dictionary<int, Table>();
+                                if (App.Config.FosFixCompetenceIndicators) {
+                                    foreach (var item in fos.EvalTools) {
+                                        foreach (var tool in item.Value) {
+                                            var table = docx.Tables.FirstOrDefault(t => t.Index == tool.TableIndex);
+                                            if (table != null) {
+                                                evalToolTables[tool.TableIndex] = table;
+                                            }
+                                        }
+                                    }
+                                }
+
                                 foreach (var table in docx.Tables) {
                                     var backup = table.Xml;
                                     if (fixCompetences1 && CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Fos21) {
@@ -2624,6 +2668,36 @@ namespace FosMan {
                                     }
                                 }
 
+                                //коррекция индикаторов оценочных средств
+                                var allCodes = rpd.CompetenceMatrix.GetAllAchievementCodes().ToList();
+
+                                foreach (var item in fos.EvalTools) {
+                                    foreach (var tool in item.Value) {
+                                        if (evalToolTables.TryGetValue(tool.TableIndex, out var table)) {
+                                        //var table = docx.Tables.FirstOrDefault(t => t.Index == tool.TableIndex);
+                                        //if (table != null) {
+                                            if (EvaluationTool.TestTable(table, out var colIndicatorsIndex)) {
+                                                var indicatorCodes = new List<string>();
+                                                foreach (var m in rpd.EducationalWorks[EFormOfStudy.FullTime].Modules) {
+                                                    if (m.EvaluationTools.Contains(item.Key)) {
+                                                        var topicIndicators = rpd.CompetenceMatrix.GetAchievements(m.CompetenceResultCodes);
+                                                        indicatorCodes.AddRange(topicIndicators.Select(achi => achi.Code));
+                                                    }
+                                                }
+                                                if (indicatorCodes.Any()) {
+                                                    var codes = indicatorCodes.ToHashSet().ToList();
+                                                    codes.Sort((x1, x2) => allCodes.IndexOf(x1) - allCodes.IndexOf(x2));
+
+                                                    table.Rows[1].Cells[tool.TableColIndexCompetenceIndicators].SetText(string.Join("\n", codes));
+                                                    rep.Append($"<div style='color: green'>В таблицу оценочного средства [{item.Key.GetDescription()}] добавлены индикаторы компетенций.</div>");
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            rep.AddError($"Не удалось найти таблицу оценочного средства с индексом {tool.TableIndex}.");
+                                        }
+                                    }
+                                }
 
                                 //foreach (var table in docx.Tables) {
                                 //    var backup = table.Xml;
@@ -3056,7 +3130,7 @@ namespace FosMan {
                         if (fos == null || (!(fos.EvalTools?.Any() ?? false))) {
                             throw new Exception("При заданном параметре \"Брать оценочные средства из ФОС\" ФОС не обнаружен или у него не определены оценочные средства");
                         }
-                        evalTools = GetEvalTools(topicCount, rand, Array.Empty<EEvaluationTool>(), fos.EvalTools.ToArray());
+                        evalTools = GetEvalTools(topicCount, rand, Array.Empty<EEvaluationTool>(), fos.EvalTools.Keys.ToArray());
                     }
                     else {
                         evalTools = GetEvalTools(topicCount, rand, evalTools1stStageItems.ToArray(), evalTools2ndStageItems.ToArray());

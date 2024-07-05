@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,15 @@ namespace FosMan {
         /// Флаг однократного применение оценочного средства
         /// </summary>
         public bool SingleUse { get; set; }
+        /// <summary>
+        /// Короткое экранное название
+        /// </summary>
+        public string ShortDescription { get; set; }
+
+        public EvaluationToolAttribute(string shortDescription, bool singleUse = false) {
+            ShortDescription = shortDescription;
+            SingleUse = singleUse;
+        }
     }
 
     public static class Enums {
@@ -19,12 +29,16 @@ namespace FosMan {
         /// </summary>
         public enum EFormOfStudy {
             [Description("Очная")]
+            [EvaluationTool("О")]
             FullTime,               //очная
             [Description("Заочная")]
+            [EvaluationTool("З")]
             PartTime,               //заочная
             [Description("Очно-заочная")]
+            [EvaluationTool("ОЗ")]
             MixedTime,              //очно-заочная
             [Description("НЕИЗВЕСТНО")]
+            [EvaluationTool("?")]
             Unknown
         }
 
@@ -45,25 +59,34 @@ namespace FosMan {
         /// </summary>
         public enum EEvaluationTool {
             [Description("Опрос")]
+            [EvaluationTool("О")]
             Survey,
             [Description("Эссе")]
+            [EvaluationTool("Э")]
             Essay,
             [Description("Реферат")]
+            [EvaluationTool("Р")]
             Paper,
             [Description("Тестирование")]
+            [EvaluationTool("Т")]
             Testing,
             [Description("Контрольная работа")]
+            [EvaluationTool("К")]
             ControlWork,
             [Description("Доклад")]
+            [EvaluationTool("Д")]
             Presentation,
             [Description("Практическая работа")]
+            [EvaluationTool("ПР")]
             PracticalWork,
             [Description("Мини-кейсы")]
+            [EvaluationTool("МК")]
             MiniCases,
             [Description("Деловая игра")]
+            [EvaluationTool("ДИ")]
             BusinessGame,
             [Description("Курсовая работа")]
-            [EvaluationTool(SingleUse = true)]
+            [EvaluationTool("УР", true)]
             CourseWork
         }
 

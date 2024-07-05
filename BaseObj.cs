@@ -10,7 +10,7 @@ namespace FosMan {
     /// <summary>
     /// Базовый объект с фичами аксессора к свойствам
     /// </summary>
-    internal class BaseObj {
+    public class BaseObj {
         static ConcurrentDictionary<Type, TypeAccessor> m_typeAccessors = []; // TypeAccessor.Create(typeof(CurriculumDiscipline));
         static ConcurrentDictionary<Type, TypeAccessor> m_extraTypeAccessors = [];
 

@@ -27,26 +27,26 @@ namespace FosMan {
             new CurriculumDisciplineHeader() {
                 Text = "ЭКЗА",
                 TestFunction = EPropertyTestFunction.Contains,
-                TargetProperty = "ControlFormExamHours",
-                TargetType = typeof(int)
+                TargetProperty = "ControlFormExamSemester",
+                TargetType = typeof(string)
             },
             new CurriculumDisciplineHeader() {
                 Text = "ЗАЧЕТ",
                 TestFunction = EPropertyTestFunction.Contains,
-                TargetProperty = "ControlFormTestHours",
-                TargetType = typeof(int)
+                TargetProperty = "ControlFormTestSemester",
+                TargetType = typeof(string)
             },
             new CurriculumDisciplineHeader() {
                 Text = "ЗАЧЕТ С ОЦ",
                 TestFunction = EPropertyTestFunction.Contains,
-                TargetProperty = "ControlFormTestWithAGradeHours",
-                TargetType = typeof(int)
+                TargetProperty = "ControlFormTestWithAGradeSemester",
+                TargetType = typeof(string)
             },
             new CurriculumDisciplineHeader() {
                 Text = "КР",
                 TestFunction = EPropertyTestFunction.Equals,
-                TargetProperty = "ControlFormControlWorkHours",
-                TargetType = typeof(int)
+                TargetProperty = "ControlFormCourseWorkSemester",
+                TargetType = typeof(string)
             },
             new CurriculumDisciplineHeader() {
                 Text = "По плану", 

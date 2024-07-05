@@ -46,7 +46,12 @@ namespace FosMan {
                 }
                 return m_type;
             }
-            set { m_type = value; }
+            set { 
+                m_type = value;
+                if (value != null) {
+                    m_typeName = value.FullName;
+                }
+            }
         }
         /// <summary>
         /// Имя целевого типа

@@ -203,6 +203,11 @@ namespace FosMan {
         [JsonInclude]
         public bool FosFixResetSelection { get; set; }
         /// <summary>
+        /// Коррекция кодов индикаторов компетенций в таблицах описания оценочных средств
+        /// </summary>
+        [JsonInclude]
+        public bool FosFixCompetenceIndicators { get; set; }
+        /// <summary>
         /// Сброс цветовых выделений
         /// </summary>
         [JsonInclude]

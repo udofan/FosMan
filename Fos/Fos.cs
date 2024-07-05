@@ -15,7 +15,7 @@ namespace FosMan {
     /// <summary>
     /// Описание ФОСа
     /// </summary>
-    internal class Fos : BaseObj {
+    public class Fos : BaseObj {
         /// <summary>
         /// Ключ (по нему сравниваются РПД и ФОС)
         /// </summary>
@@ -84,7 +84,7 @@ namespace FosMan {
         /// Оценочные средства
         /// </summary>
         [JsonInclude]
-        public HashSet<EEvaluationTool> EvalTools { get; set; }
+        public Dictionary<EEvaluationTool, List<EvaluationTool>> EvalTools { get; set; }
         /// <summary>
         /// Выявленные ошибки
         /// </summary>
@@ -110,11 +110,28 @@ namespace FosMan {
         /// </summary>
         [JsonIgnore]
         public Table TableOfPassport{ get; set; }
+
         /// <summary>
-        /// Таблицы со списками вопросов по типам оценочных средств
+        /// Очистка ФОС
         /// </summary>
-        [JsonIgnore]
-        public Dictionary<EEvaluationTool, (Table table, int colIdx)> EvalToolTables { get; set; }
+        public void Clear() {
+            this.Errors = [];
+            this.FormsOfStudy = [];
+            this.CompetenceMatrix = null;
+            this.Passport = null;
+            this.Compiler = "";
+            this.Department = "";
+            this.DirectionCode = "";
+            this.DirectionName = "";
+            this.DisciplineName = "";
+            this.Profile = "";
+            this.Year = "";
+            this.ExtraErrors = [];
+            this.EvalTools = [];
+            this.TableOfCompetence1 = null;
+            this.TableOfCompetence2 = null;
+            this.TableOfPassport = null;
+        }
 
         /// <summary>
         /// Загрузка ФОС из файла
@@ -122,23 +139,8 @@ namespace FosMan {
         /// <param name="fileName"></param>
         public static Fos LoadFromFile(string fileName, Fos fos = null) {
             fos ??= new();
-
-            fos.Errors = [];
+            fos.Clear();
             fos.SourceFileName = fileName;
-            fos.FormsOfStudy = [];
-            //fos.SummaryParagraphs = [];
-            //fos.QuestionList = [];
-            //fos.ReferencesBase = [];
-            //fos.ReferencesExtra = [];
-            fos.CompetenceMatrix = null;
-            fos.Passport = null;
-            fos.Compiler = "";
-            fos.Department = "";
-            fos.DirectionCode = "";
-            fos.DirectionName = "";
-            fos.DisciplineName = "";
-            fos.Profile = "";
-            fos.Year = "";
 
             try {
                 if (!DocParser.TryParse(fileName, fos, FosParser.Rules, out var errors)) {

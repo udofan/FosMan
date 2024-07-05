@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -263,6 +264,29 @@ namespace FosMan {
         [JsonInclude]
         public List<string> ReferencesExtra { get; set; }
 
+        /// <summary>
+        /// Очистка РПД
+        /// </summary>
+        public void Clear() {
+            this.Errors = new();
+            this.ExtraErrors = new();
+            this.EducationalWorks = [];
+            this.FormsOfStudy = [];
+            this.SummaryParagraphs = [];
+            this.QuestionList = [];
+            this.ReferencesBase = [];
+            this.ReferencesExtra = [];
+            this.CompetenceMatrix = null;
+            this.Compiler = "";
+            this.Department = "";
+            this.DirectionCode = "";
+            this.DirectionName = "";
+            this.DisciplineName = "";
+            this.NextDisciplines = "";
+            this.PrevDisciplines = "";
+            this.Profile = "";
+            this.Year = "";
+        }
 
         /// <summary>
         /// Загрузка РПД из файла
@@ -270,26 +294,8 @@ namespace FosMan {
         /// <param name="fileName"></param>
         public static Rpd LoadFromFile(string fileName, Rpd rpd = null) {
             rpd ??= new();
-            
-            rpd.Errors = new();
-            rpd.ExtraErrors = new();
+            rpd.Clear();
             rpd.SourceFileName = fileName;
-            rpd.EducationalWorks = [];
-            rpd.FormsOfStudy = [];
-            rpd.SummaryParagraphs = [];
-            rpd.QuestionList = [];
-            rpd.ReferencesBase = [];
-            rpd.ReferencesExtra = [];
-            rpd.CompetenceMatrix = null;
-            rpd.Compiler = "";
-            rpd.Department = "";
-            rpd.DirectionCode = "";
-            rpd.DirectionName = "";
-            rpd.DisciplineName = "";
-            rpd.NextDisciplines = "";
-            rpd.PrevDisciplines = "";
-            rpd.Profile = "";
-            rpd.Year = "";
 
             try {
                 using (var docx = DocX.Load(fileName)) {

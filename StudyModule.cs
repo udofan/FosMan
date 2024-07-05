@@ -10,7 +10,7 @@ namespace FosMan {
     /// <summary>
     /// Описание модуля обучения: раздел (тема), оценочное средство, компетенции, время?
     /// </summary>
-    internal class StudyModule {
+    public class StudyModule {
         HashSet<string> m_competenceResults = null;
 
         /// <summary>

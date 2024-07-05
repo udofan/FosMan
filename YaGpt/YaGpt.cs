@@ -260,7 +260,7 @@ namespace FosMan {
                 }
             }
             else {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
                 resultList = await GetRelatedDisciplinesAsync(disciplineName, possibleDisciplines);
                 //throw new Exception(result.error.message);
             }

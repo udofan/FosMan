@@ -323,13 +323,13 @@ namespace FosMan {
             };
             list.Columns.Add(olvColumnYear);
             var olvColumnFormsOfStudy = new OLVColumn("Формы обучения", nameof(Rpd.FormsOfStudy)) {
-                Width = 190,
+                Width = 120,
                 IsEditable = false,
                 AspectGetter = (x) => {
                     var value = x?.ToString();
                     var rpd = x as Rpd;
                     if (rpd != null) {
-                        var items = rpd.FormsOfStudy.Select(x => x.GetDescription()).ToList();
+                        var items = rpd.FormsOfStudy.Select(x => x.GetAttribute<EvaluationToolAttribute>()?.ShortDescription ?? x.GetDescription()).ToList();
                         value = string.Join(", ", items);
                     }
                     return value;
@@ -431,16 +431,28 @@ namespace FosMan {
             });
 
             list.Columns.Add(new OLVColumn("Формы обучения", nameof(Fos.FormsOfStudy)) {
-                Width = 190,
+                Width = 120,
                 IsEditable = false,
                 AspectGetter = (x) => {
                     var value = x?.ToString();
                     var fos = x as Fos;
                     if (fos?.FormsOfStudy?.Any() ?? false) {
-                        var items = fos.FormsOfStudy.Select(x => x.GetDescription()).ToList();
+                        var items = fos.FormsOfStudy.Select(x => x.GetAttribute<EvaluationToolAttribute>()?.ShortDescription ?? x.GetDescription()).ToList();
                         value = string.Join(", ", items);
                     }
                     return value;
+                }
+            });
+            //оценочные средства
+            list.Columns.Add(new OLVColumn("Оценочные средства", nameof(Fos.EvalTools)) {
+                Width = 120,
+                IsEditable = false,
+                AspectGetter = x => {
+                    var items = (x as Fos)?.EvalTools?
+                        .Select(t => t.Key.GetAttribute<EvaluationToolAttribute>()?.ShortDescription ?? t.Key.GetDescription())?
+                        .Order()
+                        .ToList() ?? ["?"];
+                    return string.Join(", ", items);
                 }
             });
             //составитель
@@ -588,6 +600,7 @@ namespace FosMan {
             checkBoxFosFixCompetenceTable2.Checked = App.Config.FosFixCompetenceTable2;
             checkBoxFosFixPassportTable.Checked = App.Config.FosFixPassportTable;
             checkBoxFosFixResetSelection.Checked = App.Config.FosFixResetSelection;
+            checkBoxFosFixCompetenceIndicators.Checked = App.Config.FosFixCompetenceIndicators;
             textBoxFosFixTargetDir.Text = App.Config.FosFixTargetDir;
             fastObjectListViewFosFixFindAndReplace.AddObjects(App.Config.FosFixFindAndReplaceItems);
             fastObjectListViewFosFixDocProperties.AddObjects(App.Config.FosFixDocPropertyList);
@@ -2354,6 +2367,11 @@ namespace FosMan {
 
         private void checkBoxRpdFixEduWorksEvalToolsTakeFromFos_CheckedChanged(object sender, EventArgs e) {
             App.Config.RpdFixEduWorkTablesTakeEvalToolsFromFos = checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Checked;
+            App.SaveConfig();
+        }
+
+        private void checkBoxFosFixCompetenceIndicators_CheckedChanged(object sender, EventArgs e) {
+            App.Config.FosFixCompetenceIndicators = checkBoxFosFixCompetenceIndicators.Checked;
             App.SaveConfig();
         }
     }
