@@ -1296,6 +1296,7 @@ namespace FosMan {
 
                     labelRpdGenStatus.Visible = true;
                     Application.UseWaitCursor = true;
+                    Application.DoEvents();
                     labelRpdGenStatus.Text = "";
                     var targetDir = textBoxRpdGenTargetDir.Text;
                     if (string.IsNullOrEmpty(targetDir)) {
@@ -2373,6 +2374,90 @@ namespace FosMan {
         private void checkBoxFosFixCompetenceIndicators_CheckedChanged(object sender, EventArgs e) {
             App.Config.FosFixCompetenceIndicators = checkBoxFosFixCompetenceIndicators.Checked;
             App.SaveConfig();
+        }
+
+        private void iconButtonRpdGenAbstracts_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var addedCurriculumCount = 0;
+                var missedCurriculumCount = 0;
+                //дозагрузка УП по-возможности
+                foreach (var rpd in rpdList) {
+                    var curricula = App.FindCurricula(rpd);
+                    if ((curricula?.Count ?? 0) != rpd.FormsOfStudy.Count) {
+                        var curriculaFromStore = App.Store.CurriculaDic.Values.Where(c =>
+                            c.DirectionCode.Equals(rpd.DirectionCode) &&
+                            c.Profile.Equals(rpd.Profile) &&
+                            !curricula.Select(x => x.Value.FormOfStudy).Contains(c.FormOfStudy)
+                        );
+                        if (curriculaFromStore != null) {
+                            foreach (var curr in curriculaFromStore) {
+                                App.AddCurriculum(curr, false);
+                                addedCurriculumCount++;
+                            }
+                        }
+                        else {
+                            missedCurriculumCount++;
+                        }
+                    }
+                }
+                if (missedCurriculumCount > 0) {
+                    MessageBox.Show($"Для генерации Аннотация РПД необходимо предварительно загрузить группу учебных планов.", "Генерация Аннотаций к РПД",
+                                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                }
+                else {
+                    if (!Templates.Items.TryGetValue(Templates.TEMPLATE_ABSTRACTS_FOR_RPD, out var mainTemplate) ||
+                        !Templates.Items.TryGetValue(Templates.TEMPLATE_ABSTRACT_FOR_DISCIPLINE, out var disciplineTemplate)) {
+                        MessageBox.Show($"Обнаружены не все требуемые шаблоны из списка:\n" +
+                                        $"{Templates.TEMPLATE_ABSTRACTS_FOR_RPD}\n{Templates.TEMPLATE_ABSTRACT_FOR_DISCIPLINE}.\n" +
+                                        $"Генерация Аннотаций к РПД невозможна.",
+                                        "Генерация Аннотаций к РПД", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        return;
+                    }
+                    var curriculumGroup = App.GetCurriculumGroup(rpdList.FirstOrDefault());
+                    if (curriculumGroup == null) {
+                        MessageBox.Show($"Не удалось найти группу УП [{rpdList.FirstOrDefault().DirectionCode} {rpdList.FirstOrDefault().Profile}].\n" +
+                                        $"Генерация Аннотация к РПД невозможна.",
+                            "Генерация Аннотаций к РПД", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                        return;
+                    }
+                    if (MessageBox.Show($"Вы уверены, что хотите сгенерировать Аннотации к РПД?",
+                                        "Генерация Аннотаций к РПД", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) == DialogResult.Yes) {
+                        Application.UseWaitCursor = true;
+                        Application.DoEvents();
+                        labelRpdGenStatus.Text = "";
+                        var sw = Stopwatch.StartNew();
+                        var targetDir = textBoxRpdGenTargetDir.Text;
+                        var fileName = App.GenerateAbstractsForRpd(curriculumGroup, mainTemplate, disciplineTemplate, targetDir,
+                                                                   "{DirectionCode}_{Profile}_Аннотации к РПД.docx",
+                                                                   (int idx, Rpd rpd) => {
+                                                                       this.Invoke(new MethodInvoker(() => {
+                                                                           labelRpdGenStatus.Text = $"Генерация Аннотаций к РПД " +
+                                                                                                    $"({idx} из {curriculumGroup.Disciplines.Count})... ";
+                                                                           Application.DoEvents();
+                                                                       }));
+                                                                   },
+                                                                   out var errors);
+
+                        Application.UseWaitCursor = false;
+                        labelRpdGenStatus.Text += " завершено.";
+                        var msg = "";
+                        if (!string.IsNullOrEmpty(fileName)) {
+                            msg = $"Генерация Аннотаций к РПД завершена.\n" +
+                                  $"Время работы: {sw.Elapsed})\n" +
+                                  $"Итоговый файл: {fileName}\n";
+                        }
+                        else {
+                            msg = $"Генерация Аннотаций к РПД не успешна.\r\nФайл не создан.";
+                        }
+                        if (errors.Any()) {
+                            msg += $"\r\n\r\nПолученные ошибки ({errors.Count} шт.):\r\n{string.Join("\r\n", errors)}";
+                        }
+                        MessageBox.Show(msg, "Генерация Аннотаций к РПД", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
         }
     }
 }

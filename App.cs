@@ -237,6 +237,17 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Получить группу УП по РПД
+        /// </summary>
+        /// <param name="rpd"></param>
+        /// <returns></returns>
+        public static CurriculumGroup GetCurriculumGroup(Rpd rpd) {
+            //CurriculumGroup group = null;
+
+            return CurriculumGroups.Values.FirstOrDefault(g => g.DirectionCode.Equals(rpd.DirectionCode) && g.Profile.Equals(rpd.Profile));
+        }
+
+        /// <summary>
         /// Extension для ячейки: получение текста по всем абзацам, объединенными заданной строкой
         /// </summary>
         /// <param name="cell"></param>
@@ -3767,6 +3778,26 @@ namespace FosMan {
             var enumType = value.GetType();
             var name = Enum.GetName(enumType, value);
             return enumType.GetField(name).GetCustomAttributes(false).OfType<TAttribute>().SingleOrDefault();
+        }
+
+        /// <summary>
+        /// Генерация файла Аннотаций к РПД
+        /// </summary>
+        /// <param name="curriculumGroup"></param>
+        /// <param name="mainTemplate"></param>
+        /// <param name="disciplineTemplate"></param>
+        /// <param name="targetDir"></param>
+        /// <param name="templateTargetFileName"></param>
+        /// <param name="value"></param>
+        /// <param name="errors"></param>
+        /// <returns></returns>
+        internal static string? GenerateAbstractsForRpd(CurriculumGroup curriculumGroup, 
+                                                        string mainTemplate, 
+                                                        string disciplineTemplate, 
+                                                        string targetDir, 
+                                                        string templateTargetFileName, 
+                                                        Action<int, Rpd> value, out object errors) {
+            throw new NotImplementedException();
         }
     }
 }

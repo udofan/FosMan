@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static FosMan.Enums;
 
 namespace FosMan {
     /// <summary>
@@ -48,12 +49,12 @@ namespace FosMan {
         /// Форма обучения
         /// </summary>
         [JsonInclude]
-        public Enums.EFormOfStudy FormOfStudy { get; set; } = Enums.EFormOfStudy.Unknown;
+        public EFormOfStudy FormOfStudy { get; set; } = EFormOfStudy.Unknown;
         /// <summary>
         /// Квалификация
         /// </summary>
         [JsonInclude]
-        public Enums.EDegree Degree { get; set; }
+        public EDegree Degree { get; set; }
         /// <summary>
         /// Учебный год
         /// </summary>
@@ -99,11 +100,11 @@ namespace FosMan {
             curriculum.FSES = string.Empty;
             curriculum.Faculty = string.Empty;
             curriculum.AcademicYear = string.Empty;
-            curriculum.Degree = Enums.EDegree.Unknown;
+            curriculum.Degree = EDegree.Unknown;
             curriculum.Department = string.Empty;
             curriculum.DirectionCode = string.Empty;
             curriculum.DirectionName = string.Empty;
-            curriculum.FormOfStudy = Enums.EFormOfStudy.Unknown;
+            curriculum.FormOfStudy = EFormOfStudy.Unknown;
             curriculum.Profile = string.Empty;
 
             try {
@@ -188,7 +189,7 @@ namespace FosMan {
                         }
                         if (cellValue.Contains("ФОРМА ОБУЧ", StringComparison.CurrentCultureIgnoreCase)) {
                             curriculum.FormOfStudy = DetectFormOfStudy(cellValue);
-                            if (curriculum.FormOfStudy == Enums.EFormOfStudy.Unknown) {
+                            if (curriculum.FormOfStudy == EFormOfStudy.Unknown) {
                                 curriculum.Errors.Add($"Не удалось определить форму обучения - {cellValue}");
                             }
                         }
@@ -206,17 +207,17 @@ namespace FosMan {
             }
         }
 
-        private static Enums.EDegree DetectDegree(string value) {
-            var degree = Enums.EDegree.Unknown;
+        private static EDegree DetectDegree(string value) {
+            var degree = EDegree.Unknown;
 
             value = value.Trim().ToLower();
 
             if (!string.IsNullOrEmpty(value)) {
                 if (value.Contains("бакалавр")) {
-                    degree = Enums.EDegree.Bachelor;
+                    degree = EDegree.Bachelor;
                 }
                 else if (value.Contains("магистр")) {
-                    degree = Enums.EDegree.Master;
+                    degree = EDegree.Master;
                 }
             }
 
@@ -259,20 +260,20 @@ namespace FosMan {
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        static Enums.EFormOfStudy DetectFormOfStudy(string value) {
-            var form = Enums.EFormOfStudy.Unknown;
+        static EFormOfStudy DetectFormOfStudy(string value) {
+            var form = EFormOfStudy.Unknown;
 
             value = value.Trim().ToLower();
 
             if (!string.IsNullOrEmpty(value)) {
                 if (value.Contains("очно-заочная")) {
-                    form = Enums.EFormOfStudy.MixedTime;
+                    form = EFormOfStudy.MixedTime;
                 }
                 else if (value.Contains("заочная")) {
-                    form = Enums.EFormOfStudy.PartTime;
+                    form = EFormOfStudy.PartTime;
                 }
                 else if (value.Contains("очная")) {
-                    form = Enums.EFormOfStudy.FullTime;
+                    form = EFormOfStudy.FullTime;
                 }
             }
 

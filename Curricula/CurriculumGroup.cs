@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using static FosMan.Enums;
 
 namespace FosMan {
     /// <summary>
@@ -41,7 +42,7 @@ namespace FosMan {
         /// <summary>
         /// Формы обучения по всем УП из группы
         /// </summary>
-        public List<Enums.EFormOfStudy> FormsOfStudy { get => Curricula?.Values.Select(c => c.FormOfStudy).ToList(); }
+        public List<EFormOfStudy> FormsOfStudy { get => Curricula?.Values.Select(c => c.FormOfStudy).ToList(); }
         /// <summary>
         /// Формы обучения в виде списка [исп. для вставки в РПД]
         /// </summary>
@@ -49,6 +50,14 @@ namespace FosMan {
             get => m_formsOfStudyList ??= string.Join(", ", FormsOfStudy.Select(f => f.GetDescription())).ToLower();
             set => m_formsOfStudyList = value;
         }
+        /// <summary>
+        /// Квалификация
+        /// </summary>
+        public EDegree Degree { get => Curricula?.Values.FirstOrDefault().Degree ?? EDegree.Unknown; }
+        /// <summary>
+        /// Квалификация (для экрана)
+        /// </summary>
+        public string DegreeForScreen { get => Curricula?.Values.FirstOrDefault()?.Degree.GetDescription().ToLower() ?? EDegree.Unknown.GetDescription(); }
         /// <summary>
         /// УП, входящие в группу
         /// </summary>

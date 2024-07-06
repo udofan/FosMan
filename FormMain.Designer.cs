@@ -72,6 +72,7 @@
             splitContainerRpd = new SplitContainer();
             groupBox4 = new GroupBox();
             groupBox8 = new GroupBox();
+            iconButtonRpdGenAbstracts = new FontAwesome.Sharp.IconButton();
             linkLabelRpdFixGeneratePrevDisciplines = new LinkLabel();
             linkLabelRpdFixGenerateNextDisciplines = new LinkLabel();
             linkLabelRpdFixSelectFilesToFix = new LinkLabel();
@@ -212,6 +213,8 @@
             iconToolStripButtonFileFixerSelectTargetDir = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator17 = new ToolStripSeparator();
             iconToolStripButtonFileFixerRun = new FontAwesome.Sharp.IconToolStripButton();
+            tabPageGenAbstracts = new TabPage();
+            groupBox9 = new GroupBox();
             openFileDialogSelectCompetenceMatrixFile = new OpenFileDialog();
             openFileDialogSelectCurriculumFiles = new OpenFileDialog();
             openFileDialogSelectRpd = new OpenFileDialog();
@@ -275,6 +278,7 @@
             groupBox13.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFileFixerFindAndReplace).BeginInit();
             toolStrip3.SuspendLayout();
+            tabPageGenAbstracts.SuspendLayout();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -289,6 +293,7 @@
             tabControl1.Controls.Add(tabPageRpdGeneration);
             tabControl1.Controls.Add(tabPageYaGPT);
             tabControl1.Controls.Add(tabPageFileFixer);
+            tabControl1.Controls.Add(tabPageGenAbstracts);
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
@@ -512,9 +517,9 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(6, 393);
+            groupBoxDisciplines.Location = new Point(6, 394);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
-            groupBoxDisciplines.Size = new Size(1245, 308);
+            groupBoxDisciplines.Size = new Size(1245, 277);
             groupBoxDisciplines.TabIndex = 3;
             groupBoxDisciplines.TabStop = false;
             groupBoxDisciplines.Text = "Дисциплины программы";
@@ -528,7 +533,7 @@
             fastObjectListViewDisciplines.Location = new Point(3, 18);
             fastObjectListViewDisciplines.Name = "fastObjectListViewDisciplines";
             fastObjectListViewDisciplines.ShowGroups = false;
-            fastObjectListViewDisciplines.Size = new Size(1239, 287);
+            fastObjectListViewDisciplines.Size = new Size(1239, 256);
             fastObjectListViewDisciplines.TabIndex = 4;
             fastObjectListViewDisciplines.UseFilterIndicator = true;
             fastObjectListViewDisciplines.UseFiltering = true;
@@ -548,7 +553,7 @@
             fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1245, 350);
+            fastObjectListViewCurricula.Size = new Size(1245, 351);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -567,10 +572,10 @@
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainerRpd);
-            tabPageRpd.Location = new Point(4, 24);
+            tabPageRpd.Location = new Point(4, 23);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1257, 676);
+            tabPageRpd.Size = new Size(1257, 677);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "  РПД  ";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -640,8 +645,8 @@
             iconToolStripButtonRpdFixToFileFixer.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonRpdFixToFileFixer.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonRpdFixToFileFixer.Name = "iconToolStripButtonRpdFixToFileFixer";
-            iconToolStripButtonRpdFixToFileFixer.Size = new Size(207, 28);
-            iconToolStripButtonRpdFixToFileFixer.Text = "На универсальную коррекцию";
+            iconToolStripButtonRpdFixToFileFixer.Size = new Size(163, 28);
+            iconToolStripButtonRpdFixToFileFixer.Text = "На коррекцию файлов";
             iconToolStripButtonRpdFixToFileFixer.ToolTipText = "Передать выделенные файлы в режим универсальной коррекции файлов";
             // 
             // toolStripSeparator19
@@ -724,9 +729,9 @@
             iconToolStripButtonRpdFixMode.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonRpdFixMode.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonRpdFixMode.Name = "iconToolStripButtonRpdFixMode";
-            iconToolStripButtonRpdFixMode.Size = new Size(139, 28);
-            iconToolStripButtonRpdFixMode.Text = "Режим коррекции";
-            iconToolStripButtonRpdFixMode.ToolTipText = "Показать/Скрыть режим коррекции";
+            iconToolStripButtonRpdFixMode.Size = new Size(85, 28);
+            iconToolStripButtonRpdFixMode.Text = "Функции";
+            iconToolStripButtonRpdFixMode.ToolTipText = "Показать/Скрыть режим применения функций";
             iconToolStripButtonRpdFixMode.Click += iconToolStripButtonRpdFixMode_Click;
             // 
             // toolStripLabelRpdFosIndicator
@@ -755,7 +760,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 655);
+            splitContainerRpd.Size = new Size(1251, 640);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -788,16 +793,34 @@
             // 
             // groupBox8
             // 
+            groupBox8.Controls.Add(iconButtonRpdGenAbstracts);
             groupBox8.Controls.Add(linkLabelRpdFixGeneratePrevDisciplines);
             groupBox8.Controls.Add(linkLabelRpdFixGenerateNextDisciplines);
             groupBox8.Controls.Add(linkLabelRpdFixSelectFilesToFix);
             groupBox8.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            groupBox8.Location = new Point(1035, 17);
+            groupBox8.Location = new Point(995, 17);
             groupBox8.Name = "groupBox8";
-            groupBox8.Size = new Size(195, 198);
+            groupBox8.Size = new Size(250, 255);
             groupBox8.TabIndex = 25;
             groupBox8.TabStop = false;
             groupBox8.Text = "Доп. средства";
+            // 
+            // iconButtonRpdGenAbstracts
+            // 
+            iconButtonRpdGenAbstracts.FlatStyle = FlatStyle.Flat;
+            iconButtonRpdGenAbstracts.IconChar = FontAwesome.Sharp.IconChar.ClipboardList;
+            iconButtonRpdGenAbstracts.IconColor = Color.DarkBlue;
+            iconButtonRpdGenAbstracts.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconButtonRpdGenAbstracts.IconSize = 24;
+            iconButtonRpdGenAbstracts.ImageAlign = ContentAlignment.MiddleLeft;
+            iconButtonRpdGenAbstracts.Location = new Point(24, 201);
+            iconButtonRpdGenAbstracts.Name = "iconButtonRpdGenAbstracts";
+            iconButtonRpdGenAbstracts.Size = new Size(208, 26);
+            iconButtonRpdGenAbstracts.TabIndex = 23;
+            iconButtonRpdGenAbstracts.Text = "Генерация Аннотаций...";
+            toolTip1.SetToolTip(iconButtonRpdGenAbstracts, "Запустить режим генерации Аннотаций к РПД");
+            iconButtonRpdGenAbstracts.UseVisualStyleBackColor = true;
+            iconButtonRpdGenAbstracts.Click += iconButtonRpdGenAbstracts_Click;
             // 
             // linkLabelRpdFixGeneratePrevDisciplines
             // 
@@ -1208,7 +1231,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 211);
+            fastObjectListViewRpdList.Size = new Size(1251, 196);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1225,10 +1248,10 @@
             // 
             tabPageFos.Controls.Add(splitContainerFos);
             tabPageFos.Controls.Add(toolStrip2);
-            tabPageFos.Location = new Point(4, 23);
+            tabPageFos.Location = new Point(4, 24);
             tabPageFos.Name = "tabPageFos";
             tabPageFos.Padding = new Padding(3);
-            tabPageFos.Size = new Size(1257, 677);
+            tabPageFos.Size = new Size(1257, 676);
             tabPageFos.TabIndex = 1;
             tabPageFos.Text = "   ФОС   ";
             tabPageFos.UseVisualStyleBackColor = true;
@@ -1250,7 +1273,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(1251, 646);
+            splitContainerFos.Size = new Size(1251, 638);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             splitContainerFos.Tag = "280";
@@ -1508,7 +1531,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(1251, 362);
+            fastObjectListViewFosList.Size = new Size(1251, 354);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -1869,7 +1892,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 585);
+            labelRpdGenStatus.Location = new Point(652, 586);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -1889,7 +1912,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(6, 543);
+            groupBox2.Location = new Point(6, 544);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 138);
             groupBox2.TabIndex = 14;
@@ -1994,7 +2017,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 543);
+            buttonGenerate.Location = new Point(652, 544);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -2009,7 +2032,7 @@
             groupBoxRpdGenDisciplineList.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxRpdGenDisciplineList.Location = new Point(8, 237);
             groupBoxRpdGenDisciplineList.Name = "groupBoxRpdGenDisciplineList";
-            groupBoxRpdGenDisciplineList.Size = new Size(984, 295);
+            groupBoxRpdGenDisciplineList.Size = new Size(984, 296);
             groupBoxRpdGenDisciplineList.TabIndex = 4;
             groupBoxRpdGenDisciplineList.TabStop = false;
             groupBoxRpdGenDisciplineList.Text = "3. Выбор дисциплин";
@@ -2026,7 +2049,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 274);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 275);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -2193,10 +2216,10 @@
             tabPageFileFixer.Controls.Add(groupBoxFileFixerFiles);
             tabPageFileFixer.Controls.Add(groupBoxFileFixerSettings);
             tabPageFileFixer.Controls.Add(toolStrip3);
-            tabPageFileFixer.Location = new Point(4, 24);
+            tabPageFileFixer.Location = new Point(4, 23);
             tabPageFileFixer.Name = "tabPageFileFixer";
             tabPageFileFixer.Padding = new Padding(3);
-            tabPageFileFixer.Size = new Size(1257, 676);
+            tabPageFileFixer.Size = new Size(1257, 677);
             tabPageFileFixer.TabIndex = 7;
             tabPageFileFixer.Text = "  Коррекция файлов  ";
             tabPageFileFixer.UseVisualStyleBackColor = true;
@@ -2208,7 +2231,7 @@
             groupBoxFileFixerFiles.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFileFixerFiles.Location = new Point(3, 230);
             groupBoxFileFixerFiles.Name = "groupBoxFileFixerFiles";
-            groupBoxFileFixerFiles.Size = new Size(1251, 456);
+            groupBoxFileFixerFiles.Size = new Size(1251, 457);
             groupBoxFileFixerFiles.TabIndex = 18;
             groupBoxFileFixerFiles.TabStop = false;
             groupBoxFileFixerFiles.Text = "Файлы";
@@ -2222,7 +2245,7 @@
             fastObjectListViewFileFixerFiles.Location = new Point(3, 18);
             fastObjectListViewFileFixerFiles.Name = "fastObjectListViewFileFixerFiles";
             fastObjectListViewFileFixerFiles.ShowGroups = false;
-            fastObjectListViewFileFixerFiles.Size = new Size(1245, 435);
+            fastObjectListViewFileFixerFiles.Size = new Size(1245, 436);
             fastObjectListViewFileFixerFiles.TabIndex = 2;
             fastObjectListViewFileFixerFiles.UseFilterIndicator = true;
             fastObjectListViewFileFixerFiles.UseFiltering = true;
@@ -2440,6 +2463,27 @@
             iconToolStripButtonFileFixerRun.Text = "Запуск";
             iconToolStripButtonFileFixerRun.ToolTipText = "Запуск процедуры коррекции файлов";
             // 
+            // tabPageGenAbstracts
+            // 
+            tabPageGenAbstracts.Controls.Add(groupBox9);
+            tabPageGenAbstracts.Location = new Point(4, 24);
+            tabPageGenAbstracts.Name = "tabPageGenAbstracts";
+            tabPageGenAbstracts.Padding = new Padding(3);
+            tabPageGenAbstracts.Size = new Size(1257, 676);
+            tabPageGenAbstracts.TabIndex = 8;
+            tabPageGenAbstracts.Text = "  Генерация Аннотаций  ";
+            tabPageGenAbstracts.UseVisualStyleBackColor = true;
+            // 
+            // groupBox9
+            // 
+            groupBox9.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            groupBox9.Location = new Point(21, 17);
+            groupBox9.Name = "groupBox9";
+            groupBox9.Size = new Size(901, 201);
+            groupBox9.TabIndex = 0;
+            groupBox9.TabStop = false;
+            groupBox9.Text = "Настройка";
+            // 
             // openFileDialogSelectCurriculumFiles
             // 
             openFileDialogSelectCurriculumFiles.Filter = "Excel-файлы|*.xlsx|Все файлы|*.*";
@@ -2578,6 +2622,7 @@
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFileFixerFindAndReplace).EndInit();
             toolStrip3.ResumeLayout(false);
             toolStrip3.PerformLayout();
+            tabPageGenAbstracts.ResumeLayout(false);
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             ResumeLayout(false);
@@ -2785,5 +2830,8 @@
         private CheckBox checkBoxRpdFixEduWorksEvalToolsTakeFromFos;
         private ToolStripLabel toolStripLabelRpdFosIndicator;
         private ToolStripLabel toolStripLabelFosRpdIndicator;
+        private TabPage tabPageGenAbstracts;
+        private GroupBox groupBox9;
+        private FontAwesome.Sharp.IconButton iconButtonRpdGenAbstracts;
     }
 }

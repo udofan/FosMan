@@ -25,6 +25,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Templates\АННОТАЦИИ_к_РПД.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\АННОТАЦИЯ_к_дисциплине.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Templates\РПД_таблица_содержания_дисциплины.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
