@@ -30,13 +30,13 @@ namespace FosMan {
         public enum EFormOfStudy {
             [Description("Очная")]
             [EvaluationTool("О")]
-            FullTime,               //очная
-            [Description("Заочная")]
-            [EvaluationTool("З")]
-            PartTime,               //заочная
+            FullTime = 0,               //очная
             [Description("Очно-заочная")]
             [EvaluationTool("ОЗ")]
-            MixedTime,              //очно-заочная
+            MixedTime = 1,              //очно-заочная
+            [Description("Заочная")]
+            [EvaluationTool("З")]
+            PartTime = 2,               //заочная
             [Description("НЕИЗВЕСТНО")]
             [EvaluationTool("?")]
             Unknown

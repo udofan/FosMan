@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static FosMan.Enums;
 
@@ -13,11 +14,12 @@ namespace FosMan {
     /// <summary>
     /// Группа УП (исп. при генерации РПД)
     /// </summary>
-    internal class CurriculumGroup {
-        static TypeAccessor m_typeAccessor = TypeAccessor.Create(typeof(CurriculumGroup));
+    internal class CurriculumGroup : BaseObj {
+        //static TypeAccessor m_typeAccessor = TypeAccessor.Create(typeof(CurriculumGroup));
         ConcurrentDictionary<string, CurriculumDiscipline> m_disciplines = [];
         ConcurrentDictionary<string, Curriculum> m_curricula = [];
         string m_formsOfStudyList = null;
+        Department m_department = null;
 
         /// <summary>
         /// Направление подготовки
@@ -34,7 +36,20 @@ namespace FosMan {
         /// <summary>
         /// Кафедра
         /// </summary>
-        public string Department { get; set; }
+        public string DepartmentName { get; set; }
+        /// <summary>
+        /// Описание кафедры
+        /// </summary>
+        [JsonIgnore]
+        public Department Department {
+            get {
+                if (m_department == null && !string.IsNullOrEmpty(DepartmentName)) {
+                    m_department = App.Config.Departments.Values.FirstOrDefault(d => d.Name.Equals(DepartmentName, StringComparison.CurrentCultureIgnoreCase) ||
+                                                                                     d.NameGenitive.Equals(DepartmentName, StringComparison.CurrentCultureIgnoreCase));
+                }
+                return m_department;
+            }
+        }
         /// <summary>
         /// Образовательный стандарт (ФГОС)
         /// </summary>
@@ -44,10 +59,14 @@ namespace FosMan {
         /// </summary>
         public List<EFormOfStudy> FormsOfStudy { get => Curricula?.Values.Select(c => c.FormOfStudy).ToList(); }
         /// <summary>
-        /// Формы обучения в виде списка [исп. для вставки в РПД]
+        /// Формы обучения в виде списка [исп. для вставки в РПД, Аннотации и т.п.]
         /// </summary>
         public string FormsOfStudyList {
-            get => m_formsOfStudyList ??= string.Join(", ", FormsOfStudy.Select(f => f.GetDescription())).ToLower();
+            get {
+                var forms = FormsOfStudy.ToList();
+                forms.Sort((x1, x2) => (int)x1 - (int)x2);
+                return string.Join(", ", forms.Select(f => f.GetDescription())).ToLower();
+            }
             set => m_formsOfStudyList = value;
         }
         /// <summary>
@@ -57,7 +76,7 @@ namespace FosMan {
         /// <summary>
         /// Квалификация (для экрана)
         /// </summary>
-        public string DegreeForScreen { get => Curricula?.Values.FirstOrDefault()?.Degree.GetDescription().ToLower() ?? EDegree.Unknown.GetDescription(); }
+        public string DegreeForScreen { get => Curricula?.Values.FirstOrDefault()?.DegreeForScreen ?? EDegree.Unknown.GetDescription(); }
         /// <summary>
         /// УП, входящие в группу
         /// </summary>
@@ -72,7 +91,7 @@ namespace FosMan {
         public List<CurriculumDiscipline> CheckedDisciplines { get; set; }
 
         public CurriculumGroup(Curriculum curriculum) {
-            Department = curriculum.Department;
+            DepartmentName = curriculum.Department;
             DirectionCode = curriculum.DirectionCode;
             DirectionName = curriculum.DirectionName;
             Profile = curriculum.Profile;
@@ -111,15 +130,15 @@ namespace FosMan {
         /// </summary>
         /// <param name="propName"></param>
         /// <returns></returns>
-        public object GetProperty(string propName) {
-            object value = null;
-            try {
-                value = m_typeAccessor[this, propName];
-            }
-            catch (Exception ex) {
-            }
+        //public object GetProperty(string propName) {
+        //    object value = null;
+        //    try {
+        //        value = m_typeAccessor[this, propName];
+        //    }
+        //    catch (Exception ex) {
+        //    }
 
-            return value;
-        }
+        //    return value;
+        //}
     }
 }

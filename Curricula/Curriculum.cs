@@ -56,6 +56,10 @@ namespace FosMan {
         [JsonInclude]
         public EDegree Degree { get; set; }
         /// <summary>
+        /// Квалификация (для экрана)
+        /// </summary>
+        public string DegreeForScreen { get => Degree.GetDescription().ToLower(); }
+        /// <summary>
         /// Учебный год
         /// </summary>
         [JsonInclude]

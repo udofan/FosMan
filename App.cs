@@ -1339,32 +1339,12 @@ namespace FosMan {
                                     RegexMatchHandler = m => {
                                         var replaceValue = m;
                                         var propName = m.Trim('{', '}');
-                                        object rpdProp = null;
-                                        if (applyLoadedRpd && rpd != null) {
-                                            rpdProp = rpd.GetProperty(propName);
+                                        var prop = rpd?.GetProperty(propName) ?? curriculumGroup.GetProperty(propName) ?? disc.GetProperty(propName);
+                                        if (prop != null) {
+                                            replaceValue = prop.ToString();
                                         }
-                                        if (rpdProp != null) {
-                                            replaceValue = rpdProp.ToString();
-                                        }
-                                        else {
-                                            var groupProp = curriculumGroup.GetProperty(propName);
-                                            if (groupProp != null) {
-                                                replaceValue = groupProp.ToString();
-                                            }
-                                            else {
-                                                var discProp = disc.GetProperty(propName);
-                                                if (discProp != null) {
-                                                    replaceValue = discProp.ToString();
-                                                    //if (string.IsNullOrEmpty(replaceValue)) {
-                                                    //replaceValue = m;
-                                                    //}
-                                                }
-                                                else {
-                                                    if (TryProcessSpecialField(propName, docx, par, curriculumGroup, disc, rpd, out var specialValue)) {
-                                                        replaceValue = specialValue;
-                                                    }
-                                                }
-                                            }
+                                        else if (TryProcessRpdSpecialField(propName, docx, par, curriculumGroup, disc, rpd, out var specialValue)) {
+                                            replaceValue = specialValue;
                                         }
                                         return replaceValue;
                                     }
@@ -1480,16 +1460,15 @@ namespace FosMan {
         public static Fos? FindFos(Rpd rpd) => m_fosDic.Values.FirstOrDefault(f => f.Key.Equals(rpd.Key));
 
         /// <summary>
-        /// Попытка обработать специальное поле
+        /// Попытка обработать специальное поле при генерации РПД
         /// </summary>
         /// <param name="propName"></param>
         /// <param name="par"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        private static bool TryProcessSpecialField(string propName, DocX docX, Paragraph par,
-                                                   CurriculumGroup curriculumGroup, CurriculumDiscipline discipline,
-                                                   Rpd rpd,
-                                                   out string replaceValue) {
+        private static bool TryProcessRpdSpecialField(string propName, DocX docX, Paragraph par,
+                                                      CurriculumGroup curriculumGroup, CurriculumDiscipline discipline,
+                                                      Rpd rpd,
+                                                      out string replaceValue) {
             var result = false;
 
             replaceValue = null;
@@ -1571,48 +1550,85 @@ namespace FosMan {
                         result = true;
                     }
                 }
-
-                if (propName.Equals("TOC", StringComparison.CurrentCultureIgnoreCase)) {
-                    //                    var tocSwitches = new Dictionary<TableOfSummarysSwitches, string>();
-                    ////{
-                    ////          { TableOfSummarysSwitches.O, "1-3"},
-                    ////          { TableOfSummarysSwitches.U, ""},
-                    ////          { TableOfSummarysSwitches.Z, ""},
-                    ////          { TableOfSummarysSwitches.H, ""},
-                    ////        };
-                    //                    TableOfSummarys toc = docX.InsertTableOfSummarys(par, "", tocSwitches);
-                    //                    par.FontSize(14);
-                    //                    replaceValue = "";
-                }
             }
-            //switch (propName) {
-            //    ////case "TableCompetences":
-            //    ////    var newTable = par.InsertTableAfterSelf(1, 3);
-            //    ////    RecreateTableOfCompetences(newTable, discipline);
-            //    ////    result = true;
-            //    ////    break;
-            //    //case "TableEducationWorks":
-            //    //    par.IndentationFirstLine = 0.1f;
-            //    //    var newTable2 = par.InsertTableAfterSelf(8, 4);
-            //    //    CreateTableEducationWorks(newTable2, discipline);
-            //    //    result = true;
-            //    //    break;
-            //    //case "DisciplineTypeDescription":
-            //    //    var text = "";
-            //    //    if (discipline.Type == EDisciplineType.Required) {
-            //    //        text = "обязательным дисциплинам";
-            //    //    }
-            //    //    else if (discipline.Type == EDisciplineType.ByChoice) {
-            //    //        text = "дисциплинам по выбору части, формируемой участниками образовательных отношений";
-            //    //    }
-            //    //    break;
-            //    default:
-            //        break;
-            //}
 
             return result;
         }
 
+
+        /// <summary>
+        /// Попытка обработать специальное поле при генерации Аннотации к РПД
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <param name="par"></param>
+        /// <returns></returns>
+        private static bool TryProcessAbstractsForRpdSpecialField(string propName, DocX docX, Paragraph par,
+                                                                  CurriculumGroup curriculumGroup,
+                                                                  string disciplineTemplate,
+                                                                  out string replaceValue) {
+            var result = false;
+
+            replaceValue = null;
+
+            if (curriculumGroup != null) {
+                if (propName.Equals("RequiredDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Required);
+                }
+                if (propName.Equals("VariableDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Required);
+                }
+                if (propName.Equals("ByChoiceDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.ByChoice);
+                }
+                if (propName.Equals("OptionalDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Optional);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Вставка аннотаций по дисциплинам в текущий параграф
+        /// </summary>
+        /// <param name="par"></param>
+        /// <param name="curriculumGroup"></param>
+        /// <param name="disciplineTemplate"></param>
+        /// <returns></returns>
+        private static string InsertAbstractsForDisciplines(Paragraph par, CurriculumGroup curriculumGroup, string disciplineTemplate, EDisciplineType disciplineType) {
+            string replaceValue;
+            //получаем список обязательных дисциплин из УП в нужном порядке
+            var curriculum = curriculumGroup.Curricula.Values.FirstOrDefault(c => c.FormOfStudy == EFormOfStudy.FullTime);
+            var requiredDisciplines = curriculum.Disciplines.Values.Where(d => d.Type == disciplineType).ToList();
+            var sourcePar = par;
+            foreach (var disc in requiredDisciplines) {
+                var rpd = FindRpd(disc);
+                using (var discDocx = DocX.Load(disciplineTemplate)) {
+                    foreach (var discPar in discDocx.Paragraphs.ToList()) {
+                        var replaceOptions = new FunctionReplaceTextOptions() {
+                            ContainerLocation = ReplaceTextContainer.All,
+                            FindPattern = "{[^}]+}",
+                            RegexMatchHandler = m => {
+                                var replaceValue = m;
+                                var propName = m.Trim('{', '}');
+                                var prop = rpd?.GetProperty(propName) ?? disc.GetProperty(propName);
+                                if (prop != null) {
+                                    replaceValue = prop.ToString();
+                                }
+                                else if (TryProcessRpdSpecialField(propName, discDocx, discPar, curriculumGroup, disc, rpd, out var specialValue)) {
+                                    replaceValue = specialValue;
+                                }
+                                return replaceValue;
+                            }
+                        };
+                        discPar.ReplaceText(replaceOptions);
+                        par = par.InsertParagraphAfterSelf(discPar);
+                    }
+                }
+            }
+            replaceValue = "";
+            return replaceValue;
+        }
 
         /// <summary>
         /// Получить или установить значение свойства из/в параграф(а)
@@ -3795,9 +3811,84 @@ namespace FosMan {
                                                         string mainTemplate, 
                                                         string disciplineTemplate, 
                                                         string targetDir, 
-                                                        string templateTargetFileName, 
-                                                        Action<int, Rpd> value, out object errors) {
-            throw new NotImplementedException();
+                                                        string fileNameTemplate, 
+                                                        Action<int, Rpd> progressAction, 
+                                                        out List<string> errors) {
+            var targetFile = string.Empty;
+            errors = [];
+
+            try {
+
+                if (!Directory.Exists(targetDir)) {
+                    Directory.CreateDirectory(targetDir);
+                }
+
+                string fileName;
+                if (!string.IsNullOrEmpty(fileNameTemplate)) {
+                    fileName = Regex.Replace(fileNameTemplate, @"({[^}]+})", (m) => curriculumGroup.GetProperty(m.Value.Trim('{', '}'))?.ToString() ?? m.Value);
+                }
+                else {  //если шаблон имени файла не задан
+                    fileName = $"{curriculumGroup.DirectionCode}_{curriculumGroup.DirectionName}_{curriculumGroup.Profile}_Аннотации_к_РПД.docx";
+                }
+                //создание файла
+                targetFile = Path.Combine(targetDir, fileName);
+                File.Copy(mainTemplate, targetFile, true);
+
+
+                using (var docx = DocX.Load(targetFile)) {
+                    //подстановка полей {DirectionCode}
+                    foreach (var par in docx.Paragraphs.ToList()) {
+                        var replaceOptions = new FunctionReplaceTextOptions() {
+                            ContainerLocation = ReplaceTextContainer.All,
+                            FindPattern = "{[^}]+}",
+                            RegexMatchHandler = m => {
+                                var replaceValue = m;
+                                var propName = m.Trim('{', '}');
+                                var groupProp = curriculumGroup.GetProperty(propName);
+                                if (groupProp != null) {
+                                    replaceValue = groupProp.ToString();
+                                }
+                                else if (TryProcessAbstractsForRpdSpecialField(propName, docx, par, curriculumGroup, disciplineTemplate, out var specialValue)) {
+                                    replaceValue = specialValue;
+                                }
+                                return replaceValue;
+                            }
+                        };
+                        par.ReplaceText(replaceOptions);
+                    }
+                    docx.Save();
+                }
+
+                //var i = 0;
+                ////цикл по дисциплинам
+                //foreach (var disc in curriculumGroup.CheckedDisciplines) {
+                //    try {
+                //        Rpd rpd = FindRpd(disc);
+                //        i++;
+                //        if (rpd == null) {
+                //            //errors.
+                //            continue;
+                //        }
+                //        progressAction?.Invoke(i, rpd);
+
+
+                //        //var eduWorks = new Dictionary<EFormOfStudy, EducationalWork>();
+                //        //foreach (var curr in curriculumGroup.Curricula.Values) {
+                //        //    if (curr.Disciplines.TryGetValue(disc.Key, out CurriculumDiscipline currDisc)) {
+                //        //        eduWorks[curr.FormOfStudy] = currDisc.EducationalWork;
+                //        //    }
+                //        //}
+                //    }
+                //    catch (Exception e) {
+                //        errors.Add($"Не удалось создать РПД для дисциплины [{disc.Name}]:\r\n{e.Message}\r\n{e.StackTrace}");
+                //    }
+                //}
+            }
+            catch (Exception ex) {
+                errors.Add($"{ex.Message}\r\n{ex.StackTrace}");
+            }
+
+            return targetFile;
         }
     }
 }

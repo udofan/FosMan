@@ -1237,7 +1237,7 @@ namespace FosMan {
                 textBoxRpdGenDirectionCode.Text = curriculumGroup.DirectionCode;
                 textBoxRpdGenDirectionName.Text = curriculumGroup.DirectionName;
                 textBoxRpdGenProfile.Text = curriculumGroup.Profile;
-                textBoxRpdGenDepartment.Text = curriculumGroup.Department;
+                textBoxRpdGenDepartment.Text = curriculumGroup.DepartmentName;
                 textBoxRpdGenFormsOfStudy.Text = curriculumGroup.FormsOfStudyList;
                 textBoxRpdGenFSES.Text = curriculumGroup.FSES;
             }
@@ -1286,7 +1286,7 @@ namespace FosMan {
                     var curriculumGroup = comboBoxRpdGenCurriculumGroups.SelectedItem as CurriculumGroup;
                     curriculumGroup.DirectionCode = textBoxRpdGenDirectionCode.Text;
                     curriculumGroup.DirectionName = textBoxRpdGenDirectionName.Text;
-                    curriculumGroup.Department = textBoxRpdGenDepartment.Text;
+                    curriculumGroup.DepartmentName = textBoxRpdGenDepartment.Text;
                     curriculumGroup.Profile = textBoxRpdGenProfile.Text;
                     curriculumGroup.FormsOfStudyList = textBoxRpdGenFormsOfStudy.Text;
                     curriculumGroup.FSES = textBoxRpdGenFSES.Text;
@@ -2428,9 +2428,9 @@ namespace FosMan {
                         Application.DoEvents();
                         labelRpdGenStatus.Text = "";
                         var sw = Stopwatch.StartNew();
-                        var targetDir = textBoxRpdGenTargetDir.Text;
+                        var targetDir = textBoxRpdFixTargetDir.Text;
                         var fileName = App.GenerateAbstractsForRpd(curriculumGroup, mainTemplate, disciplineTemplate, targetDir,
-                                                                   "{DirectionCode}_{Profile}_Аннотации к РПД.docx",
+                                                                   "{DirectionCode}_{DirectionName}_{Profile}_Аннотации к РПД.docx",
                                                                    (int idx, Rpd rpd) => {
                                                                        this.Invoke(new MethodInvoker(() => {
                                                                            labelRpdGenStatus.Text = $"Генерация Аннотаций к РПД " +

@@ -760,7 +760,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 640);
+            splitContainerRpd.Size = new Size(1251, 645);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -1231,7 +1231,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 196);
+            fastObjectListViewRpdList.Size = new Size(1251, 201);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -2216,10 +2216,10 @@
             tabPageFileFixer.Controls.Add(groupBoxFileFixerFiles);
             tabPageFileFixer.Controls.Add(groupBoxFileFixerSettings);
             tabPageFileFixer.Controls.Add(toolStrip3);
-            tabPageFileFixer.Location = new Point(4, 23);
+            tabPageFileFixer.Location = new Point(4, 24);
             tabPageFileFixer.Name = "tabPageFileFixer";
             tabPageFileFixer.Padding = new Padding(3);
-            tabPageFileFixer.Size = new Size(1257, 677);
+            tabPageFileFixer.Size = new Size(1257, 676);
             tabPageFileFixer.TabIndex = 7;
             tabPageFileFixer.Text = "  Коррекция файлов  ";
             tabPageFileFixer.UseVisualStyleBackColor = true;
