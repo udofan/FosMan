@@ -13,12 +13,12 @@ namespace FosMan {
         public string MultilineConcatValue { get; set; } = " ";
         public string PropertyName { get; set; } = nameof(Rpd.Profile);
         public Type PropertyType { get; set; } = typeof(Rpd).GetProperty(nameof(Rpd.Profile))?.PropertyType;
-        public List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; } = [
+        public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
             (new(@"(Профиль|Направленност[ь,и]\s+\S*\s*подготовки)[:]*\s*[«""“]*([^»""”]*)[»""”]*", RegexOptions.Compiled | RegexOptions.IgnoreCase), 1)
         ];
-        public List<Regex> StopMarkers { get; set; } = [
-            new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase),    //пустая строка
-            new(@"[»”]{1}", RegexOptions.Compiled)                          //закрывающая кавычка
+        public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = [
+            (new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase), -1),   //пустая строка
+            (new(@"(^[^»”]+)[»”]{1}", RegexOptions.Compiled), 1)                 //закрывающая кавычка (захватываем текст)
         ];
         public char[] TrimChars { get; set; } = [' ', '«', '»', '"', '“', '”'];
         public Action<DocParseRuleActionArgs<Rpd>> Action { get; set; } = null;

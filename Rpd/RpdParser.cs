@@ -22,8 +22,9 @@ namespace FosMan {
             new RpdParseRuleProfileMultiline(),
             new RpdParseRulePrevDisciplines(),
             new RpdParseRuleNextDisciplines(),
-            new RpdParseRuleTarget(),
-            new RpdParseRuleTasks()
+            new RpdParseRulePurpose(),
+            new RpdParseRuleTasks(),
+            new RpdParseRuleDescription()
         };
 
         public static List<IDocParseRule<Rpd>> Rules { get => m_rules; }

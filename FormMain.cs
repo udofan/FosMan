@@ -2431,10 +2431,9 @@ namespace FosMan {
                         var targetDir = textBoxRpdFixTargetDir.Text;
                         var fileName = App.GenerateAbstractsForRpd(curriculumGroup, mainTemplate, disciplineTemplate, targetDir,
                                                                    "{DirectionCode}_{DirectionName}_{Profile}_Аннотации к РПД.docx",
-                                                                   (int idx, Rpd rpd) => {
+                                                                   (int idx, int max, Rpd rpd, CurriculumDiscipline discipline, string text) => {
                                                                        this.Invoke(new MethodInvoker(() => {
-                                                                           labelRpdGenStatus.Text = $"Генерация Аннотаций к РПД " +
-                                                                                                    $"({idx} из {curriculumGroup.Disciplines.Count})... ";
+                                                                           StatusMessage($"Генерация Аннотаций к РПД: {text} ({idx} из {max})... ");
                                                                            Application.DoEvents();
                                                                        }));
                                                                    },
@@ -2454,6 +2453,7 @@ namespace FosMan {
                         if (errors.Any()) {
                             msg += $"\r\n\r\nПолученные ошибки ({errors.Count} шт.):\r\n{string.Join("\r\n", errors)}";
                         }
+                        StatusMessage("Генерация Аннотаций к РПД завершена.");
                         MessageBox.Show(msg, "Генерация Аннотаций к РПД", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }

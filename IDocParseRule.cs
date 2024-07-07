@@ -26,11 +26,11 @@ namespace FosMan {
         /// <summary>
         /// Маркер начала захвата строк и индекс захвата при Location = Inline
         /// </summary>
-        List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; }
+        List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; }
         /// <summary>
         /// Маркер останова сбора строк при Location = Multiline
         /// </summary>
-        List<Regex> StopMarkers { get; set; }
+        List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; }
         /// <summary>
         /// Список символов, по которым надо оттриммить полученную строку
         /// </summary>

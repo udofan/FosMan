@@ -628,9 +628,12 @@ namespace FosMan {
                         discipline.SetProperty(item.Value.TargetProperty, item.Value.TargetType, cellValue, item.Value.PropertyIndex, item.Value.SubProperty);
                     }
                 }
-                if (discipline?.Check(curriculum, rowIdx) ?? false) {
-                    if (!curriculum.AddDiscipline(discipline)) {
-                        curriculum.Errors.Add($"Обнаружено повторное упоминание дисциплины [{discipline.Name}] на строке {rowIdx}");
+                if (discipline != null) {
+                    discipline.Number = rowIdx;
+                    if (discipline.Check(curriculum, rowIdx)) {
+                        if (!curriculum.AddDiscipline(discipline)) {
+                            curriculum.Errors.Add($"Обнаружено повторное упоминание дисциплины [{discipline.Name}] на строке {rowIdx}");
+                        }
                     }
                 }
             }

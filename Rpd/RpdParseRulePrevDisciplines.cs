@@ -11,9 +11,9 @@ namespace FosMan {
         //public bool Disabled { get; set; }
         public EParseType Type { get; set; } = EParseType.Inline;
         public string MultilineConcatValue { get; set; } = null;
-        public string PropertyName { get; set; } = nameof(Rpd.PrevDisciplines);
-        public Type PropertyType { get; set; } = typeof(Rpd).GetProperty(nameof(Rpd.PrevDisciplines))?.PropertyType;
-        public List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; } = [
+        public string PropertyName { get; set; } = null; // nameof(Rpd.PrevDisciplines);
+        public Type PropertyType { get; set; } = null; //typeof(Rpd).GetProperty(nameof(Rpd.PrevDisciplines))?.PropertyType;
+        public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
             //предварительное изучение следующих дисциплин
             (new(@"предварит[^.]*(изуч)?[^.]*(след)?[^.]+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 3),
             //следующих предшествующих дисциплин
@@ -58,9 +58,12 @@ namespace FosMan {
             //Дисциплина основывается на знании следующих дисциплин: 
             (new(@"основывается\s+на\s+знании\s+следующих\s+дисциплин[:]*\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 1),
         ];
-        public List<Regex> StopMarkers { get; set; } = null;
+        public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null; // [' ', '«', '»', '"', '“', '”'];
-        public Action<DocParseRuleActionArgs<Rpd>> Action { get; set; } = null;
+        public Action<DocParseRuleActionArgs<Rpd>> Action { get; set; } = args => {
+            args.Target.PrevDisciplines = args.Value;
+            args.Target.FullTextPrevDisciplines = args.Text;
+        };
         public bool MultyApply { get; set; } = false;
         public bool Equals<T>(IDocParseRule<T>? other) {
             throw new NotImplementedException();

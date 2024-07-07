@@ -13,11 +13,11 @@ namespace FosMan {
         public string MultilineConcatValue { get; set; } = string.Empty;
         public string PropertyName { get; set; } = nameof(Rpd.Compiler);
         public Type PropertyType { get; set; } = typeof(Rpd).GetProperty(nameof(Rpd.Compiler))?.PropertyType;
-        public List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; } = [
+        public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
             (new(@"Составитель:", RegexOptions.Compiled | RegexOptions.IgnoreCase), 1)
         ];
-        public List<Regex> StopMarkers { get; set; } = [
-            new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase),    //пустая строка
+        public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = [
+            (new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase), -1)   //пустая строка
             //(new(@"^(.+)$", RegexOptions.Compiled))
         ];
         public char[] TrimChars { get; set; } = null;

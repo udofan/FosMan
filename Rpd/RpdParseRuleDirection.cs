@@ -13,10 +13,10 @@ namespace FosMan {
         public string MultilineConcatValue { get; set; } = " ";
         public string PropertyName { get; set; } = null;    //чтобы применялся Action
         public Type PropertyType { get; set; } = null;
-        public List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; } = [
+        public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
             (new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 1)
         ];
-        public List<Regex> StopMarkers { get; set; } = null;
+        public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null; // [' ', '«', '»', '"', '“', '”'];
         public Action<DocParseRuleActionArgs<Rpd>> Action { get; set; } = (args) => {
             var rpd = args.Target;

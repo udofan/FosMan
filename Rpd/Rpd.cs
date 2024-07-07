@@ -219,15 +219,39 @@ namespace FosMan {
         [JsonInclude]
         public Dictionary<EFormOfStudy, EducationalWork> EducationalWorks { get; set; }
         /// <summary>
+        /// Описание дисциплины
+        /// </summary>
+        [JsonInclude]
+        public string Description { get; set; }
+        /// <summary>
+        /// Расширенное описание дисциплины: описание + предыд. и послед. дисциплины
+        /// </summary>
+        [JsonInclude]
+        public string DescriptionExtended => $"{Description} {FullTextPrevDisciplines} {FullTextNextDisciplines}";
+        /// <summary>
         /// Цель дисциплины
         /// </summary>
         [JsonInclude]
-        public string Target { get; set; }
+        public string Purpose { get; set; }
         /// <summary>
         /// Задачи дисциплины
         /// </summary>
         [JsonInclude]
         public string Tasks { get; set; }
+        /// <summary>
+        /// Список топиков в виде строки (для Аннотаций к РПД)
+        /// </summary>
+        [JsonInclude]
+        public string TopicsAsString {
+            get {
+                var topics = "";
+                if ((EducationalWorks?.TryGetValue(EFormOfStudy.FullTime, out var eduWork) ?? false) && 
+                    eduWork.Modules != null) {
+                    topics = string.Join(" ", eduWork.Modules.Select(m => $"{m.Topic}{(m.Topic.EndsWith('.') ? "" : ".")}"));
+                }
+                return topics;
+            }
+        }
         /// <summary>
         /// Выявленные ошибки
         /// </summary>
@@ -249,10 +273,20 @@ namespace FosMan {
         [JsonInclude]
         public string PrevDisciplines { get; set; }
         /// <summary>
+        /// Полное предложение с предшествующими дисциплинами
+        /// </summary>
+        [JsonInclude]
+        public string FullTextPrevDisciplines { get; set; }
+        /// <summary>
         /// Последующие дисциплины
         /// </summary>
         [JsonInclude]
         public string NextDisciplines { get; set; }
+        /// <summary>
+        /// Полное предложение с последующими дисциплинами
+        /// </summary>
+        [JsonInclude]
+        public string FullTextNextDisciplines { get; set; }
         /// <summary>
         /// Параграфы содержания разделов и тем
         /// </summary>

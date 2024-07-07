@@ -19,6 +19,10 @@ namespace FosMan {
         /// </summary>
         public Match Match { get; set; }
         /// <summary>
+        /// Исходное значение из параграфа
+        /// </summary>
+        public string Text { get; set; }
+        /// <summary>
         /// Итоговое значение из документа
         /// </summary>
         public string Value { get; set; }

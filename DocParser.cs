@@ -62,9 +62,16 @@ namespace FosMan {
                                     catchingRule = null; //сброс захвата
                                     continue;
                                 }
-                                var stopCatch = catchingRule.StopMarkers.Any(r => r.IsMatch(text));
-                                if (stopCatch) {
-                                    ApplyValue(catchingRule, null, targetObj, catchingValue.ToString(), par, errors);
+                                //var stopCatch = catchingRule.StopMarkers.Any(r => r.IsMatch(text));
+                                (Regex regex, Match match, int idx) m = catchingRule.StopMarkers.Select(x => (x.marker, x.marker.Match(text), x.catchGroupIdx)).FirstOrDefault(x => x.Item2.Success);
+                                if (m.match != null) {
+                                    if (m.idx >= 0) { //требуется захват значения, где сработал маркер останова
+                                        if (!string.IsNullOrEmpty(catchingRule.MultilineConcatValue) && catchingValue.Length > 0) {
+                                            catchingValue.Append(catchingRule.MultilineConcatValue);
+                                        }
+                                        catchingValue.Append(m.match.Groups[m.idx].Value);
+                                    }
+                                    ApplyValue(catchingRule, null, targetObj, text, catchingValue.ToString(), par, errors);
                                     catchingValue.Clear();
                                     catchingRule = null; //сброс правила-ловца строк
                                 }
@@ -80,14 +87,14 @@ namespace FosMan {
                                     continue; //пустые строки пропускаем
                                 }
                                 foreach (var rule in activeRules.ToHashSet()) {
-                                    (Regex regex, Match match, int idx) m = rule.StartMarkers.Select(x => (x.marker, x.marker.Match(text), x.inlineGroupIdx)).FirstOrDefault(x => x.Item2.Success);
+                                    (Regex regex, Match match, int idx) m = rule.StartMarkers.Select(x => (x.marker, x.marker.Match(text), x.catchGroupIdx)).FirstOrDefault(x => x.Item2.Success);
                                     if (m.match != null) {
                                         if (!rule.MultyApply) {
                                             activeRules.Remove(rule);   //правило сработало - отключаем
                                         }
                                         //инлайн поиск значения
                                         if (rule.Type == EParseType.Inline) {
-                                            ApplyValue(rule, m, targetObj, null, par, errors);
+                                            ApplyValue(rule, m, targetObj, text, null, par, errors);
                                         }
                                         else if (rule.Type == EParseType.Multiline) {
                                             catchingRule = rule;
@@ -120,6 +127,7 @@ namespace FosMan {
         static public void ApplyValue<T>(IDocParseRule<T> rule,
                                          (Regex regex, Match match, int groupIdx)? ruleMatch,
                                          T targetObj,
+                                         string text,
                                          string value,
                                          Paragraph par,
                                          ErrorList errors) where T : BaseObj {
@@ -145,6 +153,7 @@ namespace FosMan {
                     Target = targetObj,
                     Rule = rule,
                     Match = ruleMatch.Value.match,
+                    Text = text,
                     Value = value,
                     Paragraph = par
                 };

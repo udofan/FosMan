@@ -1,16 +1,5 @@
-﻿using FastMember;
-using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Numerics;
-using System.Security.Policy;
-using System.Text;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Xceed.Document.NET;
 using static FosMan.Enums;
 
 namespace FosMan {
@@ -40,6 +29,11 @@ namespace FosMan {
         public string Name { get; set; }
         [JsonIgnore]
         public string Key { get => App.NormalizeName(Name); }
+        /// <summary>
+        /// Порядковый номер дисциплины (= номер ряда в таблице Плана УП)
+        /// </summary>
+        [JsonInclude]
+        public int Number { get; set; }
         /// <summary>
         /// Индекс дисциплины
         /// </summary>

@@ -454,18 +454,6 @@ namespace FosMan {
 
                 var table = rpd.GetPropertiesHtml();
 
-                //var tdStyle = " style='border: 1px solid;'";
-                //var table = new StringBuilder(@$"<table {tdStyle}><tr style='font-weight: bold; background-color: lightgray'>");
-                //table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Свойство</th><th {tdStyle}>Значение</th>");
-                //table.Append("</tr>");
-
-                //var props = rpd.GetPropertySet(); // rpd.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-                //var propIdx = 0;
-                //foreach (var prop in props) {
-                //    var value = rpd.GetProperty(prop.Name)?.ToString() ?? "null";
-                //    table.Append($"<tr><td {tdStyle}>{++propIdx}</td><td {tdStyle}><b>{prop.Name}</b></td><td {tdStyle}>{value}</td></tr>");
-                ////    propIdx++;
-                //}
                 rep.Append(table);
                 rep.Append("</div></div>");
 
@@ -1612,9 +1600,12 @@ namespace FosMan {
         /// <param name="propName"></param>
         /// <param name="par"></param>
         /// <returns></returns>
-        private static bool TryProcessAbstractsForRpdSpecialField(string propName, DocX docX, Paragraph par,
+        private static bool TryProcessAbstractsForRpdSpecialField(string propName, 
+                                                                  DocX docX, 
+                                                                  Paragraph par,
                                                                   CurriculumGroup curriculumGroup,
                                                                   string disciplineTemplate,
+                                                                  Action<int, int, Rpd, CurriculumDiscipline, string> progressAction,
                                                                   out string replaceValue) {
             var result = false;
 
@@ -1622,16 +1613,16 @@ namespace FosMan {
 
             if (curriculumGroup != null) {
                 if (propName.Equals("RequiredDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
-                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Required);
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Required, progressAction);
                 }
                 if (propName.Equals("VariableDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
-                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Required);
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Variable, progressAction);
                 }
                 if (propName.Equals("ByChoiceDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
-                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.ByChoice);
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.ByChoice, progressAction);
                 }
                 if (propName.Equals("OptionalDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
-                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Optional);
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Optional, progressAction);
                 }
             }
 
@@ -1645,14 +1636,22 @@ namespace FosMan {
         /// <param name="curriculumGroup"></param>
         /// <param name="disciplineTemplate"></param>
         /// <returns></returns>
-        private static string InsertAbstractsForDisciplines(Paragraph par, CurriculumGroup curriculumGroup, string disciplineTemplate, EDisciplineType disciplineType) {
+        private static string InsertAbstractsForDisciplines(Paragraph par, 
+                                                            CurriculumGroup curriculumGroup, 
+                                                            string disciplineTemplate, 
+                                                            EDisciplineType disciplineType,
+                                                            Action<int, int, Rpd, CurriculumDiscipline, string> progressAction) {
             string replaceValue;
             //получаем список обязательных дисциплин из УП в нужном порядке
             var curriculum = curriculumGroup.Curricula.Values.FirstOrDefault(c => c.FormOfStudy == EFormOfStudy.FullTime);
-            var requiredDisciplines = curriculum.Disciplines.Values.Where(d => d.Type == disciplineType).ToList();
+            var requiredDisciplines = curriculum.Disciplines.Values.Where(d => d.Type == disciplineType).ToList().OrderBy(x => x.Number).ToList();
             var sourcePar = par;
+            var idx = 0;
             foreach (var disc in requiredDisciplines) {
+                idx++;
                 var rpd = FindRpd(disc);
+                progressAction.Invoke(idx, requiredDisciplines.Count, rpd, disc, $"обработка дисциплин типа [{disciplineType.GetDescription()}]");
+
                 using (var discDocx = DocX.Load(disciplineTemplate)) {
                     foreach (var discPar in discDocx.Paragraphs.ToList()) {
                         var replaceOptions = new FunctionReplaceTextOptions() {
@@ -3861,8 +3860,8 @@ namespace FosMan {
                                                         string mainTemplate, 
                                                         string disciplineTemplate, 
                                                         string targetDir, 
-                                                        string fileNameTemplate, 
-                                                        Action<int, Rpd> progressAction, 
+                                                        string fileNameTemplate,
+                                                        Action<int, int, Rpd, CurriculumDiscipline, string> progressAction, 
                                                         out List<string> errors) {
             var targetFile = string.Empty;
             errors = [];
@@ -3898,7 +3897,9 @@ namespace FosMan {
                                 if (groupProp != null) {
                                     replaceValue = groupProp.ToString();
                                 }
-                                else if (TryProcessAbstractsForRpdSpecialField(propName, docx, par, curriculumGroup, disciplineTemplate, out var specialValue)) {
+                                else if (TryProcessAbstractsForRpdSpecialField(propName, docx, par, curriculumGroup, disciplineTemplate, 
+                                                                               progressAction,
+                                                                               out var specialValue)) {
                                     replaceValue = specialValue;
                                 }
                                 return replaceValue;

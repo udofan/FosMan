@@ -12,14 +12,14 @@ namespace FosMan {
         public string MultilineConcatValue { get; set; } = "\n";
         public string PropertyName { get; set; } = nameof(Rpd.Tasks);
         public Type PropertyType { get; set; } = typeof(Rpd).GetProperty(nameof(Rpd.Tasks))?.PropertyType;
-        public List<(Regex marker, int inlineGroupIdx)> StartMarkers { get; set; } = [
+        public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
             //Основные задачи дисциплины
             (new(@"задачи\s+дисциплины[:]*.+$", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0),
             //Основные задачи дисциплины
             (new(@"задачами\s+дисциплины\s+являю.+$", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0),
         ];
-        public List<Regex> StopMarkers { get; set; } = [
-            new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase) //пустая строка
+        public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = [
+            (new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase), -1) //пустая строка
         ];
         public char[] TrimChars { get; set; } = null;
         public Action<DocParseRuleActionArgs<Rpd>> Action { get; set; } = null;

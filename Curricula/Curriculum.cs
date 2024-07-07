@@ -15,7 +15,7 @@ namespace FosMan {
     /// <summary>
     /// Учебный план [kəˈrɪkjʊləm]
     /// </summary>
-    internal class Curriculum {
+    internal class Curriculum : BaseObj {
         static Regex m_regexTestDirectionName = new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled);
         static Regex m_regexParseSemester = new(@"Семестр\s+(\d)", RegexOptions.Compiled);
         //static bool m_programIsDetected = false;
