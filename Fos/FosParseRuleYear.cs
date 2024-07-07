@@ -18,7 +18,7 @@ namespace FosMan {
         ];
         public List<Regex> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null;
-        public Action<Fos, Match, string, Paragraph> Action { get; set; } = null;
+        public Action<DocParseRuleActionArgs<Fos>> Action { get; set; } = null;
         public bool MultyApply { get; set; } = false;
 
 

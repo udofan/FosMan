@@ -20,7 +20,7 @@ namespace FosMan {
             new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase) //пустая строка
         ];
         public char[] TrimChars { get; set; } = [' ', '«', '»', '"', '“', '”'];
-        public Action<Fos, Match, string, Paragraph> Action { get; set; } = null;
+        public Action<DocParseRuleActionArgs<Fos>> Action { get; set; } = null;
         public bool MultyApply { get; set; } = false;
 
         public bool Equals<T>(IDocParseRule<T>? other) {

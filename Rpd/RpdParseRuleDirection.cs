@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Xceed.Document.NET;
 
 namespace FosMan {
-    internal class FosParseRuleDirection : IDocParseRule<Fos> {
+    internal class RpdParseRuleDirection : IDocParseRule<Rpd> {
         //public bool Disabled { get; set; }
         public EParseType Type { get; set; } = EParseType.Inline;
         public string MultilineConcatValue { get; set; } = " ";
@@ -18,9 +18,10 @@ namespace FosMan {
         ];
         public List<Regex> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null; // [' ', '«', '»', '"', '“', '”'];
-        public Action<DocParseRuleActionArgs<Fos>> Action { get; set; } = (args) => {
-            args.Target.DirectionCode = string.Join("", args.Match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
-            args.Target.DirectionName = args.Match.Groups[2].Value.Trim(' ', '«', '»', '"', '“', '”');
+        public Action<DocParseRuleActionArgs<Rpd>> Action { get; set; } = (args) => {
+            var rpd = args.Target;
+            rpd.DirectionCode = string.Join("", args.Match.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+            rpd.DirectionName = args.Match.Groups[2].Value.Trim(' ', '«', '»', '"', '“', '”');
         };
         public bool MultyApply { get; set; } = false;
         public bool Equals<T>(IDocParseRule<T>? other) {

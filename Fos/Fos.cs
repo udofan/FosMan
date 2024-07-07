@@ -143,8 +143,8 @@ namespace FosMan {
             fos.SourceFileName = fileName;
 
             try {
-                if (!DocParser.TryParse(fileName, fos, FosParser.Rules, out var errors)) {
-                    fos.Errors.AddRange(errors);
+                if (!DocParser.TryParse(fileName, fos, FosParser.Rules, out var errorList)) {
+                    fos.Errors.AddRange(errorList.Items.Select(e => $"{e}"));
                     return null;
                 }
                 else {
@@ -158,12 +158,12 @@ namespace FosMan {
                                 fos.CompetenceMatrix == null &&
                                 CompetenceMatrix.TestTable(table, out var format) &&
                                 format == ECompetenceMatrixFormat.Fos21) {
-                                if (App.TestForTableOfCompetenceMatrix(table, format, out var matrix, out var errorList)) {
+                                if (App.TestForTableOfCompetenceMatrix(table, format, out var matrix, out var errors)) {
                                     fos.CompetenceMatrix = matrix;
                                     fos.TableOfCompetence1 = table;
                                     keepTestTable = false;
                                 }
-                                if (errorList.Any()) fos.Errors.AddRange(errorList.Select(e => $"Матрица компетенций: {e}"));
+                                if (errors.Any()) fos.Errors.AddRange(errors.Select(e => $"Матрица компетенций: {e}"));
                             }
                             //проверка на таблицу 2.2
                             if (keepTestTable &&
@@ -183,7 +183,7 @@ namespace FosMan {
                             }
                             //проверка на таблицу "3. Паспорт фонда оценочных средств текущего контроля, соотнесённых с индикаторами достижения компетенций"
                             if (keepTestTable && fos.Passport == null) {
-                                if (App.TestTableForFosPassport(table, out var passport, out errors)) {
+                                if (App.TestTableForFosPassport(table, out var passport, out var errors)) {
                                     fos.Passport = passport;
                                     fos.TableOfPassport = table;
                                     if (errors.Any()) fos.Errors.AddRange(errors.Select(e => $"Паспорт: {e}"));

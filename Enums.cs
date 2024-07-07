@@ -247,7 +247,11 @@ namespace FosMan {
             [Description("Результат индикатора достижения не соответствует компетенции")]
             CompetenceMatrixResultCodeItemMismatch,
             [Description("Результат индикатора достижения не соответствует индикатору")]
-            CompetenceMatrixResultCodeAchievementMismatch
+            CompetenceMatrixResultCodeAchievementMismatch,
+            [Description("Не определены StopMarkers для правила с типом Multiline")]
+            ParseRuleMissingStopMarkers,
+            [Description("Некорректный [inlineGroupIdx] для элемента значения StartMarkers")]
+            ParseRuleWrongInlineGroupIdxInStartMarkers,
         }
 
         static Dictionary<string, EEvaluationTool> m_evalToolDic = null;

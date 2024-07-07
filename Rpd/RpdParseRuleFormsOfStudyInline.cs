@@ -8,7 +8,7 @@ using Xceed.Document.NET;
 using static FosMan.Enums;
 
 namespace FosMan {
-    internal class FosParseRuleFormsOfStudy : IDocParseRule<Fos> {
+    internal class RpdParseRuleFormsOfStudyInline : IDocParseRule<Rpd> {
         //public bool Disabled { get; set; }
         public EParseType Type { get; set; } = EParseType.Inline;
         public string MultilineConcatValue { get; set; } = string.Empty;
@@ -19,22 +19,22 @@ namespace FosMan {
         ];
         public List<Regex> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null;
-        public Action<DocParseRuleActionArgs<Fos>> Action { get; set; } = (args) => {
-            var fos = args.Target;
+        public Action<DocParseRuleActionArgs<Rpd>> Action { get; set; } = (args) => {
+            var rpd = args.Target;
             var items = args.Match.Groups[1].Value.Split(',', StringSplitOptions.TrimEntries);
             foreach (var item in items) {
                 switch (item.Trim().ToLower()) {
                     case "очная":
-                        fos.FormsOfStudy.Add(EFormOfStudy.FullTime);
+                        rpd.FormsOfStudy.Add(EFormOfStudy.FullTime);
                         break;
                     case "заочная":
-                        fos.FormsOfStudy.Add(EFormOfStudy.PartTime);
+                        rpd.FormsOfStudy.Add(EFormOfStudy.PartTime);
                         break;
                     case "очно-заочная":
-                        fos.FormsOfStudy.Add(EFormOfStudy.MixedTime);
+                        rpd.FormsOfStudy.Add(EFormOfStudy.MixedTime);
                         break;
                     default:
-                        fos.FormsOfStudy.Add(EFormOfStudy.Unknown);
+                        rpd.FormsOfStudy.Add(EFormOfStudy.Unknown);
                         break;
                 }
             }

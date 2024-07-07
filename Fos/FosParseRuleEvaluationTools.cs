@@ -33,14 +33,15 @@ namespace FosMan {
         ];
         public List<Regex> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null;
-        public Action<Fos, Match, string, Paragraph> Action { get; set; } = (fos, match, text, par) => {
+        public Action<DocParseRuleActionArgs<Fos>> Action { get; set; } = (args) => {
+            var fos = args.Target;
             fos.EvalTools ??= [];
 
-            var items = match.Groups[2].Value.Split(',', StringSplitOptions.TrimEntries);
+            var items = args.Match.Groups[2].Value.Split(',', StringSplitOptions.TrimEntries);
             foreach (var item in items) {
                 if (EvalToolDic.TryGetValue(item.ToUpper(), out var evalTool)) {
                     //ищем таблицу ниже
-                    var currPar = par;
+                    var currPar = args.Paragraph;
                     for (var i = 0; i < 3; i++) {
                         if (currPar.FollowingTables?.Any() ?? false) {
                             var table = currPar.FollowingTables.FirstOrDefault();
@@ -50,7 +51,7 @@ namespace FosMan {
                                     var cellText = table.Rows[0].Cells[col].GetText();
                                     if (!string.IsNullOrEmpty(cellText) && cellText.StartsWith("коды", StringComparison.CurrentCultureIgnoreCase)) {
                                         var tool = new EvaluationTool() {
-                                            ChapterNum = match.Groups[1].Value,
+                                            ChapterNum = args.Match.Groups[1].Value,
                                             TableIndex = table.Index,
                                             Table = table,
                                             TableColIndexCompetenceIndicators = col,

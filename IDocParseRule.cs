@@ -38,7 +38,8 @@ namespace FosMan {
         /// <summary>
         /// Доп. действие (исп. при незаданном PropertyName)
         /// </summary>
-        Action<T, Match, string, Paragraph> Action { get; set; }
+        //Action<T, IDocParseRule<T>, Match, string, Paragraph> Action { get; set; }
+        Action<DocParseRuleActionArgs<T>> Action { get; set; }
         /// <summary>
         /// Правило с многократным применением
         /// </summary>

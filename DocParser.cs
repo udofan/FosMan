@@ -36,9 +36,9 @@ namespace FosMan {
         /// <param name="fileName"></param>
         /// <param name="targetObj">целевой объект</param>
         /// <param name="rules"></param>
-        public static bool TryParse<T>(string fileName, T targetObj, IEnumerable<IDocParseRule<T>> rules, out List<string> errors) where T : BaseObj {
+        public static bool TryParse<T>(string fileName, T targetObj, IEnumerable<IDocParseRule<T>> rules, out ErrorList errors) where T : BaseObj {
             var result = false;
-            errors = [];
+            errors = new();
 
             try {
                 //активация правил
@@ -57,7 +57,8 @@ namespace FosMan {
 
                             if (catchingRule != null) { //если в режиме отлова строк для правила catchingRule
                                 if (catchingRule.StopMarkers == null) {
-                                    errors.Add($"Для правила {catchingRule.PropertyName} с типом {catchingRule.Type} не заданы StopMarkers");
+                                    //errors.Add($"Для правила {catchingRule.PropertyName} с типом {catchingRule.Type} не заданы StopMarkers");
+                                    errors.Add(EErrorType.ParseRuleMissingStopMarkers, $"правило {catchingRule.PropertyName}");
                                     catchingRule = null; //сброс захвата
                                     continue;
                                 }
@@ -101,7 +102,8 @@ namespace FosMan {
                 result = true;
             }
             catch (Exception ex) {
-                errors?.Add($"{ex.Message}\r\n{ex.StackTrace}");
+                errors.AddException(ex);
+                //errors?.Add($"{ex.Message}\r\n{ex.StackTrace}");
                 var tt = 0;
             }
 
@@ -120,15 +122,16 @@ namespace FosMan {
                                          T targetObj,
                                          string value,
                                          Paragraph par,
-                                         List<string> errors) where T : BaseObj {
+                                         ErrorList errors) where T : BaseObj {
             if (!string.IsNullOrEmpty(rule.PropertyName)) {
                 if (ruleMatch.HasValue) {
                     if (ruleMatch.Value.groupIdx < ruleMatch.Value.match.Groups.Count) {
                         value = ruleMatch.Value.match.Groups[ruleMatch.Value.groupIdx].Value;
                     }
                     else {
-                        errors.Add($"Для правила {rule.PropertyName} с типом {rule.Type} задан некорректный [inlineGroupIdx] " +
-                                   $"для StartMarker [{ruleMatch.Value.regex}]");
+                        //errors.Add($"Для правила {rule.PropertyName} с типом {rule.Type} задан некорректный [inlineGroupIdx] " +
+                        //           $"для StartMarker [{ruleMatch.Value.regex}]");
+                        errors.Add(EErrorType.ParseRuleWrongInlineGroupIdxInStartMarkers, $"правило {rule.PropertyName}, значение StartMarker: {ruleMatch.Value.regex}");
                         return;
                     }
                 }
@@ -138,7 +141,14 @@ namespace FosMan {
                 targetObj.SetProperty(rule.PropertyName, null, value);
             }
             else if (rule.Action != null) {
-                rule.Action.Invoke(targetObj, ruleMatch.Value.match, value, par);
+                var args = new DocParseRuleActionArgs<T>() {
+                    Target = targetObj,
+                    Rule = rule,
+                    Match = ruleMatch.Value.match,
+                    Value = value,
+                    Paragraph = par
+                };
+                rule.Action.Invoke(args);
             }
         }
     }
