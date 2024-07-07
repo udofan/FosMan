@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace FosMan {
-    public class TestingItem {
+    public class TestingItem : BaseObj {
         /// <summary>
         /// Вопрос
         /// </summary>

@@ -2459,5 +2459,14 @@ namespace FosMan {
                 }
             }
         }
+
+        private void iconToolStripButtonRpdReport_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var html = App.CreateRpdReport(rpdList);
+                
+                AddReport("Îò÷¸ò ïî ÐÏÄ", html);
+            }
+        }
     }
 }

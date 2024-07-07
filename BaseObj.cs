@@ -1,10 +1,13 @@
 ﻿using FastMember;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
+using Xceed.Pdf.Atoms;
 
 namespace FosMan {
     /// <summary>
@@ -43,6 +46,8 @@ namespace FosMan {
 
             return value;
         }
+
+        public MemberSet GetPropertySet() => TypeAccessor?.GetMembers();
 
         /// <summary>
         /// Установить значение указанному свойству
@@ -83,6 +88,77 @@ namespace FosMan {
             else {
                 TypeAccessor[this, targetProperty] = value;
             }
+        }
+
+        internal string GetPropertyHtml(string propName) {
+            var value = "";
+
+            var propValue = GetProperty(propName);
+            if (propValue is BaseObj propBaseObj) {
+                value = propBaseObj.GetPropertiesHtml();
+            }
+            else {
+                if (propValue is IDictionary dict) {
+                    foreach (var key in dict.Keys) {
+                        //if (value.Length > 0) value += "<br />";
+                        
+                        var item = dict[key];
+                        if (item is BaseObj itemBaseObj) {
+                            value += $"<details open><summary>{key}</summary>";
+                            value += itemBaseObj.GetPropertiesHtml();
+                            value += "</details>";
+                        }
+                        else {
+                            if (value.Length > 0) value += "<br />";
+                            value += $"{key}: {item ?? "null"}";
+                        }
+                        
+                    }
+                }
+                else if (!(propValue is string) && (propValue is IEnumerable list)) { // list || propValue is ISet set) {
+                    var idx = 0;
+                    foreach (var item in list) {
+                        //if (value.Length > 0) value += "<br />";
+                        if (item is BaseObj itemBaseObj) {
+                            value += $"<details open><summary>{idx++}</summary>";
+                            value += itemBaseObj.GetPropertiesHtml();
+                            value += "</details>";
+                        }
+                        else {
+                            if (value.Length > 0) value += "<br />";
+                            value += $"{idx++}: {item ?? "null"}";
+                        }
+                    }
+                }
+                else {
+                    value = propValue?.ToString() ?? "null";
+                }
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Формирование html-разметки со значениями свойств
+        /// </summary>
+        /// <returns></returns>
+        internal string GetPropertiesHtml() {
+            var tdStyle = " style='border: 1px solid;'";
+            var table = new StringBuilder(@$"<table {tdStyle}><tr style='font-weight: bold; background-color: lightgray'>");
+            table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Свойство</th><th {tdStyle}>Значение</th>");
+            table.Append("</tr>");
+
+            var props = GetPropertySet(); // rpd.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+            var propIdx = 0;
+            foreach (var prop in props) {
+                var propValue = GetPropertyHtml(prop.Name);
+
+                table.Append($"<tr><td {tdStyle}>{++propIdx}</td><td {tdStyle}><b>{prop.Name}</b></td><td {tdStyle}>{propValue}</td></tr>");
+                //    propIdx++;
+            }
+            table.Append("</table>");
+
+            return table.ToString();
         }
     }
 }

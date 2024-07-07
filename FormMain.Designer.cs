@@ -66,6 +66,7 @@
             iconToolStripButtonRpdRememberList = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator5 = new ToolStripSeparator();
             iconToolStripButtonRpdCheck = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButtonRpdReport = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator4 = new ToolStripSeparator();
             iconToolStripButtonRpdFixMode = new FontAwesome.Sharp.IconToolStripButton();
             toolStripLabelRpdFosIndicator = new ToolStripLabel();
@@ -584,7 +585,7 @@
             // 
             toolStripRpd.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             toolStripRpd.ImageScalingSize = new Size(24, 24);
-            toolStripRpd.Items.AddRange(new ToolStripItem[] { iconToolStripButtonRpdOpen, iconToolStripButtonRpdReload, toolStripSeparator1, iconToolStripButtonRpdClear, toolStripSeparator2, iconToolStripButtonRpdFixToFileFixer, toolStripSeparator19, iconToolStripButtonRpdFromDb, iconToolStripButtonRpdToDb, toolStripSeparator3, iconToolStripButtonRpdRememberList, toolStripSeparator5, iconToolStripButtonRpdCheck, toolStripSeparator4, iconToolStripButtonRpdFixMode, toolStripLabelRpdFosIndicator });
+            toolStripRpd.Items.AddRange(new ToolStripItem[] { iconToolStripButtonRpdOpen, iconToolStripButtonRpdReload, toolStripSeparator1, iconToolStripButtonRpdClear, toolStripSeparator2, iconToolStripButtonRpdFixToFileFixer, toolStripSeparator19, iconToolStripButtonRpdFromDb, iconToolStripButtonRpdToDb, toolStripSeparator3, iconToolStripButtonRpdRememberList, toolStripSeparator5, iconToolStripButtonRpdCheck, iconToolStripButtonRpdReport, toolStripSeparator4, iconToolStripButtonRpdFixMode, toolStripLabelRpdFosIndicator });
             toolStripRpd.Location = new Point(3, 3);
             toolStripRpd.Name = "toolStripRpd";
             toolStripRpd.Size = new Size(1251, 31);
@@ -716,6 +717,18 @@
             iconToolStripButtonRpdCheck.ToolTipText = "Проверить загруженные РПД и сформировать отчёт";
             iconToolStripButtonRpdCheck.Click += iconToolStripButtonRpdCheck_Click;
             // 
+            // iconToolStripButtonRpdReport
+            // 
+            iconToolStripButtonRpdReport.IconChar = FontAwesome.Sharp.IconChar.Clipboard;
+            iconToolStripButtonRpdReport.IconColor = Color.DarkBlue;
+            iconToolStripButtonRpdReport.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonRpdReport.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonRpdReport.Name = "iconToolStripButtonRpdReport";
+            iconToolStripButtonRpdReport.Size = new Size(70, 28);
+            iconToolStripButtonRpdReport.Text = "Отчёт";
+            iconToolStripButtonRpdReport.ToolTipText = "Сформировать отчёт с описанием выделенных РПД";
+            iconToolStripButtonRpdReport.Click += iconToolStripButtonRpdReport_Click;
+            // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
@@ -760,7 +773,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 649);
+            splitContainerRpd.Size = new Size(1251, 651);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -1231,7 +1244,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 205);
+            fastObjectListViewRpdList.Size = new Size(1251, 207);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -2833,5 +2846,6 @@
         private TabPage tabPageGenAbstracts;
         private GroupBox groupBox9;
         private FontAwesome.Sharp.IconButton iconButtonRpdGenAbstracts;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdReport;
     }
 }

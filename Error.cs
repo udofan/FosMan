@@ -1,7 +1,7 @@
 ﻿using static FosMan.Enums;
 
 namespace FosMan {
-    public class Error {
+    public class Error : BaseObj {
         /// <summary>
         /// Код ошибки
         /// </summary>

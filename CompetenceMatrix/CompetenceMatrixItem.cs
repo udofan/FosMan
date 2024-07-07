@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FosMan {
-    public class CompetenceMatrixItem {
+    public class CompetenceMatrixItem : BaseObj {
         //УК-1. Способен осуществлять поиск, критический анализ и синтез информации, применять системный подход для решения поставленных задач
         //УК-1
         //Способен осуществлять поиск, критический анализ и синтез информации, применять системный подход для решения поставленных задач.

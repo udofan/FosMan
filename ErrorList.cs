@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using static FosMan.Enums;
 
 namespace FosMan {
-    public class ErrorList {
+    public class ErrorList : BaseObj {
         List<Error> m_errors = new();
 
         /// <summary>

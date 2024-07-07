@@ -14,7 +14,7 @@ namespace FosMan {
     /// <summary>
     /// Описание оценочного средства
     /// </summary>
-    public class EvaluationTool {
+    public class EvaluationTool : BaseObj {
         //выражение для отлова вопросов в тестах
         static Regex m_testingQuestionMark = new(@"^(\d*[\.]*\s*вопрос|\d+[\.]*\s+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 

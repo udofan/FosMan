@@ -8,7 +8,7 @@ namespace FosMan {
     /// <summary>
     /// Описание матрицы компетенций
     /// </summary>
-    public class CompetenceMatrix {
+    public class CompetenceMatrix : BaseObj {
         //вариант РПД
         //Код и наименование компетенций - Коды и индикаторы достижения компетенций - Коды и результаты обучения
         static Regex m_regexCompetenceRpdHeader0 = new(@"код.*наименование", RegexOptions.IgnoreCase | RegexOptions.Compiled);

@@ -435,6 +435,56 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Сформировать отчет по описанию РПД
+        /// </summary>
+        public static string CreateRpdReport(List<Rpd> rpdList) {
+            StringBuilder html = new("<html><body><h2>Описание РПД</h2>");
+            StringBuilder toc = new("<div><ul>");
+            StringBuilder rep = new("<div>");
+            var sw = Stopwatch.StartNew();
+
+            var idx = 0;
+            foreach (var rpd in rpdList) {
+                var anchor = $"rpd{idx}";
+                idx++;
+
+                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{rpd.DisciplineName ?? "?"}</h3>");
+                rep.Append("<div style='padding-left: 30px'>");
+                rep.AddFileLink($"Файл РПД:", rpd.SourceFileName);
+
+                var table = rpd.GetPropertiesHtml();
+
+                //var tdStyle = " style='border: 1px solid;'";
+                //var table = new StringBuilder(@$"<table {tdStyle}><tr style='font-weight: bold; background-color: lightgray'>");
+                //table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Свойство</th><th {tdStyle}>Значение</th>");
+                //table.Append("</tr>");
+
+                //var props = rpd.GetPropertySet(); // rpd.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                //var propIdx = 0;
+                //foreach (var prop in props) {
+                //    var value = rpd.GetProperty(prop.Name)?.ToString() ?? "null";
+                //    table.Append($"<tr><td {tdStyle}>{++propIdx}</td><td {tdStyle}><b>{prop.Name}</b></td><td {tdStyle}>{value}</td></tr>");
+                ////    propIdx++;
+                //}
+                rep.Append(table);
+                rep.Append("</div></div>");
+
+                toc.AddTocElement(rpd.DisciplineName ?? "?", anchor, 0);
+            }
+
+            rep.Append("</div>");
+            toc.Append("</ul></div>");
+            html.AddDiv($"Дата: {DateTime.Now}");
+            html.AddDiv($"РПД в списке: {rpdList.Count}");
+            html.AddDiv($"Время работы: {sw.Elapsed}");
+            html.Append("<p />");
+            html.AddDiv($"<b>Список РПД:</b>");
+            html.Append(toc).Append(rep).Append("</body></html>");
+
+            return html.ToString();
+        }
+
+        /// <summary>
         /// Проверить список РПД
         /// </summary>
         public static void CheckRdp(List<Rpd> rpdList, out string htmlReport) {
