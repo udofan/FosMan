@@ -63,5 +63,33 @@ namespace FosMan {
                 m_errors?.AddRange(items);
             }
         }
+
+        /// <summary>
+        /// Получение html-разметки с таблицей ошибок
+        /// </summary>
+        /// <returns></returns>
+        public string GetHtmlReport() {
+            var html = new StringBuilder();
+            if (IsEmpty) {
+                html.AddDiv("Список ошибок пуст.", "green");
+            }
+            else {
+                html.AddDiv($"Список ошибок ({Count} шт.):", "red");
+
+                var tdStyle = " style='border: 1px solid;'";
+                var table = new StringBuilder(@$"<table {tdStyle}><tr style='font-weight: bold; background-color: lightgray'>");
+                table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Тип</th><th {tdStyle}>Описание</th><th {tdStyle}>Комментарий</th>");
+                table.Append("</tr>");
+                var idx = 0;
+                foreach (var item in Items) {
+                    table.Append($"<tr><td {tdStyle}>{++idx}</td><td {tdStyle}>{item.Type}</td>" +
+                                 $"<td {tdStyle}>{item.Type.GetDescription()}</td><td {tdStyle}>{item.Comment}</td></tr>");
+                }
+                table.Append("</table>");
+                html.Append(table);
+            }
+
+            return html.ToString();
+        }
     }
 }

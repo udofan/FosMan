@@ -10,8 +10,8 @@ using static FosMan.Enums;
 namespace FosMan {
     internal class RpdParseRuleFormsOfStudyMultiline : IDocParseRule<Rpd> {
         //public bool Disabled { get; set; }
-        public EParseType Type { get; set; } = EParseType.Inline;
-        public string MultilineConcatValue { get; set; } = string.Empty;
+        public EParseType Type { get; set; } = EParseType.Multiline;
+        public string MultilineConcatValue { get; set; } = " ";
         public string PropertyName { get; set; } = null;    //чтобы применялся Action
         public Type PropertyType { get; set; } = null;
         public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [

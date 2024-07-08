@@ -216,6 +216,10 @@ namespace FosMan {
             RpdMissingDirectionName,
             [Description("Не удалось определить название дисциплины")]
             RpdMissingDisciplineName,
+            [Description("Не удалось определить цель дисциплины")]
+            RpdMissingPurpose,
+            [Description("Не удалось определить описание дисциплины")]
+            RpdMissingDescription,
             [Description("В документе не найдено таблиц")]
             CompetenceMatrixNoTables,
             [Description("Формат 2.2: в матрице не удалось найти компетенцию")]
@@ -252,6 +256,10 @@ namespace FosMan {
             ParseRuleMissingStopMarkers,
             [Description("Некорректный [inlineGroupIdx] для элемента значения StartMarkers")]
             ParseRuleWrongInlineGroupIdxInStartMarkers,
+            [Description("Не найдена РПД для дисциплины")]
+            GenAbstractsMissingRpd,
+            [Description("Не удалось получить значение свойства")]
+            GenAbstractsMissingProperty
         }
 
         static Dictionary<string, EEvaluationTool> m_evalToolDic = null;

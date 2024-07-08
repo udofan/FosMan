@@ -9,7 +9,7 @@ using Xceed.Document.NET;
 namespace FosMan {
     internal class RpdParseRuleProfileInline : IDocParseRule<Rpd> {
         //public bool Disabled { get; set; }
-        public EParseType Type { get; set; } = EParseType.Multiline;
+        public EParseType Type { get; set; } = EParseType.Inline;
         public string MultilineConcatValue { get; set; } = " ";
         public string PropertyName { get; set; } = nameof(Rpd.Profile);
         public Type PropertyType { get; set; } = typeof(Rpd).GetProperty(nameof(Rpd.Profile))?.PropertyType;

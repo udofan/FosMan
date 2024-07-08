@@ -18,6 +18,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FosMan {
     internal class Rpd : BaseObj {
+        string m_curriculumDisciplineName = null;
+
         //Кафедра
         static Regex m_regexDepartment = new(@"Кафедра\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //Маркер конца титульной странцы "Москва 20xx"
@@ -178,6 +180,21 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public string DisciplineName { get; set; }
+        /// <summary>
+        /// Название дисциплины из УП (может немного отличаться)
+        /// </summary>
+        [JsonInclude]
+        public string CurriculumDisciplineName {
+            get {
+                if (m_curriculumDisciplineName == null) {
+                    var discipline = App.FindDiscipline(this);
+                    if (discipline != null) {
+                        m_curriculumDisciplineName = discipline.Name;
+                    }
+                }
+                return m_curriculumDisciplineName;
+            }
+        }
         /// <summary>
         /// Профиль
         /// </summary>
@@ -775,7 +792,7 @@ namespace FosMan {
                         var disciplineName = "";
                         var profileTestReady = false;
                         var profileField = "";              //если профиль разнесен по неск. строкам, здесь он будет накапливаться
-                        var compilerTestReady = false;
+                        //var compilerTestReady = false;
                         //var fullTimeTestTableReady = false;
                         //var mixedTimeTestTableReady = false;
                         List<Paragraph> parList = [];
@@ -861,25 +878,25 @@ namespace FosMan {
                                 }
                             }
                             //составитель
-                            if (string.IsNullOrEmpty(rpd.Compiler)) {
-                                if (compilerTestReady) {
-                                    var matchCompiler = m_regexName.Match(text);
-                                    if (matchCompiler.Success) {
-                                        rpd.Compiler = matchCompiler.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
-                                        compilerTestReady = false;
-                                    }
-                                }
-                                else {
-                                    var matchCompiler = m_regexCompilerInline.Match(text);
-                                    if (matchCompiler.Success) {
-                                        rpd.Compiler = matchCompiler.Groups[2].Value.Trim(' ', '«', '»', '"', '“', '”');
-                                    }
-                                    else {
-                                        var matchCompilerMarker = m_regexCompilerMarker.Match(text);
-                                        compilerTestReady = matchCompilerMarker.Success;
-                                    }
-                                }
-                            }
+                            //if (string.IsNullOrEmpty(rpd.Compiler)) {
+                            //    if (compilerTestReady) {
+                            //        var matchCompiler = m_regexName.Match(text);
+                            //        if (matchCompiler.Success) {
+                            //            rpd.Compiler = matchCompiler.Groups[1].Value.Trim(' ', '«', '»', '"', '“', '”');
+                            //            compilerTestReady = false;
+                            //        }
+                            //    }
+                            //    else {
+                            //        var matchCompiler = m_regexCompilerInline.Match(text);
+                            //        if (matchCompiler.Success) {
+                            //            rpd.Compiler = matchCompiler.Groups[2].Value.Trim(' ', '«', '»', '"', '“', '”');
+                            //        }
+                            //        else {
+                            //            var matchCompilerMarker = m_regexCompilerMarker.Match(text);
+                            //            compilerTestReady = matchCompilerMarker.Success;
+                            //        }
+                            //    }
+                            //}
                             //сбор параграфов
                             if (collectPars) {
                                 var stopCollecting = false;
@@ -1168,6 +1185,8 @@ namespace FosMan {
                         if (string.IsNullOrEmpty(rpd.DirectionCode)) rpd.Errors.Add(EErrorType.RpdMissingDirectionCode);
                         if (string.IsNullOrEmpty(rpd.DirectionName)) rpd.Errors.Add(EErrorType.RpdMissingDirectionName);
                         if (string.IsNullOrEmpty(rpd.DisciplineName)) rpd.Errors.Add(EErrorType.RpdMissingDisciplineName);
+                        if (string.IsNullOrEmpty(rpd.Purpose)) rpd.Errors.Add(EErrorType.RpdMissingPurpose);
+                        if (string.IsNullOrEmpty(rpd.Description)) rpd.Errors.Add(EErrorType.RpdMissingDescription);
                     }
                 }
             }

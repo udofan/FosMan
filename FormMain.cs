@@ -1004,7 +1004,7 @@ namespace FosMan {
                             Application.DoEvents();
                         }));
 
-                        if (!rpd.Errors.IsEmpty) {
+                        if (!(rpd?.Errors?.IsEmpty ?? true)) {
                             errLog.TryAdd(file, rpd.Errors.Items.Select(e => $"{e}").ToList());
                         }
                     }
@@ -1155,24 +1155,29 @@ namespace FosMan {
         /// <param name="html"></param>
         async void AddReport(string name, string html) {
             if (!string.IsNullOrEmpty(html)) {
-                var tabCount = tabControlReports.TabPages.Cast<TabPage>().Select(t => t.Name.StartsWith(name, StringComparison.CurrentCultureIgnoreCase)).Count();
-                name += $" ({tabCount + 1})  [x]";
+                try {
+                    var tabCount = tabControlReports.TabPages.Cast<TabPage>().Select(t => t.Name.StartsWith(name, StringComparison.CurrentCultureIgnoreCase)).Count();
+                    name += $" ({tabCount + 1})  [x]";
 
-                var tabPageNewReport = new TabPage(name);
+                    var tabPageNewReport = new TabPage(name);
 
-                var webView = new WebView2();
-                await webView.EnsureCoreWebView2Async();
-                webView.NavigateToString(html);
-                tabPageNewReport.Controls.Add(webView);
-                webView.Dock = DockStyle.Fill;
-                var webViewInterop = new WebViewInterop();
-                webView.CoreWebView2.AddHostObjectToScript("external", webViewInterop);
+                    var webView = new WebView2();
+                    await webView.EnsureCoreWebView2Async();
+                    webView.NavigateToString(html);
+                    tabPageNewReport.Controls.Add(webView);
+                    webView.Dock = DockStyle.Fill;
+                    var webViewInterop = new WebViewInterop();
+                    webView.CoreWebView2.AddHostObjectToScript("external", webViewInterop);
 
-                tabPageNewReport.Tag = html;    //запоминаем на случай сохранения
-                tabControlReports.TabPages.Add(tabPageNewReport);
-                tabControlReports.SelectTab(tabPageNewReport);
+                    tabPageNewReport.Tag = html;    //запоминаем на случай сохранения
+                    tabControlReports.TabPages.Add(tabPageNewReport);
+                    tabControlReports.SelectTab(tabPageNewReport);
 
-                tabControl1.SelectTab(tabPageReports);
+                    tabControl1.SelectTab(tabPageReports);
+                }
+                catch (Exception ex) {
+                    MessageBox.Show($"Ошибка при отображении html-отчета:\n\n{ex.Message}\n{ex.StackTrace}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                }
             }
         }
 
@@ -2437,10 +2442,13 @@ namespace FosMan {
                                                                            Application.DoEvents();
                                                                        }));
                                                                    },
-                                                                   out var errors);
+                                                                   out var errors,
+                                                                   out var htmlReport);
 
                         Application.UseWaitCursor = false;
                         labelRpdGenStatus.Text += " завершено.";
+                        AddReport("Генерация Аннотаций к РПД", htmlReport);
+                        /*
                         var msg = "";
                         if (!string.IsNullOrEmpty(fileName)) {
                             msg = $"Генерация Аннотаций к РПД завершена.\n" +
@@ -2455,6 +2463,7 @@ namespace FosMan {
                         }
                         StatusMessage("Генерация Аннотаций к РПД завершена.");
                         MessageBox.Show(msg, "Генерация Аннотаций к РПД", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        */
                     }
                 }
             }

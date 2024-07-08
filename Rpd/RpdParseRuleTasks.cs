@@ -8,7 +8,7 @@ using Xceed.Document.NET;
 
 namespace FosMan {
     internal class RpdParseRuleTasks: IDocParseRule<Rpd> {
-        public EParseType Type { get; set; } = EParseType.Inline;
+        public EParseType Type { get; set; } = EParseType.Multiline;
         public string MultilineConcatValue { get; set; } = "\n";
         public string PropertyName { get; set; } = nameof(Rpd.Tasks);
         public Type PropertyType { get; set; } = typeof(Rpd).GetProperty(nameof(Rpd.Tasks))?.PropertyType;

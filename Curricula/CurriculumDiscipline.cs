@@ -13,6 +13,7 @@ namespace FosMan {
         static Regex m_regexTestTypeVariable = new(@"^[^\.]+\.В\.\d+", RegexOptions.Compiled);      //обязательная часть, формируемая участниками
         static Regex m_regexTestTypeByChoice = new(@"^[^\.]+\.В\.ДВ\.\d+", RegexOptions.Compiled);  //выбору части, формируемой...
         static Regex m_regexTestTypeOptional = new(@"^ФТД", RegexOptions.Compiled);
+        static Regex m_regexBlockNum = new(@"Б(\d+)\.", RegexOptions.Compiled);
         HashSet<string> m_competenceList = null;
         EducationalWork m_eduWork = null;
         Department m_department = null;
@@ -21,6 +22,7 @@ namespace FosMan {
         EDisciplineType? m_type = null;
         int m_startSemIdx = -1;
         int m_lastSemIdx = -1;
+        int m_blockNum = -1;
 
         /// <summary>
         /// Наименование дисциплины [ключ]
@@ -39,6 +41,21 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public string Index { get; set; }
+        /// <summary>
+        /// Номер блока обучения (вынимается из индекса)
+        /// </summary>
+        [JsonInclude]
+        public int BlockNum {
+            get {
+                if (m_blockNum <= 0) {
+                    var m = m_regexBlockNum.Match(Index);
+                    if (m.Success) {
+                        m_blockNum = int.Parse(m.Groups[1].Value);
+                    }
+                }
+                return m_blockNum;
+            }
+        }
         /// <summary>
         /// Тип дисциплины
         /// </summary>

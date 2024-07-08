@@ -15,9 +15,14 @@ namespace FosMan {
         public Type PropertyType { get; set; } = typeof(Rpd).GetProperty(nameof(Rpd.Purpose))?.PropertyType;
         public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
             //Целью изучения дисциплины «Правоведение» является
-            (new(@"цель[^.]+дисциплины[^.]+является\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0),
+            (new(@"целью\s+дисциплины\s+является\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0),
+            (new(@"целью\s+изучения\s+дисциплины\s+является\s+([^.]+).", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0),
             //Цель дисциплины -
-            (new(@"цель\s+дисциплины[- ]+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0)
+            (new(@"цель\s+дисциплины[- ]+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0),
+            //Цель изучения дисциплины
+            (new(@"цель\s+изучения\s+дисциплины[- ]+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0),
+            //Цель изучения дисциплины заключается 
+            (new(@"цель\s+изучения\s+дисциплины\s+заключ.+$", RegexOptions.IgnoreCase | RegexOptions.Compiled), 0)
         ];
         public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null;

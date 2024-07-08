@@ -10,20 +10,20 @@ namespace FosMan {
     /// </summary>
     internal static class RpdParser {
         static List<IDocParseRule<Rpd>> m_rules = new() {
-            new RpdParseRuleYear(), 
+            //new RpdParseRuleYear(), 
             new RpdParseRuleCompilerInline(),
             new RpdParseRuleCompilerMultiline(),
-            new RpdParseRuleDepartment(), 
-            new RpdParseRuleDisciplineName(),
-            new RpdParseRuleDirection(),
-            new RpdParseRuleFormsOfStudyInline(),
-            new RpdParseRuleFormsOfStudyMultiline(),
-            new RpdParseRuleProfileInline(),
-            new RpdParseRuleProfileMultiline(),
+            //new RpdParseRuleDepartment(), 
+            //new RpdParseRuleDisciplineName(),
+            //new RpdParseRuleDirection(),
+            //new RpdParseRuleFormsOfStudyInline(),
+            //new RpdParseRuleFormsOfStudyMultiline(),
+            //new RpdParseRuleProfileInline(),
+            //new RpdParseRuleProfileMultiline(),
             new RpdParseRulePrevDisciplines(),
             new RpdParseRuleNextDisciplines(),
             new RpdParseRulePurpose(),
-            new RpdParseRuleTasks(),
+            //new RpdParseRuleTasks(),
             new RpdParseRuleDescription()
         };
 
