@@ -259,7 +259,34 @@ namespace FosMan {
             [Description("Не найдена РПД для дисциплины")]
             GenAbstractsMissingRpd,
             [Description("Не удалось получить значение свойства")]
-            GenAbstractsMissingProperty
+            GenAbstractsMissingProperty,
+            [Description("Простая ошибка")]
+            Simple
+        }
+
+        /// <summary>
+        /// Типы файлов для режима коррекции
+        /// </summary>
+        public enum EFileType {
+            /// <summary>
+            /// Автоматическое определение
+            /// </summary>
+            Auto,
+            /// <summary>
+            /// Неизвестный тип
+            /// </summary>
+            [Description("Не определён")]
+            Unknown,
+            /// <summary>
+            /// РПД
+            /// </summary>
+            [Description("РПД")]
+            Rpd,
+            /// <summary>
+            /// ФОС
+            /// </summary>
+            [Description("ФОС")]
+            Fos
         }
 
         static Dictionary<string, EEvaluationTool> m_evalToolDic = null;

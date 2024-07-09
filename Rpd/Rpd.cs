@@ -36,8 +36,8 @@ namespace FosMan {
         //форма обучения
         static Regex m_regexFormsOfStudy = new(@"Форм\S+\s+обучения[:]*\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //составитель
-        static Regex m_regexCompilerInline = new(@"Составитель[:]*\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static Regex m_regexCompilerMarker = new(@"Составитель:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexCompilerInline = new(@"(Составитель|Разработчик)[:]*\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static Regex m_regexCompilerMarker = new(@"(Составитель|Разработчик)[:]*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         //маркер [РАБОЧАЯ ПРОГРАММА ДИСЦИПЛИНЫ]
         static Regex m_regexRpdMarker = new(@"рабочая\s+программа\s+дисциплины", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static List<(Regex, int)> m_regexPrevDisciplines = new() {
@@ -691,7 +691,7 @@ namespace FosMan {
                                             module.EvaluationTools = [];
                                             //var counts = table.Rows.Select(r => r.Cells.Count).ToList();
                                             //module.Topic = table.Rows[row].Cells[col].GetText();
-                                            foreach (var t in table.Rows[row].Cells[cellIdx].GetText().Split(',', '\n', ';')) {
+                                            foreach (var t in table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';')) {
                                                 //убираем лишние пробелы
                                                 if (Enums.EvalToolDic.TryGetValue(normalizeText(t), out var tool)) {
                                                     //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
@@ -1117,7 +1117,23 @@ namespace FosMan {
                                                 module.EvaluationTools = [];
                                                 //var counts = table.Rows.Select(r => r.Cells.Count).ToList();
                                                 //module.Topic = table.Rows[row].Cells[col].GetText();
-                                                foreach (var t in table.Rows[row].Cells[cellIdx].GetText().Split(',', '\n', ';')) {
+                                                var cellText = normalizeText(table.Rows[row].Cells[cellIdx].GetText()).Trim(',','.',' ');
+                                                var tools = Enums.EvalToolDic.OrderByDescending(x => x.Value.GetDescription().Split(' ').Length);
+                                                foreach (var item in tools) {
+                                                    if (cellText.Contains(item.Key)) {
+                                                        module.EvaluationTools.Add(item.Value);
+                                                        cellText = Regex.Replace(cellText, @$"{item.Key}[^ ]*[ $]", "");
+                                                        cellText = cellText.Replace(item.Key, "");
+                                                    }
+                                                }
+                                                if (!string.IsNullOrWhiteSpace(cellText)) {
+                                                    rpd.Errors.Add(EErrorType.RpdUnknownEvalTool, $"Значение - {cellText}, тема [{module.Topic}] ({formOfStudy.GetDescription()})");
+                                                }
+                                                if (module.EvaluationTools.Count == 0) {
+                                                    rpd.Errors.Add(EErrorType.RpdMissingEvalTool, $"Тема [{module.Topic}] ({formOfStudy.GetDescription()})");
+                                                }
+                                                /*
+                                                foreach (var t in table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';')) {
                                                     //убираем лишние пробелы
                                                     if (Enums.EvalToolDic.TryGetValue(normalizeText(t), out var tool)) {
                                                         //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
@@ -1133,6 +1149,7 @@ namespace FosMan {
                                                         }
                                                     }
                                                 }
+                                                */
                                             }
                                             if (col == eduWork.TableColCompetenceResults) { //результаты обучения - компетенции
                                                 module.CompetenceResultCodes = table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';').ToHashSet();

@@ -14,7 +14,7 @@ namespace FosMan {
         public string PropertyName { get; set; } = nameof(Rpd.Compiler);
         public Type PropertyType { get; set; } = typeof(Rpd).GetProperty(nameof(Rpd.Compiler))?.PropertyType;
         public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
-            (new(@"Составитель:", RegexOptions.Compiled | RegexOptions.IgnoreCase), 1)
+            (new(@"(Составитель|Разработчик)[:]*", RegexOptions.Compiled | RegexOptions.IgnoreCase), -1)
         ];
         public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = [
             (new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase), -1)   //пустая строка

@@ -97,6 +97,10 @@ namespace FosMan {
                                             ApplyValue(rule, m, targetObj, text, null, par, errors);
                                         }
                                         else if (rule.Type == EParseType.Multiline) {
+                                            catchingValue.Clear();
+                                            if (m.idx >= 0) { //требуется захват с маркера начала
+                                                catchingValue.Append(m.match.Groups[m.idx].Value);
+                                            }
                                             catchingRule = rule;
                                         }
                                         break;

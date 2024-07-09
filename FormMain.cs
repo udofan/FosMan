@@ -530,8 +530,14 @@ namespace FosMan {
             list.Columns.Add(olvColumnDir);
             list.Columns.Add(new OLVColumn("Файл", "FileName") {
                 Width = 300,
-                FillsFreeSpace = true,
+                //FillsFreeSpace = true,
                 IsEditable = false
+            });
+            list.Columns.Add(new OLVColumn("Тип", "Type") {
+                Width = 60,
+                //FillsFreeSpace = true,
+                IsEditable = false,
+                AspectGetter = x => (x as FileFixerItem)?.Type.GetDescription() ?? ""
             });
             //list.AlwaysGroupByColumn = olvColumnDir;
             list.ShowGroups = false;
@@ -604,6 +610,8 @@ namespace FosMan {
             textBoxFosFixTargetDir.Text = App.Config.FosFixTargetDir;
             fastObjectListViewFosFixFindAndReplace.AddObjects(App.Config.FosFixFindAndReplaceItems);
             fastObjectListViewFosFixDocProperties.AddObjects(App.Config.FosFixDocPropertyList);
+
+            toolStripTextBoxFileFixerTargetDir.Text = App.Config.FileFixerLastDirectory;
 
             if (!string.IsNullOrEmpty(App.Config.RpdGenTemplate)) {
                 if (comboBoxRpdGenTemplates.Items.Contains(App.Config.RpdGenTemplate)) {
@@ -2325,9 +2333,39 @@ namespace FosMan {
         /// Добавить файлы в режим универсальной файловой коррекции
         /// </summary>
         /// <param name="files"></param>
-        void AddFilesToFileFixerMode(IEnumerable<string> files) {
+        void AddFilesToFileFixerMode(IEnumerable<string> files, EFileType fileType = EFileType.Auto) {
             var oldFiles = fastObjectListViewFileFixerFiles.Objects.Cast<FileFixerItem>().Select(f => f.FullFileName).ToHashSet();
             var newFiles = files.Where(f => !oldFiles.Contains(f) && File.Exists(f));
+
+            if (newFiles.Any()) {
+                fastObjectListViewFileFixerFiles.BeginUpdate();
+                fastObjectListViewFileFixerFiles.AddObjects(newFiles.Select(f => new FileFixerItem(f, fileType)).ToList());
+                fastObjectListViewFileFixerFiles.EndUpdate();
+            }
+        }
+
+        /// <summary>
+        /// Добавить РПД файлы в режим универсальной файловой коррекции
+        /// </summary>
+        /// <param name="files"></param>
+        void AddRpdFilesToFileFixerMode(List<Rpd> rpdList) {
+            var oldFiles = fastObjectListViewFileFixerFiles.Objects.Cast<FileFixerItem>().Select(f => f.FullFileName).ToHashSet();
+            var newFiles = rpdList.Where(f => !oldFiles.Contains(f.SourceFileName) && File.Exists(f.SourceFileName));
+
+            if (newFiles.Any()) {
+                fastObjectListViewFileFixerFiles.BeginUpdate();
+                fastObjectListViewFileFixerFiles.AddObjects(newFiles.Select(f => new FileFixerItem(f)).ToList());
+                fastObjectListViewFileFixerFiles.EndUpdate();
+            }
+        }
+
+        /// <summary>
+        /// Добавить ФОС файлы в режим универсальной файловой коррекции
+        /// </summary>
+        /// <param name="files"></param>
+        void AddFosFilesToFileFixerMode(List<Fos> fosList) {
+            var oldFiles = fastObjectListViewFileFixerFiles.Objects.Cast<FileFixerItem>().Select(f => f.FullFileName).ToHashSet();
+            var newFiles = fosList.Where(f => !oldFiles.Contains(f.SourceFileName) && File.Exists(f.SourceFileName));
 
             if (newFiles.Any()) {
                 fastObjectListViewFileFixerFiles.BeginUpdate();
@@ -2442,6 +2480,7 @@ namespace FosMan {
                                                                            Application.DoEvents();
                                                                        }));
                                                                    },
+                                                                   checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.Checked ? textBoxRpdGenAbstractsReplacementForMissedProps.Text : null,
                                                                    out var errors,
                                                                    out var htmlReport);
 
@@ -2473,8 +2512,139 @@ namespace FosMan {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
                 var html = App.CreateRpdReport(rpdList);
-                
+
                 AddReport("Отчёт по РПД", html);
+            }
+        }
+
+        private void iconToolStripButtonRpdFixToFileFixer_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                AddRpdFilesToFileFixerMode(rpdList);
+            }
+        }
+
+        private void iconToolStripButtonFosToFileFixer_Click(object sender, EventArgs e) {
+            var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
+            if (fosList.Any()) {
+                AddFosFilesToFileFixerMode(fosList);
+            }
+        }
+
+        private void iconToolStripButtonFileFixerDistribByDirs_Click(object sender, EventArgs e) {
+            var files = fastObjectListViewFileFixerFiles.SelectedObjects?.Cast<FileFixerItem>()?.ToList();
+            if (files.Count == 0) return;
+
+            var count = 0;
+            var sw = Stopwatch.StartNew();
+            var errorList = new ErrorList();
+
+            //1. определим корни
+            var roots = new HashSet<string>();
+            foreach (var file in files) {
+                if (file.Type == EFileType.Rpd) {
+                    if (file.Rpd != null) {
+                        roots.Add($"{file.Rpd.DirectionCode}_{file.Rpd.DirectionName}_{file.Rpd.Profile}");
+                    }
+                    else {
+                        errorList.AddSimple($"{file.FullFileName} - РПД не загружен");
+                    }
+                }
+                if (file.Type == EFileType.Fos) {
+                    if (file.Fos != null) {
+                        roots.Add($"{file.Fos.DirectionCode}_{file.Fos.DirectionName}_{file.Fos.Profile}");
+                    }
+                    else {
+                        errorList.AddSimple($"{file.FullFileName} - ФОС не загружен");
+                    }
+                }
+            }
+            //2. создание директорий
+            foreach (var root in roots) {
+                var dirRoot = Path.Combine(App.Config.FileFixerLastDirectory, root);
+                if (!Directory.Exists(dirRoot)) Directory.CreateDirectory(dirRoot);
+
+                var rpdDirs = new Dictionary<EDisciplineType, string>() {
+                    [EDisciplineType.Required] = Path.Combine(dirRoot, "РПД", "1. Обязательная часть"),
+                    [EDisciplineType.Variable] = Path.Combine(dirRoot, "РПД", "2. Часть, формируемая уч_обр_отн"),
+                    [EDisciplineType.ByChoice] = Path.Combine(dirRoot, "РПД", "3. Дисциплины по выбору"),
+                    [EDisciplineType.Optional] = Path.Combine(dirRoot, "РПД", "4. Факультативы"),
+                };
+                var fosDirs = new Dictionary<EDisciplineType, string>() {
+                    [EDisciplineType.Required] = Path.Combine(dirRoot, "ФОС", "1. Обязательная часть"),
+                    [EDisciplineType.Variable] = Path.Combine(dirRoot, "ФОС", "2. Часть, формируемая уч_обр_отн"),
+                    [EDisciplineType.ByChoice] = Path.Combine(dirRoot, "ФОС", "3. Дисциплины по выбору"),
+                    [EDisciplineType.Optional] = Path.Combine(dirRoot, "ФОС", "4. Факультативы"),
+                };
+
+                Directory.CreateDirectory(Path.Combine(dirRoot, "РПД"));
+                Directory.CreateDirectory(rpdDirs[EDisciplineType.Required]);
+                Directory.CreateDirectory(rpdDirs[EDisciplineType.Variable]);
+                Directory.CreateDirectory(rpdDirs[EDisciplineType.ByChoice]);
+                Directory.CreateDirectory(rpdDirs[EDisciplineType.Optional]);
+                Directory.CreateDirectory(Path.Combine(dirRoot, "ФОС"));
+                Directory.CreateDirectory(fosDirs[EDisciplineType.Required]);
+                Directory.CreateDirectory(fosDirs[EDisciplineType.Variable]);
+                Directory.CreateDirectory(fosDirs[EDisciplineType.ByChoice]);
+                Directory.CreateDirectory(fosDirs[EDisciplineType.Optional]);
+                Directory.CreateDirectory(Path.Combine(dirRoot, "ГИА"));
+                Directory.CreateDirectory(Path.Combine(dirRoot, "Практики"));
+                Directory.CreateDirectory(Path.Combine(dirRoot, "Методические рекомендации"));
+                //var dirRpd = Path.Combine(dirRoot, "РПД");
+                //if (!Directory.Exists(dirRpd)) Directory.CreateDirectory(dirRpd);
+
+                //var dirFos = Path.Combine(dirRoot, "ФОС");
+                //if (!Directory.Exists(dirFos)) Directory.CreateDirectory(dirFos);
+
+                //var dirGia = Path.Combine(dirRoot, "ГИА");
+                //if (!Directory.Exists(dirGia)) Directory.CreateDirectory(dirGia);
+
+                //var dirGia = Path.Combine(dirRoot, "ГИА");
+                //if (!Directory.Exists(dirGia)) Directory.CreateDirectory(dirGia);
+
+                foreach (var f in files) {
+                    try {
+                        if (f.Type == EFileType.Rpd) {
+                            var disc = FindDiscipline(f.Rpd);
+                            if (disc != null && disc.Type.HasValue) {
+                                var newFileName = Path.Combine(rpdDirs[disc.Type.Value], f.FileName);
+                                File.Copy(f.FullFileName, newFileName, true);
+                                count++;
+                            }
+                        }
+                        if (f.Type == EFileType.Fos) {
+                            var disc = FindDiscipline(f.Fos);
+                            if (disc != null && disc.Type.HasValue) {
+                                var newFileName = Path.Combine(fosDirs[disc.Type.Value], f.FileName);
+                                File.Copy(f.FullFileName, newFileName, true);
+                                count++;
+                            }
+                        }
+                    }
+                    catch (Exception ex) {
+                        errorList.AddException(ex);
+                    }
+                }
+            }
+            var html = App.GenerateReport("Распределение файлов", $"Обработано файлов: {count}", sw.Elapsed, errorList, "", "");
+            AddReport("Распределение файлов", html);
+        }
+
+        private void toolStripTextBoxFileFixerTargetDir_Click(object sender, EventArgs e) {
+
+        }
+
+        private void toolStripTextBoxFileFixerTargetDir_TextChanged(object sender, EventArgs e) {
+            App.Config.FileFixerLastDirectory = toolStripTextBoxFileFixerTargetDir.Text;
+            App.SaveConfig();
+        }
+
+        private void iconToolStripButtonFileFixerSelectTargetDir_Click(object sender, EventArgs e) {
+            var initDir = Directory.Exists(toolStripTextBoxFileFixerTargetDir.Text) ? toolStripTextBoxFileFixerTargetDir.Text : Environment.CurrentDirectory;
+            folderBrowserDialogSelectDir.InitialDirectory = initDir;
+
+            if (folderBrowserDialogSelectDir.ShowDialog() == DialogResult.OK) {
+                toolStripTextBoxFileFixerTargetDir.Text = folderBrowserDialogSelectDir.SelectedPath;
             }
         }
     }

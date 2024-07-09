@@ -19,17 +19,17 @@ namespace FosMan {
         public string PropertyName { get; set; } = null;    //чтобы применялся Action
         public Type PropertyType { get; set; } = null;
         public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
-            (new(@"^([\d+\.]*\d+)\.\s+(доклад)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(опрос)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(тестирование)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(курсовая\s+работа)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(практическая\s+работа)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(контрольная\s+работа)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(мини-кейсы)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(деловая\s+игра)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(эссе)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(реферат)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"^([\d+\.]*\d+)\.\s+(эссе,\s+реферат)[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(доклад)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(опрос)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(тестирование)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(курсовая\s+работа)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(практическая\s+работа)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(контрольная\s+работа)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(мини-кейсы)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(деловая\s+игра)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(эссе)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(реферат)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"^([\d+\.]*\d+)\.\s*(эссе[,\.]\s*реферат)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
         ];
         public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null;

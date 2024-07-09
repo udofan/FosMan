@@ -254,20 +254,52 @@ namespace FosMan {
         /// <param name="joinParText"></param>
         /// <returns></returns>
         static public string GetText(this Cell cell, string joinParText = " ", bool applyTrim = true) {
-            var text = string.Join(joinParText, cell.Paragraphs.Select(p => {
-                var text = p.Text;
-                if (applyTrim) {
-                    text = text.Trim(); //
-                }// p.Text.Trim() : p.Text));
-                if (p.IsListItem && p.ListItemType == ListItemType.Numbered) {
-                    text = $"{p.GetListItemNumber()} {text}";
-                }
-                return text;
-            }));
-            //if (applyTrim) {
-                //return text.Trim();
+            //var sw = Stopwatch.StartNew();
+            //var sw2 = new Stopwatch();
+            //var sw3 = new Stopwatch();
+
+            //var docProp = cell.GetType().GetProperty("Document", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetProperty);
+            //if (docProp != null) {
+            //    var doc = docProp.GetValue(cell) as Xceed.Document.NET.Document;
+            //    var tt = doc.Lists;
             //}
-            return text;
+
+            var text = new StringBuilder();
+
+            foreach (var par in cell.Paragraphs) {
+                //sw3.Start();
+                var parText = applyTrim ? par.Text.Trim() : par.Text;
+                //sw3.Stop();
+
+                if (par.IsListItem && par.ListItemType == ListItemType.Numbered) {
+                    //sw2.Start();
+                    parText = $"{par.GetListItemNumber()} {parText}";
+                    //sw2.Stop();
+                }
+                if (text.Length > 0) text.Append(joinParText);
+                text.Append(parText);
+            }
+
+            //if (sw.ElapsedMilliseconds > 1000) {
+            //    var t = 0; //отладка
+            //}
+
+            return text.ToString();
+
+            //var text = string.Join(joinParText, cell.Paragraphs.Select(p => {
+            //    var text = p.Text;
+            //    if (applyTrim) {
+            //        text = text.Trim(); //
+            //    }// p.Text.Trim() : p.Text));
+            //    if (p.IsListItem && p.ListItemType == ListItemType.Numbered) {
+            //        text = $"{p.GetListItemNumber()} {text}";
+            //    }
+            //    return text;
+            //}));
+            ////if (applyTrim) {
+            //    //return text.Trim();
+            ////}
+            //return text;
         }
 
         /// <summary>
@@ -1385,7 +1417,8 @@ namespace FosMan {
                                         if (prop != null) {
                                             replaceValue = prop.ToString();
                                         }
-                                        else if (TryProcessRpdSpecialField(propName, docx, par, curriculumGroup, disc, rpd, 
+                                        else if (TryProcessRpdSpecialField(propName, docx, par, curriculumGroup, disc, rpd,
+                                                                           null,
                                                                            out var specialValue, out var newParCount)) {
                                             replaceValue = specialValue;
                                         }
@@ -1511,6 +1544,7 @@ namespace FosMan {
         private static bool TryProcessRpdSpecialField(string propName, DocX docX, Paragraph par,
                                                       CurriculumGroup curriculumGroup, CurriculumDiscipline discipline,
                                                       Rpd rpd,
+                                                      string replacementForMissedProps,
                                                       out string replaceValue,
                                                       out List<Paragraph> newParagraphs) {
             var result = false;
@@ -1660,6 +1694,7 @@ namespace FosMan {
                                                                   string disciplineTemplate,
                                                                   Action<int, int, Rpd, CurriculumDiscipline, string> progressAction,
                                                                   ErrorList errors,
+                                                                  string replacementForMissedProps,
                                                                   out string replaceValue) {
             var result = false;
 
@@ -1667,19 +1702,23 @@ namespace FosMan {
 
             if (curriculumGroup != null) {
                 if (propName.Equals("RequiredDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
-                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Required, 1, progressAction, errors);
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Required, 1, 
+                                                                 progressAction, errors, replacementForMissedProps);
                     result = true;
                 }
                 if (propName.Equals("VariableDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
-                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Variable, 1, progressAction, errors);
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Variable, 1, 
+                                                                 progressAction, errors, replacementForMissedProps);
                     result = true;
                 }
                 if (propName.Equals("ByChoiceDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
-                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.ByChoice, 1, progressAction, errors);
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.ByChoice, 1, 
+                                                                 progressAction, errors, replacementForMissedProps);
                     result = true;
                 }
                 if (propName.Equals("OptionalDisciplines", StringComparison.CurrentCultureIgnoreCase)) {
-                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Optional, -1, progressAction, errors);
+                    replaceValue = InsertAbstractsForDisciplines(par, curriculumGroup, disciplineTemplate, EDisciplineType.Optional, -1, 
+                                                                 progressAction, errors, replacementForMissedProps);
                     result = true;
                 }
             }
@@ -1700,7 +1739,8 @@ namespace FosMan {
                                                             EDisciplineType disciplineType,
                                                             int blockNum,
                                                             Action<int, int, Rpd, CurriculumDiscipline, string> progressAction,
-                                                            ErrorList errors) {
+                                                            ErrorList errors,
+                                                            string replacementForMissedProps) {
             string replaceValue;
             //получаем список обязательных дисциплин из УП в нужном порядке
             var curriculum = curriculumGroup.Curricula.Values.FirstOrDefault(c => c.FormOfStudy == EFormOfStudy.FullTime);
@@ -1711,7 +1751,8 @@ namespace FosMan {
                 idx++;
                 var rpd = FindRpd(disc);
                 if (rpd == null) {
-                    errors?.Add(EErrorType.GenAbstractsMissingRpd, $"дисциплина [{disc.Name}], тип: [{disciplineType.GetDescription()}]");
+                    errors?.Add(EErrorType.GenAbstractsMissingRpd, $"дисциплина [{disc.Name}], тип [{disciplineType.GetDescription()}], " +
+                                                                   $"индекс [{disc.Index}], кафедра [{disc.DepartmentName}]");
                 }
                 progressAction.Invoke(idx, disciplines.Count, rpd, disc, $"обработка дисциплин типа [{disciplineType.GetDescription()}]");
 
@@ -1719,22 +1760,35 @@ namespace FosMan {
                     foreach (var discPar in discDocx.Paragraphs.ToList()) {
                         List<Paragraph> newParagraphs = [];
                         var doReplace = false;
-                        var propName = "";
+                        var propNames = "";
+                        var resetHighlight = false;
                         var replaceOptions = new FunctionReplaceTextOptions() {
                             ContainerLocation = ReplaceTextContainer.All,
                             FindPattern = "{[^}]+}",
                             RegexMatchHandler = m => {
                                 var replaceValue = m;
-                                propName = m.Trim('{', '}');
-                                var prop = rpd?.GetProperty(propName) ?? disc.GetProperty(propName);
-                                if (prop != null) {
-                                    replaceValue = prop.ToString();
-                                    doReplace = true;
-                                }
-                                else if (TryProcessRpdSpecialField(propName, discDocx, discPar, curriculumGroup, disc, rpd, 
-                                                                   out var specialValue, out newParagraphs)) {
-                                    replaceValue = specialValue;
-                                    doReplace = true;
+                                propNames = m.Trim('{', '}');
+                                var props = propNames.Split('|');
+                                foreach (var propName in props) {
+                                    var prop = rpd?.GetProperty(propName) ?? disc.GetProperty(propName);
+                                    if (prop != null) {
+                                        replaceValue = prop.ToString();
+                                        doReplace = true;
+                                        resetHighlight = true;
+                                        break;
+                                    }
+                                    else if (TryProcessRpdSpecialField(propName, discDocx, discPar, curriculumGroup, disc, rpd,
+                                                                       replacementForMissedProps,
+                                                                       out var specialValue, out newParagraphs)) {
+                                        replaceValue = specialValue;
+                                        doReplace = true;
+                                        resetHighlight = true;
+                                        break;
+                                    }
+                                    else if (!string.IsNullOrEmpty(replacementForMissedProps)) {
+                                        replaceValue = replacementForMissedProps;
+                                        resetHighlight = true;
+                                    }
                                 }
                                 return replaceValue;
                             }
@@ -1750,12 +1804,12 @@ namespace FosMan {
                         }
                         else {
                             par = par.InsertParagraphAfterSelf(discPar);
-                            if (doReplace) {
+                            if (resetHighlight) {
                                 par.Highlight(Highlight.none);
                             }
                         }
-                        if (!doReplace && !string.IsNullOrEmpty(propName)) {
-                            errors?.Add(EErrorType.GenAbstractsMissingProperty, $"дисциплина [{disc.Name}], свойство [{propName}]");
+                        if (!doReplace && !string.IsNullOrEmpty(propNames)) {
+                            errors?.Add(EErrorType.GenAbstractsMissingProperty, $"дисциплина [{disc.Name}], свойство [{propNames}]");
                         }
                     }
                 }
@@ -2403,11 +2457,21 @@ namespace FosMan {
         /// </summary>
         static public void LoadConfig() {
             var configFile = Path.Combine(Environment.CurrentDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.config.json");
+            var resetConfig = true;
+            
             if (File.Exists(configFile)) {
-                var json = File.ReadAllText(configFile);
-                m_config = JsonSerializer.Deserialize<Config>(json, m_jsonOptions);
+                try {
+                    var json = File.ReadAllText(configFile);
+                    m_config = JsonSerializer.Deserialize<Config>(json, m_jsonOptions);
+                    resetConfig = false;
+                }
+                catch {
+                }
             }
             else {
+                resetConfig = true;
+            }
+            if (resetConfig) {
                 m_config = new();
             }
 
@@ -3013,6 +3077,22 @@ namespace FosMan {
             return discipline;
         }
 
+        /// <summary>
+        /// Найти дисциплину для указанного ФОС
+        /// </summary>
+        /// <param name="fos"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static CurriculumDiscipline FindDiscipline(Fos fos) {
+            CurriculumDiscipline discipline = null;
+            var curricula = FindCurricula(fos);
+            if (curricula != null) {
+                discipline = curricula.Values.FirstOrDefault()?.FindDiscipline(fos.DisciplineName);
+                //var curriculum = curricula.Values.Select(c => c.FormOfStudy == rpd.FormsOfStudy)
+            }
+
+            return discipline;
+        }
 
         /// <summary>
         /// Сканирование документа на разделы
@@ -3944,8 +4024,11 @@ namespace FosMan {
                 html.Append($"<h3>{description}</h3>");
             }
             html.AddDiv($"Время работы: {elapsedTime}");
-            html.Append("<p />");
-            html.AddFileLink(fileLabel, fileName);
+
+            if (!string.IsNullOrEmpty(fileLabel) && !string.IsNullOrEmpty(fileName)) {
+                html.Append("<p />");
+                html.AddFileLink(fileLabel, fileName);
+            }
 
             html.Append("<p />");
             html.Append(errorList.GetHtmlReport());
@@ -3971,6 +4054,7 @@ namespace FosMan {
                                                         string targetDir, 
                                                         string fileNameTemplate,
                                                         Action<int, int, Rpd, CurriculumDiscipline, string> progressAction, 
+                                                        string replacementForMissedProps,
                                                         out ErrorList errorList,
                                                         out string htmlReport) {
             var targetFile = string.Empty;
@@ -4000,6 +4084,7 @@ namespace FosMan {
                     foreach (var par in docx.Paragraphs.ToList()) {
                         var doReplace = false;
                         var propName = "";
+                        var resetHighlight = false;
                         var replaceOptions = new FunctionReplaceTextOptions() {
                             ContainerLocation = ReplaceTextContainer.All,
                             FindPattern = "{[^}]+}",
@@ -4010,22 +4095,29 @@ namespace FosMan {
                                 if (groupProp != null) {
                                     replaceValue = groupProp.ToString();
                                     doReplace = true;
+                                    resetHighlight = true;
                                 }
                                 else if (TryProcessAbstractsForRpdSpecialField(propName, docx, par, curriculumGroup, disciplineTemplate,
                                                                                progressAction,
                                                                                errors,
+                                                                               replacementForMissedProps,
                                                                                out var specialValue)) {
                                     replaceValue = specialValue;
+                                    resetHighlight = true;
                                     doReplace = true;
+                                }
+                                else if (!string.IsNullOrEmpty(replacementForMissedProps)) {
+                                    replaceValue = replacementForMissedProps;
+                                    resetHighlight = true;
                                 }
                                 return replaceValue;
                             }
                         };
                         par.ReplaceText(replaceOptions);
-                        if (doReplace) {
+                        if (resetHighlight) {
                             par.Highlight(Highlight.none);
                         }
-                        else if (!string.IsNullOrEmpty(propName)) {
+                        if (!doReplace && !string.IsNullOrEmpty(propName)) {
                             errors?.Add(EErrorType.GenAbstractsMissingProperty, $"свойство [{propName}]");
                         }
                     }

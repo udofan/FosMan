@@ -15,7 +15,7 @@ namespace FosMan {
         public string PropertyName { get; set; } = null;    //чтобы применялся Action
         public Type PropertyType { get; set; } = null;
         public List<(Regex marker, int catchGroupIdx)> StartMarkers { get; set; } = [
-            (new(@"^Форм\S+\s+обучения[:]*\s*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 1)
+            (new(@"^Форм\S+\s+обучения[:]*\s*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), -1)
         ];
         public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = [
             (new(@"^$", RegexOptions.Compiled | RegexOptions.IgnoreCase), -1) //пустая строка

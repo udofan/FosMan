@@ -72,8 +72,11 @@
             toolStripLabelRpdFosIndicator = new ToolStripLabel();
             splitContainerRpd = new SplitContainer();
             groupBox4 = new GroupBox();
-            groupBox8 = new GroupBox();
+            groupBox10 = new GroupBox();
+            textBoxRpdGenAbstractsReplacementForMissedProps = new TextBox();
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis = new CheckBox();
             iconButtonRpdGenAbstracts = new FontAwesome.Sharp.IconButton();
+            groupBox8 = new GroupBox();
             linkLabelRpdFixGeneratePrevDisciplines = new LinkLabel();
             linkLabelRpdFixGenerateNextDisciplines = new LinkLabel();
             linkLabelRpdFixSelectFilesToFix = new LinkLabel();
@@ -111,6 +114,7 @@
             tabPageFos = new TabPage();
             splitContainerFos = new SplitContainer();
             groupBoxFosFix = new GroupBox();
+            iconButtonDistribFiles = new FontAwesome.Sharp.IconButton();
             checkBoxFosFixResetSelection = new CheckBox();
             checkBoxFosFixPassportTable = new CheckBox();
             checkBoxFosFixCompetenceIndicators = new CheckBox();
@@ -136,6 +140,8 @@
             toolStripSeparator10 = new ToolStripSeparator();
             iconToolStripButtonFosClear = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator11 = new ToolStripSeparator();
+            iconToolStripButtonFosToFileFixer = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator21 = new ToolStripSeparator();
             iconToolStripButtonFosFromDb = new FontAwesome.Sharp.IconToolStripButton();
             iconToolStripButtonFosToDb = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator12 = new ToolStripSeparator();
@@ -205,7 +211,7 @@
             button4 = new Button();
             button5 = new Button();
             toolStrip3 = new ToolStrip();
-            iconToolStripButtonFileFixerOpen = new FontAwesome.Sharp.IconToolStripButton();
+            iconToolStripButtonFileFixerAdd = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator18 = new ToolStripSeparator();
             iconToolStripButtonFileFixerDelete = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator16 = new ToolStripSeparator();
@@ -214,6 +220,8 @@
             iconToolStripButtonFileFixerSelectTargetDir = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator17 = new ToolStripSeparator();
             iconToolStripButtonFileFixerRun = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator20 = new ToolStripSeparator();
+            iconToolStripButtonFileFixerDistribByDirs = new FontAwesome.Sharp.IconToolStripButton();
             tabPageGenAbstracts = new TabPage();
             groupBox9 = new GroupBox();
             openFileDialogSelectCompetenceMatrixFile = new OpenFileDialog();
@@ -243,6 +251,7 @@
             splitContainerRpd.Panel2.SuspendLayout();
             splitContainerRpd.SuspendLayout();
             groupBox4.SuspendLayout();
+            groupBox10.SuspendLayout();
             groupBox8.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownRpdFixMaxCompetenceResultsCount).BeginInit();
@@ -646,9 +655,10 @@
             iconToolStripButtonRpdFixToFileFixer.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonRpdFixToFileFixer.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonRpdFixToFileFixer.Name = "iconToolStripButtonRpdFixToFileFixer";
-            iconToolStripButtonRpdFixToFileFixer.Size = new Size(163, 28);
-            iconToolStripButtonRpdFixToFileFixer.Text = "На коррекцию файлов";
+            iconToolStripButtonRpdFixToFileFixer.Size = new Size(116, 28);
+            iconToolStripButtonRpdFixToFileFixer.Text = "На коррекцию";
             iconToolStripButtonRpdFixToFileFixer.ToolTipText = "Передать выделенные файлы в режим универсальной коррекции файлов";
+            iconToolStripButtonRpdFixToFileFixer.Click += iconToolStripButtonRpdFixToFileFixer_Click;
             // 
             // toolStripSeparator19
             // 
@@ -773,7 +783,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 651);
+            splitContainerRpd.Size = new Size(1251, 661);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -781,6 +791,7 @@
             // groupBox4
             // 
             groupBox4.BackColor = Color.WhiteSmoke;
+            groupBox4.Controls.Add(groupBox10);
             groupBox4.Controls.Add(groupBox8);
             groupBox4.Controls.Add(groupBox1);
             groupBox4.Controls.Add(checkBoxRpdFixRemoveColorSelection);
@@ -804,36 +815,67 @@
             groupBox4.TabStop = false;
             groupBox4.Text = "Режим коррекции РПД";
             // 
+            // groupBox10
+            // 
+            groupBox10.Controls.Add(textBoxRpdGenAbstractsReplacementForMissedProps);
+            groupBox10.Controls.Add(checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis);
+            groupBox10.Controls.Add(iconButtonRpdGenAbstracts);
+            groupBox10.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
+            groupBox10.Location = new Point(995, 205);
+            groupBox10.Name = "groupBox10";
+            groupBox10.Size = new Size(250, 198);
+            groupBox10.TabIndex = 26;
+            groupBox10.TabStop = false;
+            groupBox10.Text = "Генерация Аннотаций к РПД";
+            // 
+            // textBoxRpdGenAbstractsReplacementForMissedProps
+            // 
+            textBoxRpdGenAbstractsReplacementForMissedProps.Location = new Point(38, 69);
+            textBoxRpdGenAbstractsReplacementForMissedProps.Name = "textBoxRpdGenAbstractsReplacementForMissedProps";
+            textBoxRpdGenAbstractsReplacementForMissedProps.Size = new Size(100, 22);
+            textBoxRpdGenAbstractsReplacementForMissedProps.TabIndex = 25;
+            textBoxRpdGenAbstractsReplacementForMissedProps.Text = "...";
+            // 
+            // checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis
+            // 
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.Checked = true;
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.CheckState = CheckState.Checked;
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.Location = new Point(17, 31);
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.Name = "checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis";
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.Size = new Size(208, 32);
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.TabIndex = 24;
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.Text = "Заменять незаполненные свойства значением:";
+            checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis.UseVisualStyleBackColor = true;
+            // 
+            // iconButtonRpdGenAbstracts
+            // 
+            iconButtonRpdGenAbstracts.IconChar = FontAwesome.Sharp.IconChar.ClipboardList;
+            iconButtonRpdGenAbstracts.IconColor = Color.DarkBlue;
+            iconButtonRpdGenAbstracts.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconButtonRpdGenAbstracts.IconSize = 24;
+            iconButtonRpdGenAbstracts.ImageAlign = ContentAlignment.TopLeft;
+            iconButtonRpdGenAbstracts.Location = new Point(17, 145);
+            iconButtonRpdGenAbstracts.Name = "iconButtonRpdGenAbstracts";
+            iconButtonRpdGenAbstracts.Size = new Size(208, 30);
+            iconButtonRpdGenAbstracts.TabIndex = 23;
+            iconButtonRpdGenAbstracts.Text = "Генерация Аннотаций...";
+            toolTip1.SetToolTip(iconButtonRpdGenAbstracts, "Запустить режим генерации Аннотаций к РПД");
+            iconButtonRpdGenAbstracts.UseVisualStyleBackColor = true;
+            iconButtonRpdGenAbstracts.Click += iconButtonRpdGenAbstracts_Click;
+            // 
             // groupBox8
             // 
-            groupBox8.Controls.Add(iconButtonRpdGenAbstracts);
             groupBox8.Controls.Add(linkLabelRpdFixGeneratePrevDisciplines);
             groupBox8.Controls.Add(linkLabelRpdFixGenerateNextDisciplines);
             groupBox8.Controls.Add(linkLabelRpdFixSelectFilesToFix);
             groupBox8.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             groupBox8.Location = new Point(995, 17);
             groupBox8.Name = "groupBox8";
-            groupBox8.Size = new Size(250, 255);
+            groupBox8.Size = new Size(250, 182);
             groupBox8.TabIndex = 25;
             groupBox8.TabStop = false;
             groupBox8.Text = "Доп. средства";
-            // 
-            // iconButtonRpdGenAbstracts
-            // 
-            iconButtonRpdGenAbstracts.FlatStyle = FlatStyle.Flat;
-            iconButtonRpdGenAbstracts.IconChar = FontAwesome.Sharp.IconChar.ClipboardList;
-            iconButtonRpdGenAbstracts.IconColor = Color.DarkBlue;
-            iconButtonRpdGenAbstracts.IconFont = FontAwesome.Sharp.IconFont.Auto;
-            iconButtonRpdGenAbstracts.IconSize = 24;
-            iconButtonRpdGenAbstracts.ImageAlign = ContentAlignment.MiddleLeft;
-            iconButtonRpdGenAbstracts.Location = new Point(24, 201);
-            iconButtonRpdGenAbstracts.Name = "iconButtonRpdGenAbstracts";
-            iconButtonRpdGenAbstracts.Size = new Size(208, 26);
-            iconButtonRpdGenAbstracts.TabIndex = 23;
-            iconButtonRpdGenAbstracts.Text = "Генерация Аннотаций...";
-            toolTip1.SetToolTip(iconButtonRpdGenAbstracts, "Запустить режим генерации Аннотаций к РПД");
-            iconButtonRpdGenAbstracts.UseVisualStyleBackColor = true;
-            iconButtonRpdGenAbstracts.Click += iconButtonRpdGenAbstracts_Click;
             // 
             // linkLabelRpdFixGeneratePrevDisciplines
             // 
@@ -1244,7 +1286,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 207);
+            fastObjectListViewRpdList.Size = new Size(1251, 217);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1286,7 +1328,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(1251, 638);
+            splitContainerFos.Size = new Size(1251, 642);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             splitContainerFos.Tag = "280";
@@ -1294,6 +1336,7 @@
             // groupBoxFosFix
             // 
             groupBoxFosFix.BackColor = Color.WhiteSmoke;
+            groupBoxFosFix.Controls.Add(iconButtonDistribFiles);
             groupBoxFosFix.Controls.Add(checkBoxFosFixResetSelection);
             groupBoxFosFix.Controls.Add(checkBoxFosFixPassportTable);
             groupBoxFosFix.Controls.Add(checkBoxFosFixCompetenceIndicators);
@@ -1318,6 +1361,21 @@
             groupBoxFosFix.TabIndex = 0;
             groupBoxFosFix.TabStop = false;
             groupBoxFosFix.Text = "Режим коррекции ФОС";
+            // 
+            // iconButtonDistribFiles
+            // 
+            iconButtonDistribFiles.IconChar = FontAwesome.Sharp.IconChar.CodeBranch;
+            iconButtonDistribFiles.IconColor = Color.Black;
+            iconButtonDistribFiles.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconButtonDistribFiles.IconSize = 24;
+            iconButtonDistribFiles.ImageAlign = ContentAlignment.TopLeft;
+            iconButtonDistribFiles.Location = new Point(1045, 242);
+            iconButtonDistribFiles.Name = "iconButtonDistribFiles";
+            iconButtonDistribFiles.Size = new Size(174, 29);
+            iconButtonDistribFiles.TabIndex = 24;
+            iconButtonDistribFiles.Text = "Распределить файлы";
+            iconButtonDistribFiles.TextAlign = ContentAlignment.MiddleRight;
+            iconButtonDistribFiles.UseVisualStyleBackColor = true;
             // 
             // checkBoxFosFixResetSelection
             // 
@@ -1473,12 +1531,12 @@
             // 
             // buttonFosFixStart
             // 
-            buttonFosFixStart.Location = new Point(824, 248);
+            buttonFosFixStart.Location = new Point(788, 242);
             buttonFosFixStart.Name = "buttonFosFixStart";
-            buttonFosFixStart.Size = new Size(149, 23);
+            buttonFosFixStart.Size = new Size(185, 29);
             buttonFosFixStart.TabIndex = 3;
-            buttonFosFixStart.Text = "Исправить ФОС...";
-            toolTip1.SetToolTip(buttonFosFixStart, "Запустить процедуру исправлений выделенных файлов РПД");
+            buttonFosFixStart.Text = "Запустить коррекцию";
+            toolTip1.SetToolTip(buttonFosFixStart, "Запустить процедуру коррекции выделенных файлов РПД");
             buttonFosFixStart.UseVisualStyleBackColor = true;
             buttonFosFixStart.Click += buttonFosFixStart_Click;
             // 
@@ -1544,7 +1602,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(1251, 354);
+            fastObjectListViewFosList.Size = new Size(1251, 358);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -1561,7 +1619,7 @@
             // 
             toolStrip2.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             toolStrip2.ImageScalingSize = new Size(24, 24);
-            toolStrip2.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFosOpen, iconToolStripButtonFosReload, toolStripSeparator10, iconToolStripButtonFosClear, toolStripSeparator11, iconToolStripButtonFosFromDb, iconToolStripButtonFosToDb, toolStripSeparator12, iconToolStripButtonForRememberList, toolStripSeparator13, iconToolStripButtonFosCheck, toolStripSeparator14, iconToolStripButtonFosFixMode, toolStripLabelFosRpdIndicator });
+            toolStrip2.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFosOpen, iconToolStripButtonFosReload, toolStripSeparator10, iconToolStripButtonFosClear, toolStripSeparator11, iconToolStripButtonFosToFileFixer, toolStripSeparator21, iconToolStripButtonFosFromDb, iconToolStripButtonFosToDb, toolStripSeparator12, iconToolStripButtonForRememberList, toolStripSeparator13, iconToolStripButtonFosCheck, toolStripSeparator14, iconToolStripButtonFosFixMode, toolStripLabelFosRpdIndicator });
             toolStrip2.Location = new Point(3, 3);
             toolStrip2.Name = "toolStrip2";
             toolStrip2.Size = new Size(1251, 31);
@@ -1614,6 +1672,23 @@
             // 
             toolStripSeparator11.Name = "toolStripSeparator11";
             toolStripSeparator11.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonFosToFileFixer
+            // 
+            iconToolStripButtonFosToFileFixer.IconChar = FontAwesome.Sharp.IconChar.ArrowRightLong;
+            iconToolStripButtonFosToFileFixer.IconColor = Color.DarkBlue;
+            iconToolStripButtonFosToFileFixer.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFosToFileFixer.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFosToFileFixer.Name = "iconToolStripButtonFosToFileFixer";
+            iconToolStripButtonFosToFileFixer.Size = new Size(116, 28);
+            iconToolStripButtonFosToFileFixer.Text = "На коррекцию";
+            iconToolStripButtonFosToFileFixer.ToolTipText = "Передать выделенные файлы в режим универсальной коррекции файлов";
+            iconToolStripButtonFosToFileFixer.Click += iconToolStripButtonFosToFileFixer_Click;
+            // 
+            // toolStripSeparator21
+            // 
+            toolStripSeparator21.Name = "toolStripSeparator21";
+            toolStripSeparator21.Size = new Size(6, 31);
             // 
             // iconToolStripButtonFosFromDb
             // 
@@ -1690,9 +1765,9 @@
             iconToolStripButtonFosFixMode.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconToolStripButtonFosFixMode.ImageTransparentColor = Color.Magenta;
             iconToolStripButtonFosFixMode.Name = "iconToolStripButtonFosFixMode";
-            iconToolStripButtonFosFixMode.Size = new Size(139, 28);
-            iconToolStripButtonFosFixMode.Text = "Режим коррекции";
-            iconToolStripButtonFosFixMode.ToolTipText = "Показать/Скрыть режим коррекции";
+            iconToolStripButtonFosFixMode.Size = new Size(85, 28);
+            iconToolStripButtonFosFixMode.Text = "Функции";
+            iconToolStripButtonFosFixMode.ToolTipText = "Показать/Скрыть режим применения функций";
             iconToolStripButtonFosFixMode.Click += iconToolStripButtonFosFixMode_Click;
             // 
             // toolStripLabelFosRpdIndicator
@@ -1905,7 +1980,7 @@
             // 
             labelRpdGenStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             labelRpdGenStatus.AutoEllipsis = true;
-            labelRpdGenStatus.Location = new Point(652, 586);
+            labelRpdGenStatus.Location = new Point(652, 588);
             labelRpdGenStatus.Name = "labelRpdGenStatus";
             labelRpdGenStatus.Size = new Size(322, 52);
             labelRpdGenStatus.TabIndex = 23;
@@ -1925,7 +2000,7 @@
             groupBox2.Controls.Add(label6);
             groupBox2.Controls.Add(label5);
             groupBox2.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox2.Location = new Point(6, 544);
+            groupBox2.Location = new Point(6, 546);
             groupBox2.Name = "groupBox2";
             groupBox2.Size = new Size(630, 138);
             groupBox2.TabIndex = 14;
@@ -2030,7 +2105,7 @@
             // 
             buttonGenerate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             buttonGenerate.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            buttonGenerate.Location = new Point(652, 544);
+            buttonGenerate.Location = new Point(652, 546);
             buttonGenerate.Name = "buttonGenerate";
             buttonGenerate.Size = new Size(174, 23);
             buttonGenerate.TabIndex = 6;
@@ -2045,7 +2120,7 @@
             groupBoxRpdGenDisciplineList.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxRpdGenDisciplineList.Location = new Point(8, 237);
             groupBoxRpdGenDisciplineList.Name = "groupBoxRpdGenDisciplineList";
-            groupBoxRpdGenDisciplineList.Size = new Size(984, 296);
+            groupBoxRpdGenDisciplineList.Size = new Size(984, 298);
             groupBoxRpdGenDisciplineList.TabIndex = 4;
             groupBoxRpdGenDisciplineList.TabStop = false;
             groupBoxRpdGenDisciplineList.Text = "3. Выбор дисциплин";
@@ -2062,7 +2137,7 @@
             fastObjectListViewDisciplineListForGeneration.Name = "fastObjectListViewDisciplineListForGeneration";
             fastObjectListViewDisciplineListForGeneration.ShowGroups = false;
             fastObjectListViewDisciplineListForGeneration.ShowImagesOnSubItems = true;
-            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 275);
+            fastObjectListViewDisciplineListForGeneration.Size = new Size(978, 277);
             fastObjectListViewDisciplineListForGeneration.TabIndex = 4;
             fastObjectListViewDisciplineListForGeneration.UseFilterIndicator = true;
             fastObjectListViewDisciplineListForGeneration.UseFiltering = true;
@@ -2244,7 +2319,7 @@
             groupBoxFileFixerFiles.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFileFixerFiles.Location = new Point(3, 230);
             groupBoxFileFixerFiles.Name = "groupBoxFileFixerFiles";
-            groupBoxFileFixerFiles.Size = new Size(1251, 457);
+            groupBoxFileFixerFiles.Size = new Size(1251, 449);
             groupBoxFileFixerFiles.TabIndex = 18;
             groupBoxFileFixerFiles.TabStop = false;
             groupBoxFileFixerFiles.Text = "Файлы";
@@ -2258,7 +2333,7 @@
             fastObjectListViewFileFixerFiles.Location = new Point(3, 18);
             fastObjectListViewFileFixerFiles.Name = "fastObjectListViewFileFixerFiles";
             fastObjectListViewFileFixerFiles.ShowGroups = false;
-            fastObjectListViewFileFixerFiles.Size = new Size(1245, 436);
+            fastObjectListViewFileFixerFiles.Size = new Size(1245, 428);
             fastObjectListViewFileFixerFiles.TabIndex = 2;
             fastObjectListViewFileFixerFiles.UseFilterIndicator = true;
             fastObjectListViewFileFixerFiles.UseFiltering = true;
@@ -2393,25 +2468,25 @@
             // 
             toolStrip3.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             toolStrip3.ImageScalingSize = new Size(24, 24);
-            toolStrip3.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFileFixerOpen, toolStripSeparator18, iconToolStripButtonFileFixerDelete, toolStripSeparator16, toolStripLabel1, toolStripTextBoxFileFixerTargetDir, iconToolStripButtonFileFixerSelectTargetDir, toolStripSeparator17, iconToolStripButtonFileFixerRun });
+            toolStrip3.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFileFixerAdd, toolStripSeparator18, iconToolStripButtonFileFixerDelete, toolStripSeparator16, toolStripLabel1, toolStripTextBoxFileFixerTargetDir, iconToolStripButtonFileFixerSelectTargetDir, toolStripSeparator17, iconToolStripButtonFileFixerRun, toolStripSeparator20, iconToolStripButtonFileFixerDistribByDirs });
             toolStrip3.Location = new Point(3, 3);
             toolStrip3.Name = "toolStrip3";
             toolStrip3.Size = new Size(1251, 31);
             toolStrip3.TabIndex = 16;
             toolStrip3.Text = "toolStrip1";
             // 
-            // iconToolStripButtonFileFixerOpen
+            // iconToolStripButtonFileFixerAdd
             // 
-            iconToolStripButtonFileFixerOpen.IconChar = FontAwesome.Sharp.IconChar.PlusSquare;
-            iconToolStripButtonFileFixerOpen.IconColor = Color.DarkBlue;
-            iconToolStripButtonFileFixerOpen.IconFont = FontAwesome.Sharp.IconFont.Auto;
-            iconToolStripButtonFileFixerOpen.IconSize = 24;
-            iconToolStripButtonFileFixerOpen.ImageTransparentColor = Color.Magenta;
-            iconToolStripButtonFileFixerOpen.Name = "iconToolStripButtonFileFixerOpen";
-            iconToolStripButtonFileFixerOpen.Size = new Size(100, 28);
-            iconToolStripButtonFileFixerOpen.Text = "Добавить...";
-            iconToolStripButtonFileFixerOpen.ToolTipText = "Добавить файлы в список";
-            iconToolStripButtonFileFixerOpen.Click += iconToolStripButtonFileFixerOpen_Click;
+            iconToolStripButtonFileFixerAdd.IconChar = FontAwesome.Sharp.IconChar.PlusSquare;
+            iconToolStripButtonFileFixerAdd.IconColor = Color.DarkBlue;
+            iconToolStripButtonFileFixerAdd.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFileFixerAdd.IconSize = 24;
+            iconToolStripButtonFileFixerAdd.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFileFixerAdd.Name = "iconToolStripButtonFileFixerAdd";
+            iconToolStripButtonFileFixerAdd.Size = new Size(100, 28);
+            iconToolStripButtonFileFixerAdd.Text = "Добавить...";
+            iconToolStripButtonFileFixerAdd.ToolTipText = "Добавить файлы в список";
+            iconToolStripButtonFileFixerAdd.Click += iconToolStripButtonFileFixerOpen_Click;
             // 
             // toolStripSeparator18
             // 
@@ -2445,6 +2520,8 @@
             // 
             toolStripTextBoxFileFixerTargetDir.Name = "toolStripTextBoxFileFixerTargetDir";
             toolStripTextBoxFileFixerTargetDir.Size = new Size(350, 31);
+            toolStripTextBoxFileFixerTargetDir.Click += toolStripTextBoxFileFixerTargetDir_Click;
+            toolStripTextBoxFileFixerTargetDir.TextChanged += toolStripTextBoxFileFixerTargetDir_TextChanged;
             // 
             // iconToolStripButtonFileFixerSelectTargetDir
             // 
@@ -2458,6 +2535,7 @@
             iconToolStripButtonFileFixerSelectTargetDir.Size = new Size(28, 28);
             iconToolStripButtonFileFixerSelectTargetDir.Text = "Открыть...";
             iconToolStripButtonFileFixerSelectTargetDir.ToolTipText = "Открыть ФОС-файлы и добавить в список";
+            iconToolStripButtonFileFixerSelectTargetDir.Click += iconToolStripButtonFileFixerSelectTargetDir_Click;
             // 
             // toolStripSeparator17
             // 
@@ -2475,6 +2553,24 @@
             iconToolStripButtonFileFixerRun.Size = new Size(72, 28);
             iconToolStripButtonFileFixerRun.Text = "Запуск";
             iconToolStripButtonFileFixerRun.ToolTipText = "Запуск процедуры коррекции файлов";
+            // 
+            // toolStripSeparator20
+            // 
+            toolStripSeparator20.Name = "toolStripSeparator20";
+            toolStripSeparator20.Size = new Size(6, 31);
+            // 
+            // iconToolStripButtonFileFixerDistribByDirs
+            // 
+            iconToolStripButtonFileFixerDistribByDirs.IconChar = FontAwesome.Sharp.IconChar.CodeBranch;
+            iconToolStripButtonFileFixerDistribByDirs.IconColor = Color.DarkBlue;
+            iconToolStripButtonFileFixerDistribByDirs.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFileFixerDistribByDirs.IconSize = 24;
+            iconToolStripButtonFileFixerDistribByDirs.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFileFixerDistribByDirs.Name = "iconToolStripButtonFileFixerDistribByDirs";
+            iconToolStripButtonFileFixerDistribByDirs.Size = new Size(157, 28);
+            iconToolStripButtonFileFixerDistribByDirs.Text = "Распределить файлы";
+            iconToolStripButtonFileFixerDistribByDirs.ToolTipText = "Распределить копии файлов по директориям";
+            iconToolStripButtonFileFixerDistribByDirs.Click += iconToolStripButtonFileFixerDistribByDirs_Click;
             // 
             // tabPageGenAbstracts
             // 
@@ -2586,6 +2682,8 @@
             splitContainerRpd.ResumeLayout(false);
             groupBox4.ResumeLayout(false);
             groupBox4.PerformLayout();
+            groupBox10.ResumeLayout(false);
+            groupBox10.PerformLayout();
             groupBox8.ResumeLayout(false);
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
@@ -2824,7 +2922,7 @@
         private Button button4;
         private Button button5;
         private ToolStrip toolStrip3;
-        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFileFixerOpen;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFileFixerAdd;
         private ToolStripSeparator toolStripSeparator16;
         private ToolStripLabel toolStripLabel1;
         private ToolStripTextBox toolStripTextBoxFileFixerTargetDir;
@@ -2847,5 +2945,13 @@
         private GroupBox groupBox9;
         private FontAwesome.Sharp.IconButton iconButtonRpdGenAbstracts;
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdReport;
+        private FontAwesome.Sharp.IconButton iconButtonDistribFiles;
+        private ToolStripSeparator toolStripSeparator20;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFileFixerDistribByDirs;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosToFileFixer;
+        private ToolStripSeparator toolStripSeparator21;
+        private GroupBox groupBox10;
+        private CheckBox checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis;
+        private TextBox textBoxRpdGenAbstractsReplacementForMissedProps;
     }
 }

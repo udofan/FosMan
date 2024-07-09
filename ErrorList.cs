@@ -91,5 +91,9 @@ namespace FosMan {
 
             return html.ToString();
         }
+
+        public void AddSimple(string text) {
+            Add(EErrorType.Simple, text);
+        }
     }
 }

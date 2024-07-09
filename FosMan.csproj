@@ -23,7 +23,11 @@
     <PackageReference Include="System.Text.Json" Version="8.0.3" />
     <PackageReference Include="Xceed.Words.NET" Version="3.0.24152.1219" />
   </ItemGroup>
-
+	
+	<ItemGroup>
+		<InternalsVisibleTo Include="Xceed.Document.NET.DocumentElement" />
+	</ItemGroup>
+	
   <ItemGroup>
     <None Update="Templates\АННОТАЦИИ_к_РПД.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
