@@ -71,9 +71,12 @@ namespace FosMan {
                                         }
                                         catchingValue.Append(m.match.Groups[m.idx].Value);
                                     }
-                                    ApplyValue(catchingRule, null, targetObj, text, catchingValue.ToString(), par, errors);
-                                    catchingValue.Clear();
-                                    catchingRule = null; //сброс правила-ловца строк
+                                    //захват будем считать завершенным, когда было захвачено значение
+                                    if (catchingValue.Length > 0) {
+                                        ApplyValue(catchingRule, null, targetObj, text, catchingValue.ToString(), par, errors);
+                                        catchingValue.Clear();
+                                        catchingRule = null; //сброс правила-ловца строк
+                                    }
                                 }
                                 else { //продолжаем захват
                                     if (!string.IsNullOrEmpty(catchingRule.MultilineConcatValue) && catchingValue.Length > 0) {

@@ -289,6 +289,14 @@ namespace FosMan {
             Fos
         }
 
+        /// <summary>
+        /// Типы отчётов по РПД
+        /// </summary>
+        public enum ERpdReportType {
+            Base,               //базовый (все свойства РПД)
+            FosMatching         //проверка на соответствие с ФОСами
+        }
+
         static Dictionary<string, EEvaluationTool> m_evalToolDic = null;
 
         /// <summary>

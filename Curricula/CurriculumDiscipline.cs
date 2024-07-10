@@ -6,7 +6,7 @@ namespace FosMan {
     /// <summary>
     /// Описание дисциплины
     /// </summary>
-    internal class CurriculumDiscipline : BaseObj {
+    public class CurriculumDiscipline : BaseObj {
         public const int SEMESTER_COUNT = 10;
 
         static Regex m_regexTestTypeRequired = new(@"^[^\.]+\.О\.\d+", RegexOptions.Compiled);      //обязательная

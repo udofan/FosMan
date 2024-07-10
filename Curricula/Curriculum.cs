@@ -15,7 +15,7 @@ namespace FosMan {
     /// <summary>
     /// Учебный план [kəˈrɪkjʊləm]
     /// </summary>
-    internal class Curriculum : BaseObj {
+    public class Curriculum : BaseObj {
         static Regex m_regexTestDirectionName = new(@"(\d{2}\s*\.\s*\d{2}\s*\.\s*\d{2})\s+(.*)$", RegexOptions.Compiled);
         static Regex m_regexParseSemester = new(@"Семестр\s+(\d)", RegexOptions.Compiled);
         //static bool m_programIsDetected = false;
@@ -131,6 +131,14 @@ namespace FosMan {
                         ParseTablePlan(curriculum, dataSet);
                     }
                 }
+                //проверка
+                if (curriculum.Degree == EDegree.Unknown) {
+                    curriculum.Errors.Add("Не удалось определить квалификацию");
+                }
+                if (curriculum.FormOfStudy == EFormOfStudy.Unknown) {
+                    curriculum.Errors.Add("Не удалось определить форму обучения");
+                }
+
             }
             catch (Exception ex) {
                 curriculum.Errors.Add(ex.Message);

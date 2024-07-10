@@ -1171,7 +1171,18 @@ namespace FosMan {
 
                     var webView = new WebView2();
                     await webView.EnsureCoreWebView2Async();
-                    webView.NavigateToString(html);
+
+                    if (Encoding.UTF8.GetByteCount(html) > 1_000_000_000) {
+                        webView.NavigateToString(html);
+                    }
+                    else {
+                        var repDir = Path.Combine(Environment.CurrentDirectory, DIR_REPORTS);
+                        var fileName = Path.Combine(repDir, $"отчёт_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.html");
+                        File.WriteAllText(fileName, html, Encoding.UTF8);
+                        var uri = new Uri(fileName).AbsoluteUri;
+                        webView.CoreWebView2.Navigate(uri);
+                    }
+
                     tabPageNewReport.Controls.Add(webView);
                     webView.Dock = DockStyle.Fill;
                     var webViewInterop = new WebViewInterop();
@@ -2511,7 +2522,7 @@ namespace FosMan {
         private void iconToolStripButtonRpdReport_Click(object sender, EventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
-                var html = App.CreateRpdReport(rpdList);
+                var html = App.CreateRpdReportBase(rpdList);
 
                 AddReport("Отчёт по РПД", html);
             }
@@ -2645,6 +2656,60 @@ namespace FosMan {
 
             if (folderBrowserDialogSelectDir.ShowDialog() == DialogResult.OK) {
                 toolStripTextBoxFileFixerTargetDir.Text = folderBrowserDialogSelectDir.SelectedPath;
+            }
+        }
+
+        private void iconToolStripButtonRpdAddDir_Click(object sender, EventArgs e) {
+            var initDir = Directory.Exists(App.Config.RpdLastAddDir) ? App.Config.RpdLastAddDir : Environment.CurrentDirectory;
+            folderBrowserDialogRpdAdd.InitialDirectory = initDir;
+
+            if (folderBrowserDialogRpdAdd.ShowDialog() == DialogResult.OK) {
+                App.Config.RpdLastAddDir = folderBrowserDialogRpdAdd.SelectedPath;
+
+                var files = Directory.EnumerateFiles(App.Config.RpdLastAddDir, "*.docx", new EnumerationOptions() {
+                    RecurseSubdirectories = true,
+                    MaxRecursionDepth = 100
+                }).Except(App.RpdList.Select(r => r.Value.SourceFileName)).ToArray();
+                if (files.Any()) {
+                    LoadRpdFilesAsync(files);
+                }
+            }
+        }
+
+        private void iconToolStripButtonFosAddDir_Click(object sender, EventArgs e) {
+            var initDir = Directory.Exists(App.Config.FosLastAddDir) ? App.Config.FosLastAddDir : Environment.CurrentDirectory;
+            folderBrowserDialogFosAdd.InitialDirectory = initDir;
+
+            if (folderBrowserDialogFosAdd.ShowDialog() == DialogResult.OK) {
+                App.Config.FosLastAddDir = folderBrowserDialogFosAdd.SelectedPath;
+
+                var files = Directory.EnumerateFiles(App.Config.FosLastAddDir, "*.docx", new EnumerationOptions() {
+                    RecurseSubdirectories = true,
+                    MaxRecursionDepth = 100
+                }).Except(App.FosList.Select(r => r.Value.SourceFileName)).ToArray();
+                if (files.Any()) {
+                    LoadFosFilesAsync(files);
+                }
+            }
+        }
+
+        private void iconMenuItemRpdReportBase_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                var html = App.CreateRpdReportBase(rpdList);
+
+                AddReport("Описание РПД", html);
+            }
+        }
+
+        private void iconMenuItemRpdReportFosMatching_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
+            
+            if (rpdList.Any() && fosList.Any()) {
+                var html = App.CreateRpdReportFosMatching(rpdList, fosList);
+
+                AddReport("Сопоставление РПД с ФОС", html);
             }
         }
     }

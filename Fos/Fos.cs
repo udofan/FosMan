@@ -16,6 +16,8 @@ namespace FosMan {
     /// Описание ФОСа
     /// </summary>
     public class Fos : BaseObj {
+        CurriculumDiscipline m_discipline = null;
+
         /// <summary>
         /// Ключ (по нему сравниваются РПД и ФОС)
         /// </summary>
@@ -85,6 +87,18 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public Dictionary<EEvaluationTool, List<EvaluationTool>> EvalTools { get; set; }
+        /// <summary>
+        /// Дисциплина (вынимается из УП - все должно быть загружено в App)
+        /// </summary>
+        [JsonIgnore]
+        public CurriculumDiscipline Discipline {
+            get {
+                if (m_discipline == null) {
+                    m_discipline = App.FindDiscipline(this);
+                }
+                return m_discipline;
+            }
+        }
         /// <summary>
         /// Выявленные ошибки
         /// </summary>

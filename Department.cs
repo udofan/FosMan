@@ -8,7 +8,7 @@ namespace FosMan {
     /// <summary>
     /// Описание кафедры
     /// </summary>
-    internal class Department : BaseObj {
+    public class Department : BaseObj {
         /// <summary>
         /// Название
         /// </summary>

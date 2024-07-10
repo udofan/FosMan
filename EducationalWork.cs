@@ -13,7 +13,7 @@ namespace FosMan {
     /// <summary>
     /// Описание учебной работы
     /// </summary>
-    internal class EducationalWork : BaseObj {
+    public class EducationalWork : BaseObj {
         /// <summary>
         /// Аксессор для типа для прямой работы со свойствами через их имя
         /// </summary>

@@ -5,6 +5,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Windows.Resources;
 using static FosMan.Enums;
 
 namespace FosMan {
@@ -27,6 +28,11 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public bool CompetenceMatrixAutoload { get; set; } = true;
+        /// <summary>
+        /// Последняя выбранная директория для добавления файлов
+        /// </summary>
+        [JsonInclude]
+        public string RpdLastAddDir { get; set; } = Directory.GetCurrentDirectory();
         /// <summary>
         /// Последняя выбранная локация РПД-файлов
         /// </summary>
@@ -167,6 +173,11 @@ namespace FosMan {
         [JsonInclude]
 
         public string RpdGenTargetDir { get; set; }
+        /// <summary>
+        /// Последняя выбранная директория для добавления файлов ФОС
+        /// </summary>
+        [JsonInclude]
+        public string FosLastAddDir { get; set; } = Directory.GetCurrentDirectory();
         /// <summary>
         /// Последняя выбранная локация ФОС-файлов
         /// </summary>

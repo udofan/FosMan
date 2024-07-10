@@ -35,7 +35,9 @@ using System.Windows;
 using System.Windows.Controls;
 //using System.Windows.Documents;
 using System.Windows.Media.Media3D;
+using System.Xml.XPath;
 using Xceed.Document.NET;
+using Xceed.Pdf.Atoms;
 using Xceed.Words.NET;
 using static FosMan.Enums;
 using static System.Resources.ResXFileRef;
@@ -364,7 +366,7 @@ namespace FosMan {
         public static void AddDiv(this StringBuilder report, string Summary, string color = null) {
             var style = "";
             if (!string.IsNullOrEmpty(color)) {
-                style = $"style: 'color: {color};'";
+                style = $"style='color: {color};'";
             }
             report.Append($"<div {style}>{Summary}</div>");
         }
@@ -473,8 +475,8 @@ namespace FosMan {
         /// <summary>
         /// Сформировать отчет по описанию РПД
         /// </summary>
-        public static string CreateRpdReport(List<Rpd> rpdList) {
-            StringBuilder html = new("<html><body><h2>Описание РПД</h2>");
+        public static string CreateRpdReportBase(List<Rpd> rpdList) {
+            StringBuilder html = new($"<html><body><h2>Описание РПД</h2>");
             StringBuilder toc = new("<div><ul>");
             StringBuilder rep = new("<div>");
             var sw = Stopwatch.StartNew();
@@ -504,6 +506,107 @@ namespace FosMan {
             html.Append("<p />");
             html.AddDiv($"<b>Список РПД:</b>");
             html.Append(toc).Append(rep).Append("</body></html>");
+
+            return html.ToString();
+        }
+
+        /// <summary>
+        /// Сформировать отчет по описанию РПД
+        /// </summary>
+        public static string CreateRpdReportFosMatching(List<Rpd> rpdList, List<Fos> fosList) {
+            StringBuilder html = new($"<html><body><h2>Сопоставление РПД с ФОС</h2>");
+            //StringBuilder toc = new("<div><ul>");
+            StringBuilder rep = new("<div>");
+            var sw = Stopwatch.StartNew();
+
+            var matchedPairs = new Dictionary<Rpd, Fos>();      //совпадающие пары (РПД-ФОС)
+            var orphanedRpdList = new List<Rpd>();              //РПД без ФОСов
+            var orphanedFosList = new List<Fos>();              //ФОСы без РПД
+
+            //выявление сопоставлений
+            var fosDic = fosList.ToDictionary(f => f.Key, f => f);
+            foreach (var rpd in rpdList) {
+                if (fosDic.TryGetValue(rpd.Key, out var fos)) {
+                    matchedPairs[rpd] = fos;
+                    fosDic.Remove(rpd.Key);
+                }
+                else {
+                    orphanedRpdList.Add(rpd);
+                }
+            }
+            orphanedFosList = fosDic.Values.ToList();
+
+            rep.AddDiv($"<b>Успешно сопоставленные РПД с ФОС (шт.): {matchedPairs.Count}</b>", "green");
+
+            //выдача списков сирот
+            rep.Append("<p />");
+            rep.AddDiv($"<b>Список РПД без ФОС ({orphanedRpdList.Count} шт.):</b>", "red");
+            orphanedRpdList.Sort((rpd1, rpd2) => {
+                var result = string.Compare($"{rpd1.DirectionCode}_{rpd1.Profile}", $"{rpd2.DirectionCode}_{rpd2.Profile}");
+                if (result == 0) {
+                    result = string.Compare(rpd1.Discipline?.DepartmentName, rpd2.Discipline?.DepartmentName);
+                    if (result == 0) {
+                        result = (rpd1.Discipline?.Number ?? 0) - (rpd2.Discipline?.Number ?? 0);
+                    }
+                }
+                return result;
+            });
+            
+            var tdStyle = " style='border: 1px solid;'";
+            var table = new StringBuilder(@$"<table {tdStyle}><tr style='font-weight: bold; background-color: lightgray'>");
+            table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Направление - Профиль</th><th {tdStyle}>Дисциплина</th><th {tdStyle}>Кафедра</th>");
+            table.Append("</tr>");
+
+            var idx = 0;
+            foreach (var rpd in orphanedRpdList) {
+                table.Append($"<tr {tdStyle}><td {tdStyle}>{++idx}</td><td {tdStyle}>{rpd.Discipline?.Curriculum?.DirectionCode ?? rpd.DirectionCode} " +
+                             $"{rpd.Discipline?.Curriculum?.DirectionName ?? rpd.DirectionName} - {rpd.Discipline?.Curriculum?.Profile ?? rpd.Profile}</td>" +
+                             $"<td {tdStyle}>{rpd.CurriculumDisciplineName ?? rpd.DisciplineName}</td>" +
+                             $"<td {tdStyle}>{rpd.Discipline?.DepartmentName ?? rpd.Department}</td>" +
+                             $"</tr>");
+            }
+            table.Append("</table>");
+            rep.Append(table);
+
+            //список ФОС без РПД
+            rep.Append("<p />");
+            rep.AddDiv($"<b>Список ФОС без РПД ({orphanedFosList.Count} шт.):</b>", "red");
+            orphanedFosList.Sort((fos1, fos2) => {
+                var result = string.Compare($"{fos1.DirectionCode}_{fos1.Profile}", $"{fos2.DirectionCode}_{fos2.Profile}");
+                if (result == 0) {
+                    result = string.Compare(fos1.Discipline?.DepartmentName, fos2.Discipline?.DepartmentName);
+                    if (result == 0) {
+                        result = (fos1.Discipline?.Number ?? 0) - (fos2.Discipline?.Number ?? 0);
+                    }
+                }
+                return result;
+            });
+
+            var table2 = new StringBuilder(@$"<table {tdStyle}><tr style='font-weight: bold; background-color: lightgray'>");
+            table2.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Направление - Профиль</th><th {tdStyle}>Дисциплина</th><th {tdStyle}>Кафедра</th>");
+            table2.Append("</tr>");
+
+            idx = 0;
+            foreach (var fos in orphanedFosList) {
+                table2.Append($"<tr {tdStyle}><td {tdStyle}>{++idx}</td><td {tdStyle}>{fos.Discipline?.Curriculum?.DirectionCode ?? fos.DirectionCode} " +
+                              $"{fos.Discipline?.Curriculum?.DirectionName ?? fos.DirectionName} - {fos.Discipline?.Curriculum?.Profile ?? fos.Profile}</td>" +
+                              $"<td {tdStyle}>{fos.Discipline?.Name ?? fos.DisciplineName}</td>" +
+                              $"<td {tdStyle}>{fos.Discipline?.DepartmentName ?? fos.Department}</td>" +
+                              $"</tr>");
+            }
+            table2.Append("</table>");
+            rep.Append(table2);
+
+            rep.Append("</div>");
+            //toc.Append("</ul></div>");
+            html.AddDiv($"Дата: {DateTime.Now}");
+            html.AddDiv($"РПД (шт.): {rpdList.Count}");
+            html.AddDiv($"ФОС (шт.): {fosList.Count}");
+            html.AddDiv($"Время работы: {sw.Elapsed}");
+            html.Append("<p />");
+            //html.AddDiv($"<b>Список РПД:</b>");
+            //html.Append(toc).Append(rep).Append("</body></html>");
+            html.Append(rep).Append("</body></html>");
 
             return html.ToString();
         }

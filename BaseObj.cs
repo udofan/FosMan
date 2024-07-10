@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms.VisualStyles;
+using System.Windows.Input;
 using Xceed.Pdf.Atoms;
 
 namespace FosMan {
@@ -90,49 +91,69 @@ namespace FosMan {
             }
         }
 
-        internal string GetPropertyHtml(string propName) {
-            var value = "";
-
-            var propValue = GetProperty(propName);
-            if (propValue is BaseObj propBaseObj) {
-                value = propBaseObj.GetPropertiesHtml();
+        /// <summary>
+        /// Получить значение свойства для html-отчета
+        /// </summary>
+        /// <param name="propName"></param>
+        /// <returns></returns>
+        internal string GetPropertyHtml(string propName, Stack<object> objStack = null) {
+            objStack ??= new();
+            if (objStack.Contains(this)) {
+                return "<span style='color: red'>Обнаружена рекурсия</span>";
             }
-            else {
-                if (propValue is IDictionary dict) {
-                    foreach (var key in dict.Keys) {
-                        //if (value.Length > 0) value += "<br />";
-                        
-                        var item = dict[key];
-                        if (item is BaseObj itemBaseObj) {
-                            value += $"<details open><summary>{key}</summary>";
-                            value += itemBaseObj.GetPropertiesHtml();
-                            value += "</details>";
-                        }
-                        else {
-                            if (value.Length > 0) value += "<br />";
-                            value += $"{key}: {item ?? "null"}";
-                        }
-                        
-                    }
-                }
-                else if (!(propValue is string) && (propValue is IEnumerable list)) { // list || propValue is ISet set) {
-                    var idx = 0;
-                    foreach (var item in list) {
-                        //if (value.Length > 0) value += "<br />";
-                        if (item is BaseObj itemBaseObj) {
-                            value += $"<details open><summary>{idx++}</summary>";
-                            value += itemBaseObj.GetPropertiesHtml();
-                            value += "</details>";
-                        }
-                        else {
-                            if (value.Length > 0) value += "<br />";
-                            value += $"{idx++}: {item ?? "null"}";
-                        }
-                    }
+
+            objStack.Push(this);
+            var value = "";
+            try {
+                var propValue = GetProperty(propName);
+                if (propValue is BaseObj propBaseObj) {
+                    value = $"<details><summary>{propName}</summary>";
+                    value += propBaseObj.GetPropertiesHtml(objStack);
+                    value += "</details>";
                 }
                 else {
-                    value = propValue?.ToString() ?? "null";
+                    if (propValue is IDictionary dict) {
+                        foreach (var key in dict.Keys) {
+                            //if (value.Length > 0) value += "<br />";
+
+                            var item = dict[key];
+                            if (item is BaseObj itemBaseObj) {
+                                value += $"<details><summary>{key}</summary>";
+                                value += itemBaseObj.GetPropertiesHtml(objStack);
+                                value += "</details>";
+                            }
+                            else {
+                                if (value.Length > 0) value += "<br />";
+                                value += $"{key}: {item ?? "<span style='color: red'>null</span>"}";
+                            }
+
+                        }
+                    }
+                    else if (!(propValue is string) && (propValue is IEnumerable list)) { // list || propValue is ISet set) {
+                        var idx = 0;
+                        foreach (var item in list) {
+                            //if (value.Length > 0) value += "<br />";
+                            if (item is BaseObj itemBaseObj) {
+                                value += $"<details><summary>{idx++}</summary>";
+                                value += itemBaseObj.GetPropertiesHtml(objStack);
+                                value += "</details>";
+                            }
+                            else {
+                                if (value.Length > 0) value += "<br />";
+                                value += $"{idx++}: {item ?? "<span style='color: red'>null</span>"}";
+                            }
+                        }
+                    }
+                    else {
+                        value = propValue?.ToString() ?? "<span style='color: red'>null</span>";
+                    }
                 }
+            }
+            catch (Exception ex) {
+                value = $"<span style='color: red'>{ex.Message}<br />{ex.StackTrace}</span>";
+            }
+            finally {
+                objStack.Pop();
             }
 
             return value;
@@ -142,7 +163,9 @@ namespace FosMan {
         /// Формирование html-разметки со значениями свойств
         /// </summary>
         /// <returns></returns>
-        internal string GetPropertiesHtml() {
+        internal string GetPropertiesHtml(Stack<object> objStack = null) {
+            objStack ??= new();
+
             var tdStyle = " style='border: 1px solid;'";
             var table = new StringBuilder(@$"<table {tdStyle}><tr style='font-weight: bold; background-color: lightgray'>");
             table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Свойство</th><th {tdStyle}>Значение</th>");
@@ -151,7 +174,7 @@ namespace FosMan {
             var props = GetPropertySet(); // rpd.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
             var propIdx = 0;
             foreach (var prop in props) {
-                var propValue = GetPropertyHtml(prop.Name);
+                var propValue = GetPropertyHtml(prop.Name, objStack);
 
                 table.Append($"<tr><td {tdStyle}>{++propIdx}</td><td {tdStyle}><b>{prop.Name}</b></td><td {tdStyle}>{propValue}</td></tr>");
                 //    propIdx++;

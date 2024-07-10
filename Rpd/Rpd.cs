@@ -17,8 +17,9 @@ using static FosMan.Enums;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FosMan {
-    internal class Rpd : BaseObj {
-        string m_curriculumDisciplineName = null;
+    public class Rpd : BaseObj {
+        //string m_curriculumDisciplineName = null;
+        CurriculumDiscipline m_discipline = null;
 
         //Кафедра
         static Regex m_regexDepartment = new(@"Кафедра\s+(.+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -184,17 +185,7 @@ namespace FosMan {
         /// Название дисциплины из УП (может немного отличаться)
         /// </summary>
         [JsonInclude]
-        public string CurriculumDisciplineName {
-            get {
-                if (m_curriculumDisciplineName == null) {
-                    var discipline = App.FindDiscipline(this);
-                    if (discipline != null) {
-                        m_curriculumDisciplineName = discipline.Name;
-                    }
-                }
-                return m_curriculumDisciplineName;
-            }
-        }
+        public string CurriculumDisciplineName => Discipline?.Name;
         /// <summary>
         /// Профиль
         /// </summary>
@@ -267,6 +258,18 @@ namespace FosMan {
                     topics = string.Join(" ", eduWork.Modules.Select(m => $"{m.Topic}{(m.Topic.EndsWith('.') ? "" : ".")}"));
                 }
                 return topics;
+            }
+        }
+        /// <summary>
+        /// Дисциплина (вынимается из УП - все должно быть загружено в App)
+        /// </summary>
+        [JsonIgnore]
+        public CurriculumDiscipline Discipline {
+            get {
+                if (m_discipline == null) {
+                    m_discipline = App.FindDiscipline(this);
+                }
+                return m_discipline;
             }
         }
         /// <summary>

@@ -16,7 +16,8 @@ namespace FosMan {
             new FosParseRuleDisciplineName(),
             new FosParseRuleDirection(),
             new FosParseRuleFormsOfStudy(),
-            new FosParseRuleProfile(), 
+            new FosParseRuleProfileInline(),
+            new FosParseRuleProfileMultiline(),
             new FosParseRuleEvaluationTools()
         };
 
