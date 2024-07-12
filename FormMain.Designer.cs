@@ -241,6 +241,7 @@
             openFileDialogFileFixer = new OpenFileDialog();
             folderBrowserDialogRpdAdd = new FolderBrowserDialog();
             folderBrowserDialogFosAdd = new FolderBrowserDialog();
+            iconMenuItemRpdReportCheckByCurricula = new FontAwesome.Sharp.IconMenuItem();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
             toolStripCompetenceMatrix.SuspendLayout();
@@ -748,7 +749,7 @@
             // 
             // iconDropDownButton1
             // 
-            iconDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { iconMenuItemRpdReportBase, iconMenuItemRpdReportFosMatching });
+            iconDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { iconMenuItemRpdReportBase, iconMenuItemRpdReportFosMatching, iconMenuItemRpdReportCheckByCurricula });
             iconDropDownButton1.IconChar = FontAwesome.Sharp.IconChar.Clipboard;
             iconDropDownButton1.IconColor = Color.DarkBlue;
             iconDropDownButton1.IconFont = FontAwesome.Sharp.IconFont.Auto;
@@ -777,7 +778,7 @@
             iconMenuItemRpdReportFosMatching.Name = "iconMenuItemRpdReportFosMatching";
             iconMenuItemRpdReportFosMatching.Size = new Size(219, 30);
             iconMenuItemRpdReportFosMatching.Text = "Сопоставление с ФОС";
-            iconMenuItemRpdReportFosMatching.ToolTipText = "Отчёт с инфой о сопоставлении РПД с ФОС\r\n(требуется предварительная загрузка всех РПД и ФОС)";
+            iconMenuItemRpdReportFosMatching.ToolTipText = "Отчёт с инфой о сопоставлении РПД с ФОС\r\n(требуется предварительная загрузка всех УП, РПД и ФОС)";
             iconMenuItemRpdReportFosMatching.Click += iconMenuItemRpdReportFosMatching_Click;
             // 
             // toolStripSeparator4
@@ -824,7 +825,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 645);
+            splitContainerRpd.Size = new Size(1251, 646);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -1327,7 +1328,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 201);
+            fastObjectListViewRpdList.Size = new Size(1251, 202);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -2700,6 +2701,17 @@
             openFileDialogFileFixer.Filter = "Word-файлы|*.docx|Все файлы|*.*";
             openFileDialogFileFixer.Multiselect = true;
             // 
+            // iconMenuItemRpdReportCheckByCurricula
+            // 
+            iconMenuItemRpdReportCheckByCurricula.IconChar = FontAwesome.Sharp.IconChar.ClipboardCheck;
+            iconMenuItemRpdReportCheckByCurricula.IconColor = Color.DarkBlue;
+            iconMenuItemRpdReportCheckByCurricula.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconMenuItemRpdReportCheckByCurricula.Name = "iconMenuItemRpdReportCheckByCurricula";
+            iconMenuItemRpdReportCheckByCurricula.Size = new Size(219, 30);
+            iconMenuItemRpdReportCheckByCurricula.Text = "Проверка по УП";
+            iconMenuItemRpdReportCheckByCurricula.ToolTipText = "Проверка РПД по УП с отчётом";
+            iconMenuItemRpdReportCheckByCurricula.Click += iconMenuItemRpdReportCheckByCurricula_Click;
+            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
@@ -3013,5 +3025,6 @@
         private FontAwesome.Sharp.IconDropDownButton iconDropDownButton1;
         private FontAwesome.Sharp.IconMenuItem iconMenuItemRpdReportBase;
         private FontAwesome.Sharp.IconMenuItem iconMenuItemRpdReportFosMatching;
+        private FontAwesome.Sharp.IconMenuItem iconMenuItemRpdReportCheckByCurricula;
     }
 }

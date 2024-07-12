@@ -76,7 +76,7 @@ namespace FosMan {
                     if (row.Cells.Count > TableColIndexCompetenceIndicators) {
                         CompetenceIndicators = [];
                         //определим индикаторы
-                        var indicators = row.Cells[TableColIndexCompetenceIndicators].GetText(",")
+                        var indicators = row.Cells[TableColIndexCompetenceIndicators].GetText(joinParText: ",")
                             .Split([',','\n'], options: StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                         foreach (var indicator in indicators) {
                             if (CompetenceAchievement.TryParseIndicator(indicator, out var achi)) {
@@ -87,7 +87,7 @@ namespace FosMan {
                             }
                         }
                         //определим список вопросов
-                        var allText = row.Cells[TableColIndexItems].GetText("\r\n", applyTrim: true);
+                        var allText = row.Cells[TableColIndexItems].GetText(joinParText: "\r\n", applyTrim: true);
                         if (!string.IsNullOrEmpty(allText)) {
 
                             //var par = row.Cells[TableColIndexItems].Paragraphs.FirstOrDefault();

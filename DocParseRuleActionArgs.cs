@@ -30,5 +30,9 @@ namespace FosMan {
         /// Текущий параграф документа
         /// </summary>
         public Paragraph Paragraph { get; set; }
+        /// <summary>
+        /// Документ docx
+        /// </summary>
+        public Document Document { get; set; }
     }
 }

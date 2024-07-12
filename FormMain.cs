@@ -900,11 +900,7 @@ namespace FosMan {
 
         private void fastObjectListViewCurricula_ItemActivate(object sender, EventArgs e) {
             if (fastObjectListViewCurricula.FocusedObject is Curriculum curriculum) {
-                var p = new Process();
-                p.StartInfo = new ProcessStartInfo(curriculum.SourceFileName) {
-                    UseShellExecute = true
-                };
-                p.Start();
+                OpenFile(curriculum.SourceFileName);
             }
         }
 
@@ -1629,11 +1625,7 @@ namespace FosMan {
 
         private void fastObjectListViewRpdList_ItemActivate(object sender, EventArgs e) {
             if (fastObjectListViewRpdList.FocusedObject is Rpd rpd) {
-                var p = new Process();
-                p.StartInfo = new ProcessStartInfo(rpd.SourceFileName) {
-                    UseShellExecute = true
-                };
-                p.Start();
+                OpenFile(rpd.SourceFileName);
             }
         }
 
@@ -2192,11 +2184,7 @@ namespace FosMan {
 
         private void fastObjectListViewFosList_ItemActivate(object sender, EventArgs e) {
             if (fastObjectListViewFosList.FocusedObject is Fos fos) {
-                var p = new Process();
-                p.StartInfo = new ProcessStartInfo(fos.SourceFileName) {
-                    UseShellExecute = true
-                };
-                p.Start();
+                OpenFile(fos.SourceFileName);
             }
         }
 
@@ -2705,11 +2693,22 @@ namespace FosMan {
         private void iconMenuItemRpdReportFosMatching_Click(object sender, EventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
-            
+
             if (rpdList.Any() && fosList.Any()) {
                 var html = App.CreateRpdReportFosMatching(rpdList, fosList);
 
                 AddReport("Сопоставление РПД с ФОС", html);
+            }
+        }
+
+        private void iconMenuItemRpdReportCheckByCurricula_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
+
+            if (rpdList.Any() && fosList.Any()) {
+                var html = App.CreateReportRpdAndFosCheckByCurricula(rpdList, fosList);
+
+                AddReport("Проверка РПД по УП", html);
             }
         }
     }

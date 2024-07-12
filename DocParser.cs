@@ -53,7 +53,13 @@ namespace FosMan {
                         
                         //цикл по параграфам
                         foreach (var par in docx.Paragraphs) {
-                            var text = par.Text.Trim(' ', '\r', '\n', '\t');
+                            var text = par.GetText(docx).Trim(' ', '\r', '\n', '\t');
+                            //if (par.IsListItem) {
+                            //    //var tt = par.GetListItemNumber();
+                            //    if (!string.IsNullOrEmpty(text) && par.GetListItemNumber() != null) {
+                            //        var tt = par.GetText(docx);     //отладка
+                            //    }
+                            //}
 
                             if (catchingRule != null) { //если в режиме отлова строк для правила catchingRule
                                 if (catchingRule.StopMarkers == null) {
@@ -73,7 +79,7 @@ namespace FosMan {
                                     }
                                     //захват будем считать завершенным, когда было захвачено значение
                                     if (catchingValue.Length > 0) {
-                                        ApplyValue(catchingRule, null, targetObj, text, catchingValue.ToString(), par, errors);
+                                        ApplyValue(catchingRule, null, targetObj, text, catchingValue.ToString(), par, docx, errors);
                                         catchingValue.Clear();
                                         catchingRule = null; //сброс правила-ловца строк
                                     }
@@ -97,7 +103,7 @@ namespace FosMan {
                                         }
                                         //инлайн поиск значения
                                         if (rule.Type == EParseType.Inline) {
-                                            ApplyValue(rule, m, targetObj, text, null, par, errors);
+                                            ApplyValue(rule, m, targetObj, text, null, par, docx, errors);
                                         }
                                         else if (rule.Type == EParseType.Multiline) {
                                             catchingValue.Clear();
@@ -137,6 +143,7 @@ namespace FosMan {
                                          string text,
                                          string value,
                                          Paragraph par,
+                                         Document doc,
                                          ErrorList errors) where T : BaseObj {
             if (!string.IsNullOrEmpty(rule.PropertyName)) {
                 if (ruleMatch.HasValue) {
@@ -162,7 +169,8 @@ namespace FosMan {
                     Match = ruleMatch.Value.match,
                     Text = text,
                     Value = value,
-                    Paragraph = par
+                    Paragraph = par,
+                    Document = doc
                 };
                 rule.Action.Invoke(args);
             }

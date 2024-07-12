@@ -684,7 +684,7 @@ namespace FosMan {
                                                 var tt = 0;
                                             }
                                             try {
-                                                module.Topic = table.Rows[row].Cells[cellIdx].GetText();
+                                                module.Topic = table.Rows[row].Cells[cellIdx].GetText(docx);
                                             }
                                             catch (Exception exx) {
                                                 var tt = 0;
@@ -694,7 +694,7 @@ namespace FosMan {
                                             module.EvaluationTools = [];
                                             //var counts = table.Rows.Select(r => r.Cells.Count).ToList();
                                             //module.Topic = table.Rows[row].Cells[col].GetText();
-                                            foreach (var t in table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';')) {
+                                            foreach (var t in table.Rows[row].Cells[cellIdx].GetText(docx, ",").Split(',', '\n', ';')) {
                                                 //убираем лишние пробелы
                                                 if (Enums.EvalToolDic.TryGetValue(normalizeText(t), out var tool)) {
                                                     //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
@@ -712,7 +712,7 @@ namespace FosMan {
                                             }
                                         }
                                         if (col == eduWork.TableColCompetenceResults) { //результаты обучения - компетенции
-                                            module.CompetenceResultCodes = table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';').ToHashSet();
+                                            module.CompetenceResultCodes = table.Rows[row].Cells[cellIdx].GetText(docx, ",").Split(',', '\n', ';').ToHashSet();
                                         }
                                         col += table.Rows[row].Cells[cellIdx].GridSpan + 1; //переход на след. ячейку с учетом объединений
                                         cellIdx++;                                          //индексы ячеек последовательны
@@ -1155,7 +1155,7 @@ namespace FosMan {
                                                 */
                                             }
                                             if (col == eduWork.TableColCompetenceResults) { //результаты обучения - компетенции
-                                                module.CompetenceResultCodes = table.Rows[row].Cells[cellIdx].GetText(",").Split(',', '\n', ';').ToHashSet();
+                                                module.CompetenceResultCodes = table.Rows[row].Cells[cellIdx].GetText(docx, ",").Split(',', '\n', ';').ToHashSet();
                                             }
                                             col += table.Rows[row].Cells[cellIdx].GridSpan + 1; //переход на след. ячейку с учетом объединений
                                             cellIdx++;                                          //индексы ячеек последовательны

@@ -19,8 +19,8 @@
     <PackageReference Include="FastMemberMT" Version="8.0.0" />
     <PackageReference Include="FontAwesome.Sharp" Version="6.3.0" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2592.51" />
-    <PackageReference Include="ObjectListView.Repack.NET6Plus" Version="2.9.4" />
-    <PackageReference Include="System.Text.Json" Version="8.0.3" />
+    <PackageReference Include="ObjectListView.Repack.NET6Plus" Version="2.9.5" />
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
     <PackageReference Include="Xceed.Words.NET" Version="3.0.24152.1219" />
   </ItemGroup>
 	

@@ -33,7 +33,6 @@ using System.Transactions;
 using System.Web;
 using System.Windows;
 using System.Windows.Controls;
-//using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using System.Xml.XPath;
 using Xceed.Document.NET;
@@ -57,6 +56,8 @@ namespace FosMan {
     /// Загруженные данные
     /// </summary>
     static internal class App {
+        const int DISCIPLINE_ALLOWED_TYPO_COUNT = 2;    //допустимое кол-во опечаток для выявления соответствия названия дисциплин
+        const int EVAL_TOOLS_WARN_COUNT = 2;            //кол-во оценочных средства, при которых выдавать ошибку (<=)
         //const string FIXED_RPD_DIRECTORY = "FixedRpd";
         //const string CONFIG_FILENAME = "appconfig.json";
 
@@ -255,29 +256,31 @@ namespace FosMan {
         /// <param name="cell"></param>
         /// <param name="joinParText"></param>
         /// <returns></returns>
-        static public string GetText(this Cell cell, string joinParText = " ", bool applyTrim = true) {
+        static public string GetText(this Cell cell, Document doc = null, string joinParText = " ", bool applyTrim = true) {
             //var sw = Stopwatch.StartNew();
             //var sw2 = new Stopwatch();
             //var sw3 = new Stopwatch();
 
-            //var docProp = cell.GetType().GetProperty("Document", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetProperty);
-            //if (docProp != null) {
-            //    var doc = docProp.GetValue(cell) as Xceed.Document.NET.Document;
-            //    var tt = doc.Lists;
-            //}
+            if (doc == null) {
+                var docProp = cell.GetType().GetProperty("Document", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetProperty);
+                if (docProp != null) {
+                    doc = docProp.GetValue(cell) as Xceed.Document.NET.Document;
+                }
+            }
 
             var text = new StringBuilder();
 
             foreach (var par in cell.Paragraphs) {
                 //sw3.Start();
-                var parText = applyTrim ? par.Text.Trim() : par.Text;
+                //var parText = applyTrim ? par.Text.Trim() : par.Text;
+                var parText = applyTrim ? par.GetText(doc).Trim() : par.GetText(doc);
                 //sw3.Stop();
 
-                if (par.IsListItem && par.ListItemType == ListItemType.Numbered) {
-                    //sw2.Start();
-                    parText = $"{par.GetListItemNumber()} {parText}";
-                    //sw2.Stop();
-                }
+                //if (par.IsListItem && par.ListItemType == ListItemType.Numbered) {
+                //    //sw2.Start();
+                //    parText = $"{par.GetListItemNumber()} {parText}";
+                //    //sw2.Stop();
+                //}
                 if (text.Length > 0) text.Append(joinParText);
                 text.Append(parText);
             }
@@ -606,6 +609,90 @@ namespace FosMan {
             html.Append("<p />");
             //html.AddDiv($"<b>Список РПД:</b>");
             //html.Append(toc).Append(rep).Append("</body></html>");
+            html.Append(rep).Append("</body></html>");
+
+            return html.ToString();
+        }
+
+        /// <summary>
+        /// Сформировать html-разметку с таблицей дисциплин из УП
+        /// </summary>
+        /// <param name="curriculum"></param>
+        /// <param name="disciplineType"></param>
+        /// <param name="blockNum"></param>
+        /// <param name="rpdList"></param>
+        /// <returns></returns>
+        static string CreateHtmlTableForDisciplines(Curriculum curriculum, EDisciplineType disciplineType, int blockNum, List<Rpd> rpdList, List<Fos> fosList) {
+            var disciplines = curriculum.Disciplines.Values
+                                .Where(d => d.Type == disciplineType && d.BlockNum == blockNum)
+                                .OrderBy(x => x.Number)
+                                .ToList();
+
+            var html = new StringBuilder($"<h3>Дисциплины типа [{disciplineType.GetDescription()}] ({disciplines.Count} шт.):</h3>");
+
+            var tdStyle = " style='border: 1px solid;'";
+            var table = new StringBuilder(@"<table style='border: 1px solid'><tr style='font-weight: bold; background-color: lightgray'>");
+            table.Append($"<th {tdStyle}>№ п/п</th><th {tdStyle}>Индекс</th><th {tdStyle}>Название</th><th {tdStyle}>Кафедра</th>" +
+                         $"<th {tdStyle}>Наличие РПД</th><th {tdStyle}>Наличие ФОС</th>");
+            table.Append("</tr>");
+
+            var idx = 0;
+            var tdStyleCheck = "style='background-color: lightgreen; text-align: center'";
+            var tdStyleTimes = "style='background-color: lightpink; text-align: center'";
+            var spanCheck = "<span style='color: green'>&check;</span>";
+            var spanTimes = "<span style='color: red'>&times;</span>";
+            foreach (var disc in disciplines) {
+                var rpd = FindRpd(disc, rpdList);
+                var fos = FindFos(disc, fosList);
+                var discNameStyle = "style='background-color: lightgreen;'";
+                var rpdStyle = rpd != null ? tdStyleCheck : tdStyleTimes;
+                var fosStyle = fos != null ? tdStyleCheck : tdStyleTimes;
+                var rpdMatch = rpd != null ? spanCheck : spanTimes;
+                var fosMatch = fos != null ? spanCheck : spanTimes;
+
+                table.Append($"<tr {tdStyle}><td {tdStyle}>{++idx}</td><td {tdStyle}>{disc.Index}</td><td {tdStyle}>{disc.Name}</td>" +
+                             $"<td {tdStyle}>{disc.DepartmentName}</td><td {rpdStyle}>{rpdMatch}</td><td {fosStyle}>{fosMatch}</td></tr>");
+            }
+
+            table.Append("</table>");
+            html.Append(table);
+
+            return html.ToString();
+        }
+
+        /// <summary>
+        /// Проверка РПД и ФОС по УП с отчетом
+        /// </summary>
+        /// <param name="rpdList"></param>
+        /// <returns></returns>
+        public static string CreateReportRpdAndFosCheckByCurricula(List<Rpd> rpdList, List<Fos> fosList) {
+            StringBuilder html = new($"<html><body><h2>Проверка РПД и ФОС по УП</h2>");
+            //StringBuilder toc = new("<div><ul>");
+            StringBuilder rep = new("<div>");
+            var sw = Stopwatch.StartNew();
+
+            //обязательные дисциплины
+            var curricula = FindCurricula(rpdList.FirstOrDefault());
+            var curriculum = curricula?.Values.FirstOrDefault(c => c.FormOfStudy == EFormOfStudy.FullTime);
+            if (curriculum == null) {
+                rep.AddError("УП не найдены. Их загрузка осуществляется на вкладке \"Учебные планы\".");
+            }
+            else {
+                rep.AddDiv($"Направление: {curriculum.DirectionCode} {curriculum.DirectionName}");
+                rep.AddDiv($"Профиль: {curriculum.Profile}");
+
+                rep.Append(CreateHtmlTableForDisciplines(curriculum, EDisciplineType.Required, 1, rpdList, fosList));
+                rep.Append(CreateHtmlTableForDisciplines(curriculum, EDisciplineType.Variable, 1, rpdList, fosList));
+                rep.Append(CreateHtmlTableForDisciplines(curriculum, EDisciplineType.ByChoice, 1, rpdList, fosList));
+                rep.Append(CreateHtmlTableForDisciplines(curriculum, EDisciplineType.Optional, -1, rpdList, fosList));
+            }
+            rep.Append("</div>");
+            //toc.Append("</ul></div>");
+            html.AddDiv($"Дата: {DateTime.Now}");
+            html.AddDiv($"РПД в списке: {rpdList.Count}");
+            html.AddDiv($"ФОС в списке: {fosList.Count}");
+            html.AddDiv($"Время работы: {sw.Elapsed}");
+            html.Append("<p />");
             html.Append(rep).Append("</body></html>");
 
             return html.ToString();
@@ -976,9 +1063,9 @@ namespace FosMan {
                                                 }
                                             }
                                         }
-                                        if (uniqueEvalTools.Count < 3) {
+                                        if (uniqueEvalTools.Count <= EVAL_TOOLS_WARN_COUNT) {
                                             if (msg.Length > 0) msg += "<br />";
-                                            msg += $"Слишком маленький список применяемых оценочных средств ({uniqueEvalTools.Count} шт.): " +
+                                            msg += $"Маленький список применяемых оценочных средств ({uniqueEvalTools.Count} шт.): " +
                                                    $"{string.Join(", ", uniqueEvalTools.Select(t => t.GetDescription()))}";
                                         }
                                     }
@@ -1229,9 +1316,33 @@ namespace FosMan {
                         }
                         return (string.IsNullOrEmpty(msg), msg);
                     });
-                    //todo
-                    //из РПД вынимать таблицу тем (с учетом объединения ячеек)
-                    //сравнивать ее с паспортом ФОС
+                    ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Проверка паспорта: оценочные средства", (fos, rpd) => {
+                        var msg = "";
+                        //сравниваем списки оц. средств
+                        var toolsBody = fos.EvalTools.Keys.ToList();
+                        var toolsPassport = new List<EEvaluationTool>();
+                        fos.Passport.ForEach(m => toolsPassport.AddRange(m.EvaluationTools ?? []));
+
+                        if (toolsBody.Count <= EVAL_TOOLS_WARN_COUNT) {
+                            if (msg.Length > 0) msg += "<br />";
+                            //msg += $"Недостаточное количество оценочных средств в документе";
+                            msg += $"Маленький список применяемых оценочных средств в документе ({toolsBody.Count} шт.): " +
+                                   $"{string.Join(", ", toolsBody.Select(t => t.GetDescription()))}";
+                        }
+                        if (toolsPassport.Count <= EVAL_TOOLS_WARN_COUNT) {
+                            if (msg.Length > 0) msg += "<br />";
+                            //msg += $"Недостаточное количество оценочных средств в документе";
+                            msg += $"Маленький список применяемых оценочных средств в паспорте ({toolsPassport.Count} шт.): " +
+                                   $"{string.Join(", ", toolsPassport.Select(t => t.GetDescription()))}";
+                        }
+
+                        if (toolsPassport.Except(toolsBody).Any() && toolsBody.Except(toolsPassport).Any()) {
+                            if (msg.Length > 0) msg += "<br />";
+                            msg += $"Оценочные средства в паспорте отличаются от фактических в документе";
+                        }
+
+                        return (string.IsNullOrEmpty(msg), msg);
+                    });
 
                     table.Append("</table>");
                     rep.Append(table);
@@ -1603,25 +1714,139 @@ namespace FosMan {
             return files;
         }
 
+        /// Computes and returns the Damerau-Levenshtein edit distance between two strings, 
+        /// i.e. the number of insertion, deletion, sustitution, and transposition edits
+        /// required to transform one string to the other. This value will be >= 0, where 0
+        /// indicates identical strings. Comparisons are case sensitive, so for example, 
+        /// "Fred" and "fred" will have a distance of 1. This algorithm is basically the
+        /// Levenshtein algorithm with a modification that considers transposition of two
+        /// adjacent characters as a single edit.
+        /// http://blog.softwx.net/2015/01/optimizing-damerau-levenshtein_15.html
+        /// </summary>
+        /// <remarks>See http://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance
+        /// Note that this is based on Sten Hjelmqvist's "Fast, memory efficient" algorithm, described
+        /// at http://www.codeproject.com/Articles/13525/Fast-memory-efficient-Levenshtein-algorithm.
+        /// This version differs by including some optimizations, and extending it to the Damerau-
+        /// Levenshtein algorithm.
+        /// Note that this is the simpler and faster optimal string alignment (aka restricted edit) distance
+        /// that difers slightly from the classic Damerau-Levenshtein algorithm by imposing the restriction
+        /// that no substring is edited more than once. So for example, "CA" to "ABC" has an edit distance
+        /// of 2 by a complete application of Damerau-Levenshtein, but a distance of 3 by this method that
+        /// uses the optimal string alignment algorithm. See wikipedia article for more detail on this
+        /// distinction.
+        /// https://blog.softwx.net/2015/01/optimizing-damerau-levenshtein_15.html
+        /// </remarks>
+        /// <param name="s">String being compared for distance.</param>
+        /// <param name="t">String being compared against other string.</param>
+        /// <param name="maxDistance">The maximum edit distance of interest.</param>
+        /// <returns>int edit distance, >= 0 representing the number of edits required
+        /// to transform one string to the other, or -1 if the distance is greater than the specified maxDistance.</returns>
+        public static int DamLev(this string s, string t, int maxDistance = int.MaxValue) {
+            if (String.IsNullOrEmpty(s)) return ((t ?? "").Length <= maxDistance) ? (t ?? "").Length : -1;
+            if (String.IsNullOrEmpty(t)) return (s.Length <= maxDistance) ? s.Length : -1;
+
+            // if strings of different lengths, ensure shorter string is in s. This can result in a little
+            // faster speed by spending more time spinning just the inner loop during the main processing.
+            if (s.Length > t.Length) {
+                var temp = s; s = t; t = temp; // swap s and t
+            }
+            int sLen = s.Length; // this is also the minimun length of the two strings
+            int tLen = t.Length;
+
+            // suffix common to both strings can be ignored
+            while ((sLen > 0) && (s[sLen - 1] == t[tLen - 1])) { sLen--; tLen--; }
+
+            int start = 0;
+            if ((s[0] == t[0]) || (sLen == 0)) { // if there's a shared prefix, or all s matches t's suffix
+                                                 // prefix common to both strings can be ignored
+                while ((start < sLen) && (s[start] == t[start])) start++;
+                sLen -= start; // length of the part excluding common prefix and suffix
+                tLen -= start;
+
+                // if all of shorter string matches prefix and/or suffix of longer string, then
+                // edit distance is just the delete of additional characters present in longer string
+                if (sLen == 0) return (tLen <= maxDistance) ? tLen : -1;
+
+                t = t.Substring(start, tLen); // faster than t[start+j] in inner loop below
+            }
+            int lenDiff = tLen - sLen;
+            if ((maxDistance < 0) || (maxDistance > tLen)) {
+                maxDistance = tLen;
+            }
+            else if (lenDiff > maxDistance) return -1;
+
+            var v0 = new int[tLen];
+            var v2 = new int[tLen]; // stores one level further back (offset by +1 position)
+            int j;
+            for (j = 0; j < maxDistance; j++) v0[j] = j + 1;
+            for (; j < tLen; j++) v0[j] = maxDistance + 1;
+
+            int jStartOffset = maxDistance - (tLen - sLen);
+            bool haveMax = maxDistance < tLen;
+            int jStart = 0;
+            int jEnd = maxDistance;
+            char sChar = s[0];
+            int current = 0;
+            for (int i = 0; i < sLen; i++) {
+                char prevsChar = sChar;
+                sChar = s[start + i];
+                char tChar = t[0];
+                int left = i;
+                current = left + 1;
+                int nextTransCost = 0;
+                // no need to look beyond window of lower right diagonal - maxDistance cells (lower right diag is i - lenDiff)
+                // and the upper left diagonal + maxDistance cells (upper left is i)
+                jStart += (i > jStartOffset) ? 1 : 0;
+                jEnd += (jEnd < tLen) ? 1 : 0;
+                for (j = jStart; j < jEnd; j++) {
+                    int above = current;
+                    int thisTransCost = nextTransCost;
+                    nextTransCost = v2[j];
+                    v2[j] = current = left; // cost of diagonal (substitution)
+                    left = v0[j];    // left now equals current cost (which will be diagonal at next iteration)
+                    char prevtChar = tChar;
+                    tChar = t[j];
+                    if (sChar != tChar) {
+                        if (left < current) current = left;   // insertion
+                        if (above < current) current = above; // deletion
+                        current++;
+                        if ((i != 0) && (j != 0)
+                            && (sChar == prevtChar)
+                            && (prevsChar == tChar)) {
+                            thisTransCost++;
+                            if (thisTransCost < current) current = thisTransCost; // transposition
+                        }
+                    }
+                    v0[j] = current;
+                }
+                if (haveMax && (v0[i + lenDiff] > maxDistance)) return -1;
+            }
+            return (current <= maxDistance) ? current : -1;
+        }
+
         /// <summary>
         /// Поиск РПД по дисциплине
         /// </summary>
         /// <param name="disc"></param>
         /// <returns></returns>
-        public static Rpd? FindRpd(CurriculumDiscipline disc) {
-            //var name = disc.Name.Replace('ё', 'е').ToLower();
-
-            //var rpd = m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').Equals(name));
-            //rpd ??= m_rpdDic.Values.FirstOrDefault(d => d.DisciplineName.ToLower().Replace('ё', 'е').StartsWith(name));
-            //rpd ??= m_rpdDic.Values.FirstOrDefault(d => name.StartsWith(d.DisciplineName.ToLower().Replace('ё', 'е')));
-
+        public static Rpd? FindRpd(CurriculumDiscipline disc, IEnumerable<Rpd> rpdList = null) {
             var name = NormalizeName(disc.Name);
 
-            var rpd = m_rpdDic.Values.FirstOrDefault(d => NormalizeName(d.DisciplineName).Equals(name));
-            rpd ??= m_rpdDic.Values.FirstOrDefault(d => NormalizeName(d.DisciplineName).StartsWith(name));
-            rpd ??= m_rpdDic.Values.FirstOrDefault(d => name.StartsWith(NormalizeName(d.DisciplineName)));
+            rpdList ??= m_rpdDic.Values;
 
-            return rpd; //m_rpdDic.Values.FirstOrDefault(r => r.DisciplineName.Equals(disc.Name, StringComparison.CurrentCultureIgnoreCase));
+            Rpd rpd = null;
+            foreach (var item in rpdList) {
+                var discName = NormalizeName(item.DisciplineName);
+                if (discName.Equals(name) ||
+                    discName.StartsWith(name) ||
+                    name.StartsWith(discName) ||
+                    discName.DamLev(name) <= DISCIPLINE_ALLOWED_TYPO_COUNT) { //проверка с учётом опечаток
+                    rpd = item;
+                    break;
+                }
+            }
+
+            return rpd;
         }
 
         /// <summary>
@@ -1630,6 +1855,31 @@ namespace FosMan {
         /// <param name="disc"></param>
         /// <returns></returns>
         public static Rpd? FindRpd(Fos fos) => m_rpdDic.Values.FirstOrDefault(d => d.Key.Equals(fos.Key));
+
+        /// <summary>
+        /// Поиск ФОС по дисциплине
+        /// </summary>
+        /// <param name="disc"></param>
+        /// <returns></returns>
+        public static Fos? FindFos(CurriculumDiscipline disc, IEnumerable<Fos> fosList = null) {
+            var name = NormalizeName(disc.Name);
+
+            fosList ??= m_fosDic.Values;
+
+            Fos fos = null;
+            foreach (var item in fosList) {
+                var discName = NormalizeName(item.DisciplineName);
+                if (discName.Equals(name) ||
+                    discName.StartsWith(name) ||
+                    name.StartsWith(discName) ||
+                    discName.DamLev(name) <= DISCIPLINE_ALLOWED_TYPO_COUNT) { //проверка с учётом опечаток
+                    fos = item;
+                    break;
+                }
+            }
+
+            return fos;
+        }
 
         /// <summary>
         /// Поиск ФОС по РПД
@@ -3798,7 +4048,7 @@ namespace FosMan {
         }
 
         /// <summary>
-        /// Нормализация имени ("Основы микро- и макроэкономики" -> "ОСНОВЫМИКРОИМАКРОЭКОНОМИКИ")
+        /// Нормализация имени ("Основы микро- и макроэкономики" -> "ОСНОВЫМИКРОИМАКРОЭКОНОМИКИ", замена Ё на Е)
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -4008,7 +4258,7 @@ namespace FosMan {
                         for (var row = 1; row < table.RowCount; row++) {
                             //var evalTools = table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';');
                             HashSet<EEvaluationTool> tools = [];
-                            foreach (var t in table.Rows[row].Cells[3].GetText(",").Split(',', '\n', ';')) {
+                            foreach (var t in table.Rows[row].Cells[3].GetText(joinParText: ",").Split(',', '\n', ';')) {
                                 //убираем лишние пробелы
                                 if (Enums.EvalToolDic.TryGetValue(NormalizeText(t), out var tool)) {
                                  //var normalizedText = string.Join(" ", t.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToUpper();
@@ -4022,7 +4272,7 @@ namespace FosMan {
 
                             passport.Add(new() {
                                 Topic = table.Rows[row].Cells[1].GetText(),
-                                CompetenceResultCodes = [.. table.Rows[row].Cells[2].GetText(",").Split(',', '\n', ';')],
+                                CompetenceResultCodes = [.. table.Rows[row].Cells[2].GetText(joinParText: ",").Split(',', '\n', ';')],
                                 EvaluationTools = tools
                             });
                         }
@@ -4238,6 +4488,24 @@ namespace FosMan {
                                         "Итоговый файл:", targetFile);
 
             return targetFile;
+        }
+
+        /// <summary>
+        /// Открытие файла
+        /// </summary>
+        /// <param name="fileName"></param>
+        internal static void OpenFile(string fileName) {
+            try {
+                var p = new Process();
+                p.StartInfo = new ProcessStartInfo(fileName) {
+                    UseShellExecute = true
+                };
+                p.Start();
+            }
+            catch (Exception ex) {
+                System.Windows.MessageBox.Show($"Не удалось открыть файл\n{fileName}\n\n{ex.Message}\n{ex.StackTrace}", "Ошибка", 
+                                               MessageBoxButton.OK, MessageBoxImage.Stop);
+            }
         }
     }
 }
