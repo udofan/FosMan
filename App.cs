@@ -380,9 +380,14 @@ namespace FosMan {
                 $" style='text-decoration: underline; cursor: hand; color: blue'>{fileName}</span></div>");
         }
 
-        static void AddTocElement(this StringBuilder toc, string element, string anchor, int errorCount) {
-            var color = errorCount > 0 ? "red" : "green";
-            toc.Append($"<li><a href='#{anchor}'><span style='color:{color};'>{element} (ошибок: {errorCount})</span></a></li>");
+        static void AddTocElement(this StringBuilder toc, string element, string anchor, int count, 
+                                  bool boldIfNonZero = false, 
+                                  string colorIfZero = "green", 
+                                  string colorIfNonZero = "red",
+                                  string countName = "ошибок") {
+            var color = count > 0 ? colorIfNonZero : colorIfZero;
+            toc.Append($"<li>{(boldIfNonZero && count > 0 ? "<b>" : "")}<a href='#{anchor}'><span style='color:{color};'>{element} ({countName}: {count})</span>" +
+                       $"</a>{(boldIfNonZero && count > 0 ? "</b>" : "")}</li>");
         }
 
         /// <summary>
@@ -4506,6 +4511,48 @@ namespace FosMan {
                 System.Windows.MessageBox.Show($"Не удалось открыть файл\n{fileName}\n\n{ex.Message}\n{ex.StackTrace}", "Ошибка", 
                                                MessageBoxButton.OK, MessageBoxImage.Stop);
             }
+        }
+
+        /// <summary>
+        /// Поиск текста (выражения) в файлах
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="files"></param>
+        /// <returns></returns>
+        internal static string FindTextInFiles(string pattern, IEnumerable<FileFixerItem> files) {
+            StringBuilder html = new($"<html><body><h2>Поиск текста (выражения) в файлах</h2>");
+            StringBuilder toc = new("<div><ul>");
+            StringBuilder rep = new("<div>");
+            var sw = Stopwatch.StartNew();
+
+            var idx = 0;
+            foreach (var file in files) {
+                var anchor = $"file{idx}";
+                idx++;
+
+                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{file.FileName ?? "?"}</h3>");
+                rep.Append("<div style='padding-left: 30px'>");
+                rep.AddFileLink($"Файл:", file.FullFileName);
+
+                var matchCount = file.FindAllEntries(pattern, out var fileRep);
+
+                rep.Append(fileRep);
+                rep.Append("</div></div>");
+
+                toc.AddTocElement(file.FileName ?? "?", anchor, matchCount, true, "black", "black", "вхождений");
+            }
+
+            rep.Append("</div>");
+            toc.Append("</ul></div>");
+            html.AddDiv($"Дата: {DateTime.Now}");
+            html.AddDiv($"Файлов в списке: {files.Count()}");
+            html.AddDiv($"Поисковое выражение: {pattern}");
+            html.AddDiv($"Время работы: {sw.Elapsed}");
+            html.Append("<p />");
+            html.AddDiv($"<b>Список файлов:</b>");
+            html.Append(toc).Append(rep).Append("</body></html>");
+
+            return html.ToString();
         }
     }
 }

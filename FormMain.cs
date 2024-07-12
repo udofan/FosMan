@@ -523,13 +523,13 @@ namespace FosMan {
 
         void TuneFileFixerFileList(FastObjectListView list) {
             var olvColumnDir = new OLVColumn("Директория", "DirectoryName") {
-                Width = 300,
+                Width = 500,
                 IsEditable = false//, 
                 //GroupKeyGetter = x => ((FileFixerItem)x).DirectoryName
             };
             list.Columns.Add(olvColumnDir);
             list.Columns.Add(new OLVColumn("Файл", "FileName") {
-                Width = 300,
+                Width = 500,
                 //FillsFreeSpace = true,
                 IsEditable = false
             });
@@ -2337,8 +2337,11 @@ namespace FosMan {
             var newFiles = files.Where(f => !oldFiles.Contains(f) && File.Exists(f));
 
             if (newFiles.Any()) {
+                var newItems = newFiles.Select(f => new FileFixerItem(f, fileType)).ToList();
                 fastObjectListViewFileFixerFiles.BeginUpdate();
-                fastObjectListViewFileFixerFiles.AddObjects(newFiles.Select(f => new FileFixerItem(f, fileType)).ToList());
+                fastObjectListViewFileFixerFiles.AddObjects(newItems);
+                fastObjectListViewFileFixerFiles.SelectedObjects = newItems;
+                fastObjectListViewFileFixerFiles.EnsureModelVisible(newItems.FirstOrDefault());
                 fastObjectListViewFileFixerFiles.EndUpdate();
             }
         }
@@ -2352,8 +2355,11 @@ namespace FosMan {
             var newFiles = rpdList.Where(f => !oldFiles.Contains(f.SourceFileName) && File.Exists(f.SourceFileName));
 
             if (newFiles.Any()) {
+                var newItems = newFiles.Select(f => new FileFixerItem(f)).ToList();
                 fastObjectListViewFileFixerFiles.BeginUpdate();
-                fastObjectListViewFileFixerFiles.AddObjects(newFiles.Select(f => new FileFixerItem(f)).ToList());
+                fastObjectListViewFileFixerFiles.AddObjects(newItems);
+                fastObjectListViewFileFixerFiles.SelectedObjects = newItems;
+                fastObjectListViewFileFixerFiles.EnsureModelVisible(newItems.FirstOrDefault());
                 fastObjectListViewFileFixerFiles.EndUpdate();
             }
         }
@@ -2367,8 +2373,11 @@ namespace FosMan {
             var newFiles = fosList.Where(f => !oldFiles.Contains(f.SourceFileName) && File.Exists(f.SourceFileName));
 
             if (newFiles.Any()) {
+                var newItems = newFiles.Select(f => new FileFixerItem(f)).ToList();
                 fastObjectListViewFileFixerFiles.BeginUpdate();
-                fastObjectListViewFileFixerFiles.AddObjects(newFiles.Select(f => new FileFixerItem(f)).ToList());
+                fastObjectListViewFileFixerFiles.AddObjects(newItems);
+                fastObjectListViewFileFixerFiles.SelectedObjects = newItems;
+                fastObjectListViewFileFixerFiles.EnsureModelVisible(newItems.FirstOrDefault());
                 fastObjectListViewFileFixerFiles.EndUpdate();
             }
         }
@@ -2520,6 +2529,7 @@ namespace FosMan {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
                 AddRpdFilesToFileFixerMode(rpdList);
+                tabControl1.SelectedTab = tabPageFileFixer;
             }
         }
 
@@ -2527,6 +2537,7 @@ namespace FosMan {
             var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
             if (fosList.Any()) {
                 AddFosFilesToFileFixerMode(fosList);
+                tabControl1.SelectedTab = tabPageFileFixer;
             }
         }
 
@@ -2709,6 +2720,36 @@ namespace FosMan {
                 var html = App.CreateReportRpdAndFosCheckByCurricula(rpdList, fosList);
 
                 AddReport("Проверка РПД по УП", html);
+            }
+        }
+
+        private void iconToolStripButtonFileFixerFind_Click(object sender, EventArgs e) {
+            var files = fastObjectListViewFileFixerFiles.SelectedObjects?.Cast<FileFixerItem>()?.ToList();
+            if (files.Count == 0) return;
+
+            if (!string.IsNullOrEmpty(toolStripTextBoxFileFixerFind.Text)) {
+                var report = App.FindTextInFiles(toolStripTextBoxFileFixerFind.Text, files);
+
+                AddReport("Поиск текста в файлах", report);
+            }
+        }
+
+        private void iconToolStripButtonFileFixerRun_Click(object sender, EventArgs e) {
+
+        }
+
+        private void toolStripTextBoxFileFixerFind_KeyDown(object sender, KeyEventArgs e) {
+            if (e.KeyCode == Keys.Enter) {
+                iconToolStripButtonFileFixerFind.PerformClick();
+            }
+        }
+
+        private void FormMain_KeyDown(object sender, KeyEventArgs e) {
+            if (tabControl1.SelectedTab == tabPageFileFixer) {
+                if (e.Control && e.KeyCode == Keys.F) {
+                    toolStripTextBoxFileFixerFind.SelectAll();
+                    toolStripTextBoxFileFixerFind.Focus();
+                }
             }
         }
     }

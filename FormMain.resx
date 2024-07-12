@@ -121,85 +121,85 @@
     <value>383, 55</value>
   </metadata>
   <metadata name="iconToolStripButtonCompetenceMatrixOpen.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>456, 129</value>
   </metadata>
   <metadata name="iconToolStripButtonComptenceMatrixReload.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>697, 55</value>
+    <value>17, 166</value>
   </metadata>
   <metadata name="iconToolStripButtonCompetenceMatrixAutoload.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>456, 80</value>
+    <value>552, 277</value>
   </metadata>
   <metadata name="toolStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>383, 55</value>
+    <value>914, 55</value>
   </metadata>
   <metadata name="iconToolStripButtonCurriculaOpen.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>1019, 55</value>
   </metadata>
   <metadata name="iconToolStripButtonCurriculaReload.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>697, 55</value>
+    <value>746, 129</value>
   </metadata>
   <metadata name="iconToolStripButtonCurriculaClear.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>913, 55</value>
+    <value>954, 166</value>
   </metadata>
   <metadata name="iconToolStripButtonCurriculaFromDb.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1120, 55</value>
+    <value>237, 203</value>
   </metadata>
   <metadata name="iconToolStripButtonCurriculaToDb.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1285, 55</value>
+    <value>1164, 203</value>
   </metadata>
   <metadata name="iconToolStripButtonCurriculaRememberList.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>456, 80</value>
+    <value>17, 277</value>
   </metadata>
   <metadata name="iconToolStripButtonCurriculaCheck.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 80</value>
+    <value>224, 240</value>
   </metadata>
   <metadata name="toolStripRpd.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>383, 55</value>
+    <value>794, 55</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdAddDir.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>17, 92</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdOpen.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>1255, 55</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdReload.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>697, 55</value>
+    <value>1202, 129</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdClear.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>913, 55</value>
+    <value>308, 166</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdFixToFileFixer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1120, 55</value>
+    <value>710, 203</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdFromDb.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1120, 55</value>
+    <value>487, 203</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdToDb.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1285, 55</value>
+    <value>17, 240</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdRememberList.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>456, 80</value>
+    <value>862, 277</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdCheck.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 80</value>
+    <value>464, 240</value>
   </metadata>
   <metadata name="iconDropDownButton1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 123</value>
+    <value>221, 314</value>
   </metadata>
   <metadata name="iconMenuItemRpdReportBase.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>193, 123</value>
+    <value>397, 314</value>
   </metadata>
   <metadata name="iconMenuItemRpdReportFosMatching.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>405, 123</value>
+    <value>609, 314</value>
   </metadata>
   <metadata name="iconMenuItemRpdReportCheckByCurricula.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>662, 123</value>
+    <value>866, 314</value>
   </metadata>
   <metadata name="iconToolStripButtonRpdFixMode.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>230, 80</value>
+    <value>1110, 240</value>
   </metadata>
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>632, 18</value>
+    <value>332, 17</value>
   </metadata>
   <data name="checkBoxRpdFixEduWorkTablesFixEvalTools.ToolTip" xml:space="preserve">
     <value>Автоматическое распределение оценочных средств.
@@ -209,88 +209,91 @@
 количества вариантов средства.</value>
   </data>
   <metadata name="toolStrip2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>383, 55</value>
+    <value>689, 55</value>
   </metadata>
   <metadata name="iconToolStripButtonFosAddDir.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>242, 129</value>
   </metadata>
   <metadata name="iconToolStripButtonFosOpen.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>234, 92</value>
   </metadata>
   <metadata name="iconToolStripButtonFosReload.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>697, 55</value>
+    <value>989, 129</value>
   </metadata>
   <metadata name="iconToolStripButtonFosClear.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>913, 55</value>
+    <value>750, 166</value>
   </metadata>
   <metadata name="iconToolStripButtonFosToFileFixer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1120, 55</value>
+    <value>1188, 166</value>
   </metadata>
   <metadata name="iconToolStripButtonFosFromDb.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1120, 55</value>
+    <value>17, 203</value>
   </metadata>
   <metadata name="iconToolStripButtonFosToDb.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1285, 55</value>
+    <value>960, 203</value>
   </metadata>
   <metadata name="iconToolStripButtonForRememberList.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>456, 80</value>
+    <value>300, 277</value>
   </metadata>
   <metadata name="iconToolStripButtonFosCheck.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 80</value>
+    <value>677, 240</value>
   </metadata>
   <metadata name="iconToolStripButtonFosFixMode.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>230, 80</value>
+    <value>887, 240</value>
   </metadata>
   <metadata name="toolStrip3.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>383, 55</value>
+    <value>584, 55</value>
   </metadata>
   <metadata name="iconToolStripButtonFileFixerAdd.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>1212, 92</value>
   </metadata>
   <metadata name="iconToolStripButtonFileFixerDelete.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>913, 55</value>
+    <value>515, 166</value>
   </metadata>
   <metadata name="iconToolStripButtonFileFixerSelectTargetDir.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>932, 92</value>
   </metadata>
   <metadata name="iconToolStripButtonFileFixerRun.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>709, 92</value>
   </metadata>
   <metadata name="iconToolStripButtonFileFixerDistribByDirs.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>488, 55</value>
+    <value>440, 92</value>
+  </metadata>
+  <metadata name="iconToolStripButtonFileFixerFind.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 129</value>
   </metadata>
   <metadata name="openFileDialogSelectCompetenceMatrixFile.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
+    <value>1023, 17</value>
   </metadata>
   <metadata name="openFileDialogSelectCurriculumFiles.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>21, 55</value>
   </metadata>
   <metadata name="openFileDialogSelectRpd.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1202, 7</value>
+    <value>838, 17</value>
   </metadata>
   <metadata name="openFileDialog4.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>156, 17</value>
+    <value>17, 17</value>
   </metadata>
   <metadata name="openFileDialogRpdTemplate.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>766, 13</value>
+    <value>429, 17</value>
   </metadata>
   <metadata name="folderBrowserDialogSelectDir.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>983, 13</value>
+    <value>631, 17</value>
   </metadata>
   <metadata name="statusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>268, 55</value>
   </metadata>
   <metadata name="openFileDialogFosSelect.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>777, 88</value>
+    <value>1118, 277</value>
   </metadata>
   <metadata name="openFileDialogFileFixer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>307, 16</value>
+    <value>156, 17</value>
   </metadata>
   <metadata name="folderBrowserDialogRpdAdd.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1169, 86</value>
+    <value>17, 314</value>
   </metadata>
   <metadata name="folderBrowserDialogFosAdd.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>959, 88</value>
+    <value>1300, 277</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>148</value>

@@ -70,6 +70,7 @@
             iconDropDownButton1 = new FontAwesome.Sharp.IconDropDownButton();
             iconMenuItemRpdReportBase = new FontAwesome.Sharp.IconMenuItem();
             iconMenuItemRpdReportFosMatching = new FontAwesome.Sharp.IconMenuItem();
+            iconMenuItemRpdReportCheckByCurricula = new FontAwesome.Sharp.IconMenuItem();
             toolStripSeparator4 = new ToolStripSeparator();
             iconToolStripButtonRpdFixMode = new FontAwesome.Sharp.IconToolStripButton();
             toolStripLabelRpdFosIndicator = new ToolStripLabel();
@@ -226,6 +227,9 @@
             iconToolStripButtonFileFixerRun = new FontAwesome.Sharp.IconToolStripButton();
             toolStripSeparator20 = new ToolStripSeparator();
             iconToolStripButtonFileFixerDistribByDirs = new FontAwesome.Sharp.IconToolStripButton();
+            toolStripSeparator22 = new ToolStripSeparator();
+            toolStripTextBoxFileFixerFind = new ToolStripTextBox();
+            iconToolStripButtonFileFixerFind = new FontAwesome.Sharp.IconToolStripButton();
             tabPageGenAbstracts = new TabPage();
             groupBox9 = new GroupBox();
             openFileDialogSelectCompetenceMatrixFile = new OpenFileDialog();
@@ -241,7 +245,6 @@
             openFileDialogFileFixer = new OpenFileDialog();
             folderBrowserDialogRpdAdd = new FolderBrowserDialog();
             folderBrowserDialogFosAdd = new FolderBrowserDialog();
-            iconMenuItemRpdReportCheckByCurricula = new FontAwesome.Sharp.IconMenuItem();
             tabControl1.SuspendLayout();
             tabPageCompetenceMatrix.SuspendLayout();
             toolStripCompetenceMatrix.SuspendLayout();
@@ -589,10 +592,10 @@
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainerRpd);
-            tabPageRpd.Location = new Point(4, 23);
+            tabPageRpd.Location = new Point(4, 24);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1257, 677);
+            tabPageRpd.Size = new Size(1257, 676);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "  РПД  ";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -781,6 +784,17 @@
             iconMenuItemRpdReportFosMatching.ToolTipText = "Отчёт с инфой о сопоставлении РПД с ФОС\r\n(требуется предварительная загрузка всех УП, РПД и ФОС)";
             iconMenuItemRpdReportFosMatching.Click += iconMenuItemRpdReportFosMatching_Click;
             // 
+            // iconMenuItemRpdReportCheckByCurricula
+            // 
+            iconMenuItemRpdReportCheckByCurricula.IconChar = FontAwesome.Sharp.IconChar.ClipboardCheck;
+            iconMenuItemRpdReportCheckByCurricula.IconColor = Color.DarkBlue;
+            iconMenuItemRpdReportCheckByCurricula.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconMenuItemRpdReportCheckByCurricula.Name = "iconMenuItemRpdReportCheckByCurricula";
+            iconMenuItemRpdReportCheckByCurricula.Size = new Size(219, 30);
+            iconMenuItemRpdReportCheckByCurricula.Text = "Проверка по УП";
+            iconMenuItemRpdReportCheckByCurricula.ToolTipText = "Проверка РПД по УП с отчётом";
+            iconMenuItemRpdReportCheckByCurricula.Click += iconMenuItemRpdReportCheckByCurricula_Click;
+            // 
             // toolStripSeparator4
             // 
             toolStripSeparator4.Name = "toolStripSeparator4";
@@ -825,7 +839,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 646);
+            splitContainerRpd.Size = new Size(1251, 647);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -1328,7 +1342,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 202);
+            fastObjectListViewRpdList.Size = new Size(1251, 203);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -2359,10 +2373,10 @@
             tabPageFileFixer.Controls.Add(groupBoxFileFixerFiles);
             tabPageFileFixer.Controls.Add(groupBoxFileFixerSettings);
             tabPageFileFixer.Controls.Add(toolStrip3);
-            tabPageFileFixer.Location = new Point(4, 24);
+            tabPageFileFixer.Location = new Point(4, 23);
             tabPageFileFixer.Name = "tabPageFileFixer";
             tabPageFileFixer.Padding = new Padding(3);
-            tabPageFileFixer.Size = new Size(1257, 676);
+            tabPageFileFixer.Size = new Size(1257, 677);
             tabPageFileFixer.TabIndex = 7;
             tabPageFileFixer.Text = "  Коррекция файлов  ";
             tabPageFileFixer.UseVisualStyleBackColor = true;
@@ -2374,7 +2388,7 @@
             groupBoxFileFixerFiles.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFileFixerFiles.Location = new Point(3, 230);
             groupBoxFileFixerFiles.Name = "groupBoxFileFixerFiles";
-            groupBoxFileFixerFiles.Size = new Size(1251, 450);
+            groupBoxFileFixerFiles.Size = new Size(1251, 454);
             groupBoxFileFixerFiles.TabIndex = 18;
             groupBoxFileFixerFiles.TabStop = false;
             groupBoxFileFixerFiles.Text = "Файлы";
@@ -2388,7 +2402,7 @@
             fastObjectListViewFileFixerFiles.Location = new Point(3, 18);
             fastObjectListViewFileFixerFiles.Name = "fastObjectListViewFileFixerFiles";
             fastObjectListViewFileFixerFiles.ShowGroups = false;
-            fastObjectListViewFileFixerFiles.Size = new Size(1245, 429);
+            fastObjectListViewFileFixerFiles.Size = new Size(1245, 433);
             fastObjectListViewFileFixerFiles.TabIndex = 2;
             fastObjectListViewFileFixerFiles.UseFilterIndicator = true;
             fastObjectListViewFileFixerFiles.UseFiltering = true;
@@ -2523,7 +2537,7 @@
             // 
             toolStrip3.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             toolStrip3.ImageScalingSize = new Size(24, 24);
-            toolStrip3.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFileFixerAdd, toolStripSeparator18, iconToolStripButtonFileFixerDelete, toolStripSeparator16, toolStripLabel1, toolStripTextBoxFileFixerTargetDir, iconToolStripButtonFileFixerSelectTargetDir, toolStripSeparator17, iconToolStripButtonFileFixerRun, toolStripSeparator20, iconToolStripButtonFileFixerDistribByDirs });
+            toolStrip3.Items.AddRange(new ToolStripItem[] { iconToolStripButtonFileFixerAdd, toolStripSeparator18, iconToolStripButtonFileFixerDelete, toolStripSeparator16, toolStripLabel1, toolStripTextBoxFileFixerTargetDir, iconToolStripButtonFileFixerSelectTargetDir, toolStripSeparator17, iconToolStripButtonFileFixerRun, toolStripSeparator20, iconToolStripButtonFileFixerDistribByDirs, toolStripSeparator22, toolStripTextBoxFileFixerFind, iconToolStripButtonFileFixerFind });
             toolStrip3.Location = new Point(3, 3);
             toolStrip3.Name = "toolStrip3";
             toolStrip3.Size = new Size(1251, 31);
@@ -2608,6 +2622,7 @@
             iconToolStripButtonFileFixerRun.Size = new Size(72, 28);
             iconToolStripButtonFileFixerRun.Text = "Запуск";
             iconToolStripButtonFileFixerRun.ToolTipText = "Запуск процедуры коррекции файлов";
+            iconToolStripButtonFileFixerRun.Click += iconToolStripButtonFileFixerRun_Click;
             // 
             // toolStripSeparator20
             // 
@@ -2626,6 +2641,31 @@
             iconToolStripButtonFileFixerDistribByDirs.Text = "Распределить файлы";
             iconToolStripButtonFileFixerDistribByDirs.ToolTipText = "Распределить копии файлов по директориям";
             iconToolStripButtonFileFixerDistribByDirs.Click += iconToolStripButtonFileFixerDistribByDirs_Click;
+            // 
+            // toolStripSeparator22
+            // 
+            toolStripSeparator22.Name = "toolStripSeparator22";
+            toolStripSeparator22.Size = new Size(6, 31);
+            // 
+            // toolStripTextBoxFileFixerFind
+            // 
+            toolStripTextBoxFileFixerFind.Name = "toolStripTextBoxFileFixerFind";
+            toolStripTextBoxFileFixerFind.Size = new Size(150, 31);
+            toolStripTextBoxFileFixerFind.ToolTipText = "Текст (регулярное выражение) для поиска\r\n[Enter] = поиск\r\n[Ctrl+F] = установка фокуса в данное поле";
+            toolStripTextBoxFileFixerFind.KeyDown += toolStripTextBoxFileFixerFind_KeyDown;
+            // 
+            // iconToolStripButtonFileFixerFind
+            // 
+            iconToolStripButtonFileFixerFind.IconChar = FontAwesome.Sharp.IconChar.Search;
+            iconToolStripButtonFileFixerFind.IconColor = Color.DarkBlue;
+            iconToolStripButtonFileFixerFind.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconToolStripButtonFileFixerFind.IconSize = 24;
+            iconToolStripButtonFileFixerFind.ImageTransparentColor = Color.Magenta;
+            iconToolStripButtonFileFixerFind.Name = "iconToolStripButtonFileFixerFind";
+            iconToolStripButtonFileFixerFind.Size = new Size(69, 28);
+            iconToolStripButtonFileFixerFind.Text = "Поиск";
+            iconToolStripButtonFileFixerFind.ToolTipText = "Поиск текстовых вхождений в файлах:\r\n* поддерживаются регулярные выражения;\r\n* регистр символов игнорируется.";
+            iconToolStripButtonFileFixerFind.Click += iconToolStripButtonFileFixerFind_Click;
             // 
             // tabPageGenAbstracts
             // 
@@ -2671,6 +2711,11 @@
             // toolTip1
             // 
             toolTip1.AutomaticDelay = 300;
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 300;
+            toolTip1.IsBalloon = true;
+            toolTip1.ReshowDelay = 60;
+            toolTip1.ToolTipIcon = ToolTipIcon.Info;
             // 
             // statusStrip1
             // 
@@ -2701,17 +2746,6 @@
             openFileDialogFileFixer.Filter = "Word-файлы|*.docx|Все файлы|*.*";
             openFileDialogFileFixer.Multiselect = true;
             // 
-            // iconMenuItemRpdReportCheckByCurricula
-            // 
-            iconMenuItemRpdReportCheckByCurricula.IconChar = FontAwesome.Sharp.IconChar.ClipboardCheck;
-            iconMenuItemRpdReportCheckByCurricula.IconColor = Color.DarkBlue;
-            iconMenuItemRpdReportCheckByCurricula.IconFont = FontAwesome.Sharp.IconFont.Auto;
-            iconMenuItemRpdReportCheckByCurricula.Name = "iconMenuItemRpdReportCheckByCurricula";
-            iconMenuItemRpdReportCheckByCurricula.Size = new Size(219, 30);
-            iconMenuItemRpdReportCheckByCurricula.Text = "Проверка по УП";
-            iconMenuItemRpdReportCheckByCurricula.ToolTipText = "Проверка РПД по УП с отчётом";
-            iconMenuItemRpdReportCheckByCurricula.Click += iconMenuItemRpdReportCheckByCurricula_Click;
-            // 
             // FormMain
             // 
             AutoScaleDimensions = new SizeF(7F, 14F);
@@ -2720,11 +2754,13 @@
             Controls.Add(statusStrip1);
             Controls.Add(tabControl1);
             Font = new Font("Tahoma", 9F);
+            KeyPreview = true;
             Name = "FormMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Менеджер РПД и ФОС";
             FormClosed += FormMain_FormClosed;
             Load += FormMain_Load;
+            KeyDown += FormMain_KeyDown;
             tabControl1.ResumeLayout(false);
             tabPageCompetenceMatrix.ResumeLayout(false);
             tabPageCompetenceMatrix.PerformLayout();
@@ -3026,5 +3062,8 @@
         private FontAwesome.Sharp.IconMenuItem iconMenuItemRpdReportBase;
         private FontAwesome.Sharp.IconMenuItem iconMenuItemRpdReportFosMatching;
         private FontAwesome.Sharp.IconMenuItem iconMenuItemRpdReportCheckByCurricula;
+        private ToolStripSeparator toolStripSeparator22;
+        private ToolStripTextBox toolStripTextBoxFileFixerFind;
+        private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFileFixerFind;
     }
 }
