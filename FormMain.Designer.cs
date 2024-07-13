@@ -592,10 +592,10 @@
             // 
             tabPageRpd.Controls.Add(toolStripRpd);
             tabPageRpd.Controls.Add(splitContainerRpd);
-            tabPageRpd.Location = new Point(4, 24);
+            tabPageRpd.Location = new Point(4, 23);
             tabPageRpd.Name = "tabPageRpd";
             tabPageRpd.Padding = new Padding(3);
-            tabPageRpd.Size = new Size(1257, 676);
+            tabPageRpd.Size = new Size(1257, 677);
             tabPageRpd.TabIndex = 0;
             tabPageRpd.Text = "  РПД  ";
             tabPageRpd.UseVisualStyleBackColor = true;
@@ -839,7 +839,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 647);
+            splitContainerRpd.Size = new Size(1251, 648);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -1342,7 +1342,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 203);
+            fastObjectListViewRpdList.Size = new Size(1251, 204);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -2388,7 +2388,7 @@
             groupBoxFileFixerFiles.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFileFixerFiles.Location = new Point(3, 230);
             groupBoxFileFixerFiles.Name = "groupBoxFileFixerFiles";
-            groupBoxFileFixerFiles.Size = new Size(1251, 454);
+            groupBoxFileFixerFiles.Size = new Size(1251, 455);
             groupBoxFileFixerFiles.TabIndex = 18;
             groupBoxFileFixerFiles.TabStop = false;
             groupBoxFileFixerFiles.Text = "Файлы";
@@ -2402,7 +2402,7 @@
             fastObjectListViewFileFixerFiles.Location = new Point(3, 18);
             fastObjectListViewFileFixerFiles.Name = "fastObjectListViewFileFixerFiles";
             fastObjectListViewFileFixerFiles.ShowGroups = false;
-            fastObjectListViewFileFixerFiles.Size = new Size(1245, 433);
+            fastObjectListViewFileFixerFiles.Size = new Size(1245, 434);
             fastObjectListViewFileFixerFiles.TabIndex = 2;
             fastObjectListViewFileFixerFiles.UseFilterIndicator = true;
             fastObjectListViewFileFixerFiles.UseFiltering = true;

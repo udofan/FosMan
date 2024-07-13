@@ -2516,15 +2516,6 @@ namespace FosMan {
             }
         }
 
-        private void iconToolStripButtonRpdReport_Click(object sender, EventArgs e) {
-            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
-            if (rpdList.Any()) {
-                var html = App.CreateRpdReportBase(rpdList);
-
-                AddReport("Отчёт по РПД", html);
-            }
-        }
-
         private void iconToolStripButtonRpdFixToFileFixer_Click(object sender, EventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
@@ -2695,7 +2686,7 @@ namespace FosMan {
         private void iconMenuItemRpdReportBase_Click(object sender, EventArgs e) {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
-                var html = App.CreateRpdReportBase(rpdList);
+                var html = Reports.CreateRpdReportBase(rpdList);
 
                 AddReport("Описание РПД", html);
             }
@@ -2706,7 +2697,7 @@ namespace FosMan {
             var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
 
             if (rpdList.Any() && fosList.Any()) {
-                var html = App.CreateRpdReportFosMatching(rpdList, fosList);
+                var html = Reports.CreateRpdReportFosMatching(rpdList, fosList);
 
                 AddReport("Сопоставление РПД с ФОС", html);
             }
@@ -2717,7 +2708,7 @@ namespace FosMan {
             var fosList = fastObjectListViewFosList.SelectedObjects?.Cast<Fos>().ToList();
 
             if (rpdList.Any() && fosList.Any()) {
-                var html = App.CreateReportRpdAndFosCheckByCurricula(rpdList, fosList);
+                var html = Reports.CreateReportRpdAndFosCheckByCurricula(rpdList, fosList);
 
                 AddReport("Проверка РПД по УП", html);
             }

@@ -350,6 +350,7 @@ namespace FosMan {
             this.PrevDisciplines = "";
             this.Profile = "";
             this.Year = "";
+            this.m_discipline = null;
         }
 
         /// <summary>

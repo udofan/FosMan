@@ -336,42 +336,49 @@ namespace FosMan {
         internal static string GetListItemNumberFast(this Paragraph par, Document doc, string textFormat = null) {
             string text = null;
             if (par.IsListItem && par.ListItemType == ListItemType.Numbered) {
-                CacheDoc(doc);
+                try {
+                    CacheDoc(doc);
 
-                if (m_cacheListParagraphs.TryGetValue(doc, out var parCache)) {
-                    if (parCache.TryGetValue(par, out var listInfo)) {
-                        var levelConfig = listInfo.list.ListOptions.LevelsConfigs[par.IndentLevel.Value];
-                        var num = listInfo.parIndex + (levelConfig.StartNumber ?? 1);
-                        textFormat ??= levelConfig.NumberingLevelText;
-                        
-                        text = levelConfig.NumberingFormat switch {
-                            NumberingFormat.decimalNormal => num.ToString(),
-                            NumberingFormat.lowerLetter => ((char)((num - 1) % 26 + 97)).ToString(),
-                            NumberingFormat.upperLetter => ((char)((num - 1) % 26 + 65)).ToString(),
-                            NumberingFormat.lowerRoman => ConvertIntToRoman(num, isCapital: false),
-                            NumberingFormat.upperRoman => ConvertIntToRoman(num, isCapital: true),
-                            NumberingFormat.russianLower => ((char)((num - 1) % 33 + (int)'а')).ToString(),
-                            NumberingFormat.russianUpper => ((char)((num - 1) % 33 + (int)'А')).ToString(),
-                            _ => null
-                        };
-                        if (textFormat != null) {
-                            int num2 = levelConfig.NumberingLevelText.LastIndexOf("%");
-                            if (num2 >= 0) {
-                                textFormat = textFormat.Remove(num2, 2).Insert(num2, text);
-                            }
-                            if (textFormat.Contains("%")) {
-                                //ищем первый параграф уровнем выше
-                                if (m_cacheListLevels.TryGetValue(doc, out var listCache) &&
-                                    listCache.TryGetValue(listInfo.list.NumId, out var levelCache) &&
-                                    levelCache.TryGetValue(par.IndentLevel.Value - 1, out var upperLevelPar)) {
-                                    return upperLevelPar.GetListItemNumberFast(doc, textFormat);
+                    if (m_cacheListParagraphs.TryGetValue(doc, out var parCache)) {
+                        if (parCache.TryGetValue(par, out var listInfo)) {
+                            var levelIdx = Math.Min(par.IndentLevel.Value, listInfo.list.ListOptions.LevelsConfigs.Count - 1);
+                            var levelConfig = listInfo.list.ListOptions.LevelsConfigs[levelIdx];
+                            var num = listInfo.parIndex + (levelConfig.StartNumber ?? 1);
+                            textFormat ??= levelConfig.NumberingLevelText;
 
+                            text = levelConfig.NumberingFormat switch {
+                                NumberingFormat.decimalNormal => num.ToString(),
+                                NumberingFormat.lowerLetter => ((char)((num - 1) % 26 + 97)).ToString(),
+                                NumberingFormat.upperLetter => ((char)((num - 1) % 26 + 65)).ToString(),
+                                NumberingFormat.lowerRoman => ConvertIntToRoman(num, isCapital: false),
+                                NumberingFormat.upperRoman => ConvertIntToRoman(num, isCapital: true),
+                                NumberingFormat.russianLower => ((char)((num - 1) % 33 + (int)'а')).ToString(),
+                                NumberingFormat.russianUpper => ((char)((num - 1) % 33 + (int)'А')).ToString(),
+                                _ => null
+                            };
+                            if (textFormat != null) {
+                                int num2 = levelConfig.NumberingLevelText.LastIndexOf("%");
+                                if (num2 >= 0) {
+                                    textFormat = textFormat.Remove(num2, 2).Insert(num2, text);
                                 }
-                            }
+                                if (textFormat.Contains("%")) {
+                                    //ищем первый параграф уровнем выше
+                                    if (m_cacheListLevels.TryGetValue(doc, out var listCache) &&
+                                        listCache.TryGetValue(listInfo.list.NumId, out var levelCache) &&
+                                        levelCache.TryGetValue(par.IndentLevel.Value - 1, out var upperLevelPar)) {
+                                        return upperLevelPar.GetListItemNumberFast(doc, textFormat);
 
-                            return textFormat;
+                                    }
+                                }
+
+                                return textFormat;
+                            }
                         }
                     }
+                }
+                catch {
+                    //исп. дефолтный метод, если наш сломался
+                    return par.GetListItemNumber();
                 }
             }
 

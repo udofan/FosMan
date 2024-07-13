@@ -145,6 +145,7 @@ namespace FosMan {
             this.TableOfCompetence1 = null;
             this.TableOfCompetence2 = null;
             this.TableOfPassport = null;
+            this.m_discipline = null;
         }
 
         /// <summary>
