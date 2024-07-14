@@ -163,9 +163,17 @@ namespace FosMan {
                                 .OrderBy(x => x.Number)
                                 .ToList();
 
-            var html = new StringBuilder($"<h3>Дисциплины типа [{disciplineType.GetDescription()}] ({disciplines.Count} шт.):</h3>");
-            var table = CreateHtmlTableForDisciplines(disciplines, rpdList, fosList);
+            var table = CreateHtmlTableForDisciplines(disciplines, rpdList, fosList, out var matchedRpdCount, out var matchedFosCount);
+            
+            var html = new StringBuilder($"<h3 style='background-color: lightsteelblue'>Дисциплины типа [{disciplineType.GetDescription()}] ({disciplines.Count} шт.)</h3>");
+            var rpdMatchPercent = matchedRpdCount * 100 / disciplines.Count;
+            var fosMatchPercent = matchedFosCount * 100 / disciplines.Count;
+            html.AddDiv($"<b>РПД в наличии: {matchedRpdCount} ({rpdMatchPercent}%)</b>");
+            html.AddDiv($"<b>ФОС в наличии: {matchedFosCount} ({fosMatchPercent}%)</b>");
+
+            html.Append("<details><summary>Таблица</summary>");
             html.Append(table);
+            html.Append("</details>");
 
             return html.ToString();
         }
@@ -178,7 +186,11 @@ namespace FosMan {
         /// <param name="blockNum"></param>
         /// <param name="rpdList"></param>
         /// <returns></returns>
-        static string CreateHtmlTableForDisciplines(IEnumerable<CurriculumDiscipline> disciplines, List<Rpd> rpdList, List<Fos> fosList) {
+        static string CreateHtmlTableForDisciplines(IEnumerable<CurriculumDiscipline> disciplines, 
+                                                    List<Rpd> rpdList, 
+                                                    List<Fos> fosList,
+                                                    out int matchedRpdCount,
+                                                    out int matchedFosCount) {
             var html = new StringBuilder();
 
             var tdStyle = " style='border: 1px solid;'";
@@ -192,10 +204,15 @@ namespace FosMan {
             var spanCheck = "<span style='color: green'>&check;</span>";
             var spanTimes = "<span style='color: red'>&times;</span>";
 
+            matchedRpdCount = 0;
+            matchedFosCount = 0;
+
             var idx = 0;
             foreach (var disc in disciplines) {
                 var rpd = App.FindRpd(disc, rpdList);
                 var fos = App.FindFos(disc, fosList);
+                matchedRpdCount += rpd != null ? 1 : 0;
+                matchedFosCount += fos != null ? 1 : 0;
                 //var discNameStyle = "style='background-color: lightgreen;'";
                 var rpdStyle = rpd != null ? tdStyleCheck : tdStyleTimes;
                 var fosStyle = fos != null ? tdStyleCheck : tdStyleTimes;
@@ -230,8 +247,8 @@ namespace FosMan {
                 rep.AddError("УП не найдены. Их загрузка осуществляется на вкладке <b>\"Учебные планы\"</b>.");
             }
             else {
-                rep.AddDiv($"Направление: {curriculum.DirectionCode} {curriculum.DirectionName}");
-                rep.AddDiv($"Профиль: {curriculum.Profile}");
+                rep.Append($"<h3>Направление: {curriculum.DirectionCode} {curriculum.DirectionName}</h3>");
+                rep.Append($"<h3>Профиль: {curriculum.Profile}</h3>");
 
                 rep.Append(CreateHtmlForDisciplinesForCurriculumBlock(curriculum, EDisciplineType.Required, 1, rpdList, fosList));
                 rep.Append(CreateHtmlForDisciplinesForCurriculumBlock(curriculum, EDisciplineType.Variable, 1, rpdList, fosList));
@@ -241,11 +258,20 @@ namespace FosMan {
                 var depCodes = curriculum.Disciplines.Values.Select(d => d.DepartmentCode).ToHashSet();
 
                 foreach (var depCode in depCodes) {
-                    var depDisciplines = curriculum.Disciplines.Values.Where(d => d.DepartmentCode.Equals(depCode)).OrderBy(d => d.Number).ToList();
+                    var disciplines = curriculum.Disciplines.Values.Where(d => d.DepartmentCode.Equals(depCode)).OrderBy(d => d.Number).ToList();
                     rep.Append("<p />");
-                    rep.AddDiv($"<h3>Дисциплины кафедры <b>{depDisciplines.FirstOrDefault().DepartmentName}</b> [{depCode}] ({depDisciplines.Count} шт.):</h3>");
-                    var discTable = CreateHtmlTableForDisciplines(depDisciplines, rpdList, fosList);
+
+                    var discTable = CreateHtmlTableForDisciplines(disciplines, rpdList, fosList, out var matchedRpdCount, out var matchedFosCount);
+                    
+                    rep.AddDiv($"<h3 style='background-color: lightsteelblue'>Дисциплины кафедры <b>{disciplines.FirstOrDefault().DepartmentName}</b> [{depCode}] ({disciplines.Count} шт.)</h3>");
+                    var rpdMatchPercent = matchedRpdCount * 100 / disciplines.Count;
+                    var fosMatchPercent = matchedFosCount * 100 / disciplines.Count;
+                    rep.AddDiv($"<b>РПД в наличии: {matchedRpdCount} ({rpdMatchPercent}%)</b>");
+                    rep.AddDiv($"<b>ФОС в наличии: {matchedFosCount} ({fosMatchPercent}%)</b>");
+
+                    rep.Append("<details><summary>Таблица</summary>");
                     rep.Append(discTable);
+                    rep.Append("</details>");
                 }
             }
             rep.Append("</div>");

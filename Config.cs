@@ -239,6 +239,11 @@ namespace FosMan {
         [JsonInclude]
         public string FileFixerLastDirectory { get; set; }
         /// <summary>
+        /// Текст для поиска в режиме коррекции файлов
+        /// </summary>
+        [JsonInclude]
+        public string FileFixerFindText { get; set; }
+        /// <summary>
         /// Список описаний кафедр
         /// </summary>
         [JsonInclude]

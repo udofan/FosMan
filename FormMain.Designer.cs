@@ -537,7 +537,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(6, 394);
+            groupBoxDisciplines.Location = new Point(6, 396);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(1245, 277);
             groupBoxDisciplines.TabIndex = 3;
@@ -573,7 +573,7 @@
             fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1245, 351);
+            fastObjectListViewCurricula.Size = new Size(1245, 353);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -839,7 +839,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 648);
+            splitContainerRpd.Size = new Size(1251, 653);
             splitContainerRpd.SplitterDistance = 440;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "440";
@@ -1342,7 +1342,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 204);
+            fastObjectListViewRpdList.Size = new Size(1251, 209);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1353,7 +1353,9 @@
             fastObjectListViewRpdList.VirtualMode = true;
             fastObjectListViewRpdList.CellToolTipShowing += fastObjectListViewRpdList_CellToolTipShowing;
             fastObjectListViewRpdList.FormatRow += fastObjectListViewRpdList_FormatRow;
+            fastObjectListViewRpdList.SelectionChanged += fastObjectListViewRpdList_SelectionChanged;
             fastObjectListViewRpdList.ItemActivate += fastObjectListViewRpdList_ItemActivate;
+            fastObjectListViewRpdList.SelectedIndexChanged += fastObjectListViewRpdList_SelectedIndexChanged;
             // 
             // tabPageFos
             // 
@@ -1384,7 +1386,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(1251, 644);
+            splitContainerFos.Size = new Size(1251, 648);
             splitContainerFos.SplitterDistance = 280;
             splitContainerFos.TabIndex = 16;
             splitContainerFos.Tag = "280";
@@ -1658,7 +1660,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(1251, 360);
+            fastObjectListViewFosList.Size = new Size(1251, 364);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -1669,7 +1671,9 @@
             fastObjectListViewFosList.VirtualMode = true;
             fastObjectListViewFosList.CellToolTipShowing += fastObjectListViewFosList_CellToolTipShowing;
             fastObjectListViewFosList.FormatRow += fastObjectListViewFosList_FormatRow;
+            fastObjectListViewFosList.SelectionChanged += fastObjectListViewFosList_SelectionChanged;
             fastObjectListViewFosList.ItemActivate += fastObjectListViewFosList_ItemActivate;
+            fastObjectListViewFosList.SelectedIndexChanged += fastObjectListViewFosList_SelectedIndexChanged;
             // 
             // toolStrip2
             // 
@@ -2388,7 +2392,7 @@
             groupBoxFileFixerFiles.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFileFixerFiles.Location = new Point(3, 230);
             groupBoxFileFixerFiles.Name = "groupBoxFileFixerFiles";
-            groupBoxFileFixerFiles.Size = new Size(1251, 455);
+            groupBoxFileFixerFiles.Size = new Size(1251, 459);
             groupBoxFileFixerFiles.TabIndex = 18;
             groupBoxFileFixerFiles.TabStop = false;
             groupBoxFileFixerFiles.Text = "Файлы";
@@ -2402,7 +2406,7 @@
             fastObjectListViewFileFixerFiles.Location = new Point(3, 18);
             fastObjectListViewFileFixerFiles.Name = "fastObjectListViewFileFixerFiles";
             fastObjectListViewFileFixerFiles.ShowGroups = false;
-            fastObjectListViewFileFixerFiles.Size = new Size(1245, 434);
+            fastObjectListViewFileFixerFiles.Size = new Size(1245, 438);
             fastObjectListViewFileFixerFiles.TabIndex = 2;
             fastObjectListViewFileFixerFiles.UseFilterIndicator = true;
             fastObjectListViewFileFixerFiles.UseFiltering = true;
@@ -2411,6 +2415,8 @@
             fastObjectListViewFileFixerFiles.UseTranslucentSelection = true;
             fastObjectListViewFileFixerFiles.View = View.Details;
             fastObjectListViewFileFixerFiles.VirtualMode = true;
+            fastObjectListViewFileFixerFiles.SelectionChanged += fastObjectListViewFileFixerFiles_SelectionChanged;
+            fastObjectListViewFileFixerFiles.SelectedIndexChanged += fastObjectListViewFileFixerFiles_SelectedIndexChanged;
             // 
             // groupBoxFileFixerSettings
             // 
@@ -2653,6 +2659,7 @@
             toolStripTextBoxFileFixerFind.Size = new Size(150, 31);
             toolStripTextBoxFileFixerFind.ToolTipText = "Текст (регулярное выражение) для поиска\r\n[Enter] = поиск\r\n[Ctrl+F] = установка фокуса в данное поле";
             toolStripTextBoxFileFixerFind.KeyDown += toolStripTextBoxFileFixerFind_KeyDown;
+            toolStripTextBoxFileFixerFind.Click += toolStripTextBoxFileFixerFind_Click;
             // 
             // iconToolStripButtonFileFixerFind
             // 
@@ -2757,6 +2764,7 @@
             KeyPreview = true;
             Name = "FormMain";
             StartPosition = FormStartPosition.CenterScreen;
+            Tag = "Менеджер РПД и ФОС";
             Text = "Менеджер РПД и ФОС";
             FormClosed += FormMain_FormClosed;
             Load += FormMain_Load;

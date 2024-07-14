@@ -612,6 +612,7 @@ namespace FosMan {
             fastObjectListViewFosFixDocProperties.AddObjects(App.Config.FosFixDocPropertyList);
 
             toolStripTextBoxFileFixerTargetDir.Text = App.Config.FileFixerLastDirectory;
+            toolStripTextBoxFileFixerFind.Text = App.Config.FileFixerFindText;
 
             if (!string.IsNullOrEmpty(App.Config.RpdGenTemplate)) {
                 if (comboBoxRpdGenTemplates.Items.Contains(App.Config.RpdGenTemplate)) {
@@ -623,6 +624,7 @@ namespace FosMan {
             }
 
             InitEvalToolsLists();
+            UpdateCaption();
 
             //отладка
             //textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
@@ -1214,7 +1216,38 @@ namespace FosMan {
             }
         }
 
+        void UpdateCaption() {
+            var text = $"{this.Tag} - {tabControl1.SelectedTab.Text.Trim()}";
+            FastObjectListView list = null;
+
+            if (tabControl1.SelectedTab == tabPageСurriculum) {
+                list = fastObjectListViewCurricula;
+            }
+            if (tabControl1.SelectedTab == tabPageRpd) {
+                list = fastObjectListViewRpdList;
+            }
+            if (tabControl1.SelectedTab == tabPageFos) {
+                list = fastObjectListViewFosList;
+            }
+            if (tabControl1.SelectedTab == tabPageFileFixer) {
+                list = fastObjectListViewFileFixerFiles;
+            }
+
+            if (list != null) {
+                var count = list.GetItemCount();
+                text += $" - {count}";
+                var selCount = list.SelectedObjects?.Count ?? 0;
+                if (selCount > 0) {
+                    text += $" ({selCount})";
+                }
+            }
+
+            this.Text = text;
+        }
+
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e) {
+            this.UpdateCaption();
+
             if (tabControl1.SelectedTab == tabPageRpdGeneration) {
                 //матрица компетенций
                 if (App.CompetenceMatrix == null) {
@@ -2742,6 +2775,32 @@ namespace FosMan {
                     toolStripTextBoxFileFixerFind.Focus();
                 }
             }
+        }
+
+        private void fastObjectListViewRpdList_SelectedIndexChanged(object sender, EventArgs e) {
+        }
+
+        private void fastObjectListViewFosList_SelectedIndexChanged(object sender, EventArgs e) {
+        }
+
+        private void fastObjectListViewFileFixerFiles_SelectedIndexChanged(object sender, EventArgs e) {
+        }
+
+        private void fastObjectListViewFileFixerFiles_SelectionChanged(object sender, EventArgs e) {
+            UpdateCaption();
+        }
+
+        private void fastObjectListViewFosList_SelectionChanged(object sender, EventArgs e) {
+            UpdateCaption();
+        }
+
+        private void fastObjectListViewRpdList_SelectionChanged(object sender, EventArgs e) {
+            UpdateCaption();
+        }
+
+        private void toolStripTextBoxFileFixerFind_Click(object sender, EventArgs e) {
+            App.Config.FileFixerFindText = toolStripTextBoxFileFixerFind.Text;
+            App.SaveConfig();
         }
     }
 }

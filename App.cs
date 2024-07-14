@@ -39,10 +39,6 @@ using Xceed.Document.NET;
 using Xceed.Pdf.Atoms;
 using Xceed.Words.NET;
 using static FosMan.Enums;
-using static System.Resources.ResXFileRef;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace FosMan {
     /// <summary>
@@ -56,8 +52,8 @@ namespace FosMan {
     /// Загруженные данные
     /// </summary>
     static internal class App {
-        const int DISCIPLINE_ALLOWED_TYPO_COUNT = 2;    //допустимое кол-во опечаток для выявления соответствия названия дисциплин
-        const int EVAL_TOOLS_WARN_COUNT = 2;            //кол-во оценочных средства, при которых выдавать ошибку (<=)
+        const int STRING_COMPARE_ALLOWED_TYPO_COUNT = 2;    //допустимое кол-во опечаток для выявления соответствия строк (например, названий дисциплин)
+        const int EVAL_TOOLS_WARN_COUNT = 2;                //кол-во оценочных средства, при которых выдавать ошибку (<=)
         //const string FIXED_RPD_DIRECTORY = "FixedRpd";
         //const string CONFIG_FILENAME = "appconfig.json";
 
@@ -1289,6 +1285,38 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Умное сравнение с учётом вхождения в начало строк и опечаток
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <param name="sourceIsNormalized"></param>
+        /// <param name="targetIsNormalized"></param>
+        /// <param name="applyStarts"></param>
+        /// <param name="typoCount"></param>
+        /// <returns></returns>
+        public static bool EqualsSmart(this string source, 
+                                       string target, 
+                                       bool sourceIsNormalized = true,
+                                       bool targetIsNormalized = true, 
+                                       bool applyStarts = false,
+                                       int typoCount = STRING_COMPARE_ALLOWED_TYPO_COUNT) {
+            if (source == null || target == null) {
+                return false;
+            }
+            if (!sourceIsNormalized) {
+                source = NormalizeName(source);
+            }
+            if (!targetIsNormalized) {
+                target = NormalizeName(target);
+            }
+            var result = source.Equals(target) ||
+                         applyStarts && source.StartsWith(target) ||
+                         applyStarts && target.StartsWith(source) ||
+                         typoCount > 0 && source.DamLev(target) <= typoCount; //проверка с учётом опечаток
+            return result;
+        }
+
+        /// <summary>
         /// Найти учебные планы по формам обучения
         /// </summary>
         /// <param name="directionCode"></param>
@@ -1296,9 +1324,11 @@ namespace FosMan {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public static Dictionary<EFormOfStudy, Curriculum> FindCurricula(Rpd rpd) {
-            if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(rpd.Profile)) {
-                var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, rpd.DirectionCode, true) == 0 &&
-                                                              string.Compare(c.Profile, rpd.Profile, true) == 0);
+            var normalizedProfile = NormalizeName(rpd.Profile);
+
+            if (!string.IsNullOrEmpty(rpd.DirectionCode) && !string.IsNullOrEmpty(normalizedProfile)) {
+                var items = m_curriculumDic.Values.Where(c => c.DirectionCode.Equals(rpd.DirectionCode) &&
+                                                              NormalizeName(c.Profile).EqualsSmart(normalizedProfile));
 
                 var dic = items.Distinct().ToDictionary(x => x.FormOfStudy, x => x);
                 return dic;
@@ -1316,9 +1346,11 @@ namespace FosMan {
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
         public static Dictionary<EFormOfStudy, Curriculum> FindCurricula(Fos fos) {
-            if (!string.IsNullOrEmpty(fos.DirectionCode) && !string.IsNullOrEmpty(fos.Profile)) {
-                var items = m_curriculumDic.Values.Where(c => string.Compare(c.DirectionCode, fos.DirectionCode, true) == 0 &&
-                                                              string.Compare(c.Profile, fos.Profile, true) == 0);
+            var normalizedProfile = NormalizeName(fos.Profile);
+
+            if (!string.IsNullOrEmpty(fos.DirectionCode) && !string.IsNullOrEmpty(normalizedProfile)) {
+                var items = m_curriculumDic.Values.Where(c => c.DirectionCode.Equals(fos.DirectionCode) &&
+                                                              NormalizeName(c.Profile).EqualsSmart(normalizedProfile)); ;
 
                 var dic = items.Distinct().ToDictionary(x => x.FormOfStudy, x => x);
                 return dic;
@@ -1619,10 +1651,7 @@ namespace FosMan {
             Rpd rpd = null;
             foreach (var item in rpdList) {
                 var discName = NormalizeName(item.DisciplineName);
-                if (discName.Equals(name) ||
-                    discName.StartsWith(name) ||
-                    name.StartsWith(discName) ||
-                    discName.DamLev(name) <= DISCIPLINE_ALLOWED_TYPO_COUNT) { //проверка с учётом опечаток
+                if (discName.EqualsSmart(name, applyStarts: true)) {
                     rpd = item;
                     break;
                 }
@@ -1654,7 +1683,7 @@ namespace FosMan {
                 if (discName.Equals(name) ||
                     discName.StartsWith(name) ||
                     name.StartsWith(discName) ||
-                    discName.DamLev(name) <= DISCIPLINE_ALLOWED_TYPO_COUNT) { //проверка с учётом опечаток
+                    discName.DamLev(name) <= STRING_COMPARE_ALLOWED_TYPO_COUNT) { //проверка с учётом опечаток
                     fos = item;
                     break;
                 }
