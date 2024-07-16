@@ -4332,31 +4332,40 @@ namespace FosMan {
             var sw = Stopwatch.StartNew();
 
             var idx = 0;
+            var foundFileCount = 0;
             foreach (var file in files) {
                 var anchor = $"file{idx}";
                 idx++;
 
-                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{file.FileName ?? "?"}</h3>");
-                rep.Append("<div style='padding-left: 30px'>");
-                rep.AddFileLink($"Файл:", file.FullFileName);
-
                 var matchCount = file.FindAllEntries(pattern, out var fileRep);
+                if (matchCount > 0) {
+                    rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{file.FileName ?? "?"}</h3>");
+                    rep.Append("<div style='padding-left: 30px'>");
+                    rep.AddFileLink($"Файл:", file.FullFileName);
+                    rep.Append(fileRep);
+                    rep.Append("</div></div>");
 
-                rep.Append(fileRep);
-                rep.Append("</div></div>");
+                    toc.AddTocElement(file.FileName ?? "?", anchor, matchCount, true, "black", "black", "вхождений");
 
-                toc.AddTocElement(file.FileName ?? "?", anchor, matchCount, true, "black", "black", "вхождений");
+                    foundFileCount++;
+                }
             }
 
             rep.Append("</div>");
             toc.Append("</ul></div>");
             html.AddDiv($"Дата: {DateTime.Now}");
-            html.AddDiv($"Файлов в списке: {files.Count()}");
+            html.AddDiv($"Проверено файлов: {files.Count()}");
             html.AddDiv($"Поисковое выражение: {pattern}");
             html.AddDiv($"Время работы: {sw.Elapsed}");
             html.Append("<p />");
-            html.AddDiv($"<b>Список файлов:</b>");
-            html.Append(toc).Append(rep).Append("</body></html>");
+            if (foundFileCount > 0) {
+                html.AddDiv($"<b>Список найденных файлов ({foundFileCount} шт.):</b>");
+                html.Append(toc).Append(rep);
+            }
+            else {
+                html.AddDiv("Файлов не найдено.");
+            }
+            html.Append("</body></html>");
 
             return html.ToString();
         }

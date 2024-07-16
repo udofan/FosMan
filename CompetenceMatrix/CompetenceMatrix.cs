@@ -326,7 +326,7 @@ namespace FosMan {
         static internal bool TestTable(Table table, out ECompetenceMatrixFormat format) {
             format = ECompetenceMatrixFormat.Unknown;
 
-            if (table.RowCount > 0 && table.ColumnCount >= 3) {
+            if (table.RowCount > 0 && table.Rows[0].Cells.Count >= 3) {
                 var row = table.Rows[0];
                 var header0 = row.Cells[0].GetText();
                 var header1 = row.Cells[1].GetText();

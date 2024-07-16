@@ -626,14 +626,6 @@ namespace FosMan {
             InitEvalToolsLists();
             UpdateCaption();
 
-            //отладка
-            //textBoxMatrixFileName.Text = @"c:\FosMan\Матрицы_компетенций\test5.docx";
-            //buttonLoadCompetenceMatrix.PerformClick();
-            //var files = new string[] {
-            //    @"c:\FosMan\Учебные_планы\Бизнес- информатика 38.03.05 очное 23.plx.xlsx",
-            //    @"c:\FosMan\Учебные_планы\Бизнес-информатика 38.03.05 ОЗ 23.plx.xlsx",
-            //    @"c:\FosMan\Учебные_планы\Бизнес-информатика заочн 38.03.05.plx.xlsx"
-            //};
             Task.Run(() => {
                 this.Invoke(new MethodInvoker(() => {
                     tabControl1.SelectTab(tabPageCompetenceMatrix);
@@ -666,8 +658,9 @@ namespace FosMan {
             foreach (EEvaluationTool item in items) {
                 var idx = checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Items.Add(item.GetDescription());
                 if (App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems == null &&
-                    (item == EEvaluationTool.Essay || item == EEvaluationTool.Paper || item == EEvaluationTool.Presentation || item == EEvaluationTool.ControlWork)
-                    || (App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems?.Contains(item) ?? false)) {
+                    (item == EEvaluationTool.Essay || item == EEvaluationTool.Paper || 
+                    item == EEvaluationTool.Presentation || item == EEvaluationTool.ControlWork) || 
+                    (App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems?.Contains(item) ?? false)) {
                     checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.SetItemChecked(idx, true);
                 }
 
