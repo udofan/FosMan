@@ -613,6 +613,13 @@ namespace FosMan {
 
             toolStripTextBoxFileFixerTargetDir.Text = App.Config.FileFixerLastDirectory;
             toolStripTextBoxFileFixerFind.Text = App.Config.FileFixerFindText;
+            checkBoxFileFixerFindAndReplace.Checked = App.Config.FileFixerFindAndReplaceApply;
+            checkBoxFileFixerResetSelection.Checked = App.Config.FileFixerResetSelectionApply;
+            TuneFindAndReplaceList(fastObjectListViewFileFixerFindAndReplaceItems);
+            fastObjectListViewFileFixerFindAndReplaceItems.AddObjects(App.Config.FileFixerFindAndReplaceItems);
+            checkBoxFileFixerDocPropsApply.Checked = App.Config.FileFixerDocPropsApply;
+            TuneDocPropertiesList(fastObjectListViewFileFixerDocProperties);
+            fastObjectListViewFileFixerDocProperties.AddObjects(App.Config.FileFixerDocProps);
 
             if (!string.IsNullOrEmpty(App.Config.RpdGenTemplate)) {
                 if (comboBoxRpdGenTemplates.Items.Contains(App.Config.RpdGenTemplate)) {
@@ -658,8 +665,8 @@ namespace FosMan {
             foreach (EEvaluationTool item in items) {
                 var idx = checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.Items.Add(item.GetDescription());
                 if (App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems == null &&
-                    (item == EEvaluationTool.Essay || item == EEvaluationTool.Paper || 
-                    item == EEvaluationTool.Presentation || item == EEvaluationTool.ControlWork) || 
+                    (item == EEvaluationTool.Essay || item == EEvaluationTool.Paper ||
+                    item == EEvaluationTool.Presentation || item == EEvaluationTool.ControlWork) ||
                     (App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems?.Contains(item) ?? false)) {
                     checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems.SetItemChecked(idx, true);
                 }
@@ -2412,13 +2419,16 @@ namespace FosMan {
             openFileDialogFileFixer.InitialDirectory = App.Config.FileFixerLastDirectory ?? Environment.CurrentDirectory;
 
             if (openFileDialogFileFixer.ShowDialog(this) == DialogResult.OK) {
-                var files = openFileDialogFileFixer.FileNames.Where(x => !App.HasRpdFile(x)).ToArray();
-
                 if (openFileDialogFileFixer.FileNames.Length > 0) {
                     App.Config.FileFixerLastDirectory = Path.GetDirectoryName(openFileDialogFileFixer.FileNames[0]);
                     App.SaveConfig();
                 }
-                AddFilesToFileFixerMode(files);
+                var oldFiles = fastObjectListViewFileFixerFiles.Objects.Cast<FileFixerItem>().Select(f => f.FullFileName);
+                var files = openFileDialogFileFixer.FileNames.Except(oldFiles);
+
+                if (files.Any()) {
+                    AddFilesToFileFixerMode(files);
+                }
             }
         }
 
@@ -2740,19 +2750,48 @@ namespace FosMan {
             }
         }
 
+        void StartProcess(string msg) {
+            StatusMessage(msg);
+            Application.UseWaitCursor = true;
+            Cursor.Current = Cursors.WaitCursor;
+            Application.DoEvents();
+        }
+
+        void StopProcess(string msg = "") {
+            StatusMessage(msg);
+            Application.UseWaitCursor = false;
+            Cursor.Current = Cursors.Default;
+        }
+
         private void iconToolStripButtonFileFixerFind_Click(object sender, EventArgs e) {
             var files = fastObjectListViewFileFixerFiles.SelectedObjects?.Cast<FileFixerItem>()?.ToList();
             if (files.Count == 0) return;
 
             if (!string.IsNullOrEmpty(toolStripTextBoxFileFixerFind.Text)) {
+                StartProcess("Поиск файлов...");
                 var report = App.FindTextInFiles(toolStripTextBoxFileFixerFind.Text, files);
 
                 AddReport("Поиск текста в файлах", report);
+                
+                StopProcess("Поиск файлов завершен.");
             }
         }
 
         private void iconToolStripButtonFileFixerRun_Click(object sender, EventArgs e) {
+            var files = fastObjectListViewFileFixerFiles.SelectedObjects?.Cast<FileFixerItem>().ToList();
+            if (files?.Any() ?? false) {
+                var targetDir = toolStripTextBoxFileFixerTargetDir.Text;
+                if (string.IsNullOrEmpty(targetDir)) {
+                    targetDir = Path.Combine(Environment.CurrentDirectory, $"Скорректированные_файлы_{DateTime.Now:yyyy-MM-dd}");
+                }
+                App.FixFiles(files, targetDir, out var htmlReport);
 
+                AddReport("Коррекция файлов", htmlReport);
+            }
+            else {
+                MessageBox.Show("Необходимо выделить файлы, которые требуется скорректировать.", "Коррекция файлов", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
         }
 
         private void toolStripTextBoxFileFixerFind_KeyDown(object sender, KeyEventArgs e) {
@@ -2794,6 +2833,73 @@ namespace FosMan {
         private void toolStripTextBoxFileFixerFind_Click(object sender, EventArgs e) {
             App.Config.FileFixerFindText = toolStripTextBoxFileFixerFind.Text;
             App.SaveConfig();
+        }
+
+        private void checkBoxFileFixerFindAndReplace_CheckedChanged(object sender, EventArgs e) {
+            App.Config.FileFixerFindAndReplaceApply = checkBoxFileFixerFindAndReplace.Checked;
+            App.SaveConfig();
+
+            buttonFileFixerFindAndReplaceAddItem.Enabled = checkBoxFileFixerFindAndReplace.Checked;
+            buttonFileFixerFindAndReplaceRemoveItem.Enabled = checkBoxFileFixerFindAndReplace.Checked;
+            fastObjectListViewFileFixerFindAndReplaceItems.Enabled = checkBoxFileFixerFindAndReplace.Checked;
+        }
+
+        private void buttonFileFixerFindAndReplaceAddItem_Click(object sender, EventArgs e) {
+            if (fastObjectListViewFileFixerFindAndReplaceItems.SelectedObjects.Count > 0) {
+                var ret = MessageBox.Show($"Вы уверены, что хотите удалить выделенные элементы ({fastObjectListViewFileFixerFindAndReplaceItems.SelectedObjects.Count} шт.)?",
+                    "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (ret == DialogResult.Yes) {
+                    foreach (var item in fastObjectListViewFileFixerFindAndReplaceItems.SelectedObjects) {
+                        App.Config.FileFixerFindAndReplaceItems.Remove(item as FindAndReplaceItem);
+                    }
+                    App.SaveConfig();
+
+                    fastObjectListViewFileFixerFindAndReplaceItems.RemoveObjects(fastObjectListViewFileFixerFindAndReplaceItems.SelectedObjects);
+                }
+            }
+        }
+
+        private void buttonFileFixerFindAndReplaceRemoveItem_Click(object sender, EventArgs e) {
+            var newItem = new FindAndReplaceItem();
+            fastObjectListViewFileFixerFindAndReplaceItems.AddObject(newItem);
+            fastObjectListViewFileFixerFindAndReplaceItems.FocusedObject = newItem;
+            fastObjectListViewFileFixerFindAndReplaceItems.EnsureModelVisible(newItem);
+            fastObjectListViewFileFixerFindAndReplaceItems.EditModel(newItem);
+            fastObjectListViewFileFixerFindAndReplaceItems.CheckObject(newItem);
+
+            App.Config.FileFixerFindAndReplaceItems.Add(newItem);
+            App.SaveConfig();
+        }
+
+        private void checkBoxFileFixerResetSelection_CheckedChanged(object sender, EventArgs e) {
+            App.Config.FileFixerResetSelectionApply = checkBoxFileFixerResetSelection.Checked;
+            App.SaveConfig();
+        }
+
+        private void checkBoxFileFixerDocPropsApply_CheckedChanged(object sender, EventArgs e) {
+            App.Config.FileFixerDocPropsApply = checkBoxFileFixerDocPropsApply.Checked;
+            App.SaveConfig();
+
+            fastObjectListViewFileFixerDocProperties.Enabled = checkBoxFileFixerDocPropsApply.Checked;
+        }
+
+        private void iconToolStripButtonFileFixerAddDir_Click(object sender, EventArgs e) {
+            var initDir = Directory.Exists(App.Config.FileFixerLastAddDir) ? App.Config.FileFixerLastAddDir : Environment.CurrentDirectory;
+            folderBrowserDialogFileFixerAdd.InitialDirectory = initDir;
+
+            if (folderBrowserDialogFileFixerAdd.ShowDialog() == DialogResult.OK) {
+                App.Config.FileFixerLastAddDir = folderBrowserDialogFileFixerAdd.SelectedPath;
+
+                var oldFiles = fastObjectListViewFileFixerFiles.Objects.Cast<FileFixerItem>().Select(f => f.FullFileName);
+                var files = Directory.EnumerateFiles(App.Config.FileFixerLastAddDir, "*.docx", new EnumerationOptions() {
+                    RecurseSubdirectories = true,
+                    MaxRecursionDepth = 100
+                }).Except(oldFiles);
+                
+                if (files.Any()) {
+                    AddFilesToFileFixerMode(files);
+                }
+            }
         }
     }
 }

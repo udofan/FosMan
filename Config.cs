@@ -239,10 +239,39 @@ namespace FosMan {
         [JsonInclude]
         public string FileFixerLastDirectory { get; set; }
         /// <summary>
+        /// Последняя директория, откуда добавлялись файлы в режим коррекции файлов
+        /// </summary>
+        [JsonInclude]
+        public string FileFixerLastAddDir { get; set; }
+        /// <summary>
         /// Текст для поиска в режиме коррекции файлов
         /// </summary>
         [JsonInclude]
         public string FileFixerFindText { get; set; }
+        /// <summary>
+        /// Применять "найти и заменить" в режиме файловой коррекции
+        /// </summary>
+        [JsonInclude]
+        public bool FileFixerFindAndReplaceApply { get; set; }
+        /// <summary>
+        /// Флаг сброса выделений в документах в режиме файловой коррекции
+        /// </summary>
+        [JsonInclude]
+        public bool FileFixerResetSelectionApply { get; set; }
+        /// <summary>
+        /// Применять коррекцию свойств документов в режиме файловой коррекции
+        /// </summary>
+        [JsonInclude]
+        public bool FileFixerDocPropsApply { get; set; }
+        /// <summary>
+        /// Список свойств документа для режима коррекции файлов
+        /// </summary>
+        [JsonInclude]
+        public List<DocProperty> FileFixerDocProps { get; set; }
+        /// <summary>
+        /// Элементы списка "найти и заменить" для режима файловой коррекции
+        /// </summary>
+        public List<FindAndReplaceItem> FileFixerFindAndReplaceItems { get; set; } = [];
         /// <summary>
         /// Список описаний кафедр
         /// </summary>

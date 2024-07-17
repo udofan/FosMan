@@ -2025,7 +2025,7 @@ namespace FosMan {
         public static bool TestForSummaryTableForEducationalWorks(Table table, Dictionary<EFormOfStudy, EducationalWork> eduWorks, PropertyAccess propAccess) {
             var result = false;
 
-            if (table.RowCount > 5 && table.ColumnCount >= 2) {
+            if (table.RowCount > 5 && table.Rows[0].Cells.Count >= 2) {
                 eduWorks ??= [];
 
                 var headerRow = table.Rows[0];
@@ -2651,6 +2651,9 @@ namespace FosMan {
             if (!(m_config.FosFixDocPropertyList?.Any() ?? false)) {
                 m_config.FosFixDocPropertyList = DocProperty.DefaultProperties;
             }
+            if (!(m_config.FileFixerDocProps?.Any() ?? false)) {
+                m_config.FileFixerDocProps = DocProperty.DefaultProperties;
+            }
         }
 
         /// <summary>
@@ -2658,7 +2661,7 @@ namespace FosMan {
         /// </summary>
         /// <param name="rpdList"></param>
         internal static void FixRpdFiles(List<Rpd> rpdList, string targetDir, out string htmlReport) {
-            var html = new StringBuilder("<html><body><h2>Отчёт по исправлению РПД</h2>");
+            var html = new StringBuilder("<html><body><h2>Отчёт по коррекции РПД</h2>");
             var rep = new StringBuilder("");
             DocX templateDocx = null;
             DocxChapters templateChapters = null;
@@ -2909,6 +2912,139 @@ namespace FosMan {
             finally {
                 templateDocx?.Dispose();
                 html.AddDiv($"Исправлено файлов: {successFileCount}");
+                html.AddDiv($"Сбойных файлов: {failureFileCount}");
+                html.AddDiv($"Время работы: {swMain.Elapsed}");
+                html.Append("<p />");
+                html.Append(rep);
+                html.Append("</body></html>");
+                System.Windows.Forms.Application.UseWaitCursor = false;
+            }
+
+            htmlReport = html.ToString();
+        }
+
+
+        /// <summary>
+        /// Режим коррекции файлов
+        /// </summary>
+        /// <param name="rpdList"></param>
+        internal static void FixFiles(List<FileFixerItem> files, string targetDir, out string htmlReport) {
+            var html = new StringBuilder("<html><body><h2>Отчёт по коррекции файлов</h2>");
+            var rep = new StringBuilder("");
+            var successFileCount = 0;
+            var failureFileCount = 0;
+            var swMain = Stopwatch.StartNew();
+
+            try {
+                System.Windows.Forms.Application.UseWaitCursor = true;
+                System.Windows.Forms.Application.DoEvents();
+
+                rep.Append("<div><b>Режим работы:</b></div><ul>");
+
+                List<FindAndReplaceItem> findAndReplaceItems = new();
+                if (Config.FileFixerFindAndReplaceApply) {
+                    findAndReplaceItems = Config.FileFixerFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
+                    if (findAndReplaceItems?.Any() ?? false) {
+                        rep.AddDiv("Найти и заменить:");
+                        var tdStyle = "style='border: 1px solid;'";
+                        rep.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
+                        foreach (var item in findAndReplaceItems) {
+                            rep.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
+                        }
+                        rep.Append("</table></li>");
+                    }
+                }
+                
+                List<DocProperty> setDocProperties = null;
+                if (Config.FileFixerDocPropsApply) {
+                    setDocProperties = Config.FileFixerDocProps?.Where(i => i.IsChecked).ToList();
+                    if (setDocProperties?.Any() ?? false) {
+                        rep.AddDiv("Коррекция свойств документа:");
+                        var tdStyle = "style='border: 1px solid;'";
+                        rep.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Свойство</b></th><th {tdStyle}><b>Значение</b></th></tr>");
+                        foreach (var item in setDocProperties) {
+                            rep.Append($"<tr><td {tdStyle}>{item.Name}</td><td {tdStyle}>{item.Value}</td></tr>");
+                        }
+                        rep.Append("</table></li>");
+                    }
+                }
+                if (Config.FileFixerResetSelectionApply) {
+                    rep.Append("<li>Очистка цветных выделений для служебных областей</li>");
+                }
+                rep.Append("</ul>");
+
+                foreach (var file in files) {
+                    var sw = Stopwatch.StartNew();
+                    rep.Append("<p />");
+                    if (File.Exists(file.FullFileName)) {
+                        rep.AddFileLink($"Исходный файл:", file.FullFileName);
+
+                        try {
+                            using (var docx = DocX.Load(file.FullFileName)) {
+                                if (setDocProperties?.Any() ?? false) {
+                                    foreach (var item in setDocProperties) {
+                                        docx.AddCoreProperty(item.Name, item.Value);
+                                    }
+                                }
+
+                                //обработка "найти и заменить"
+                                var replaceCount = 0;
+
+                                if ((findAndReplaceItems?.Any() ?? false) || App.Config.FileFixerResetSelectionApply) {
+                                    foreach (var par in docx.Paragraphs) {
+                                        //поиск и замена
+                                        if (findAndReplaceItems?.Any() ?? false) {
+                                            foreach (var findItem in findAndReplaceItems) {
+                                                var replaceOptions = new FunctionReplaceTextOptions() {
+                                                    FindPattern = findItem.FindPattern,
+                                                    ContainerLocation = ReplaceTextContainer.All,
+                                                    StopAfterOneReplacement = false,
+                                                    RegexMatchHandler = m => findItem.ReplacePattern,
+                                                    RegExOptions = RegexOptions.IgnoreCase
+                                                };
+                                                if (par.ReplaceText(replaceOptions)) {
+                                                    replaceCount++;
+                                                }
+                                            }
+                                        }
+                                        //очистка цветных выделений
+                                        if (App.Config.FileFixerResetSelectionApply) {
+                                            par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
+                                            par.Highlight(Highlight.none);
+                                        }
+                                    }
+                                    rep.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
+                                }
+
+                                var fileName = Path.GetFileName(file.FullFileName);
+                                var newFileName = Path.Combine(targetDir, fileName);
+                                if (!Directory.Exists(targetDir)) {
+                                    Directory.CreateDirectory(targetDir);
+                                }
+                                docx.SaveAs(newFileName);
+                                rep.Append($"<div>Время работы: {sw.Elapsed}</div>");
+                                rep.AddFileLink($"Итоговый файл:", newFileName);
+                            }
+                            successFileCount++;
+                        }
+                        catch (Exception e) {
+                            rep.AddError($"При обработке файла возникла ошибка: {e.Message}");
+                            rep.AddError($"Стек: {e.StackTrace}");
+                            failureFileCount++;
+                        }
+                    }
+                    else {
+                        rep.Append($"<div style='color:red'>Файл <b>{file.FullFileName}</b> не найден</div>");
+                        failureFileCount++;
+                    }
+                }
+            }
+            catch (Exception ex) {
+                rep.Append($"<div>{ex.Message}</div>");
+                rep.Append($"<div>{ex.StackTrace}</div>");
+            }
+            finally {
+                html.AddDiv($"Скорректировано файлов: {successFileCount}");
                 html.AddDiv($"Сбойных файлов: {failureFileCount}");
                 html.AddDiv($"Время работы: {swMain.Elapsed}");
                 html.Append("<p />");
@@ -4353,10 +4489,10 @@ namespace FosMan {
 
             rep.Append("</div>");
             toc.Append("</ul></div>");
-            html.AddDiv($"Дата: {DateTime.Now}");
-            html.AddDiv($"Проверено файлов: {files.Count()}");
-            html.AddDiv($"Поисковое выражение: {pattern}");
-            html.AddDiv($"Время работы: {sw.Elapsed}");
+            html.AddDiv($"Дата: <b>{DateTime.Now}</b>");
+            html.AddDiv($"Проверено файлов: <b>{files.Count()}</b>");
+            html.AddDiv($"Поисковое выражение: <b>{pattern}</b>");
+            html.AddDiv($"Время работы: <b>{sw.Elapsed}</b>");
             html.Append("<p />");
             if (foundFileCount > 0) {
                 html.AddDiv($"<b>Список найденных файлов ({foundFileCount} шт.):</b>");
