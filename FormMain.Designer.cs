@@ -97,21 +97,13 @@
             checkBoxRpdFixEduWorkTablesFixComptenceResults = new CheckBox();
             checkBoxRpdFixEduWorkTablesFixEvalTools = new CheckBox();
             checkBoxRpdFixEduWorkTablesFixTime = new CheckBox();
-            checkBoxRpdFixRemoveColorSelection = new CheckBox();
             checkBoxRpdFixSetPrevAndNextDisciplines = new CheckBox();
-            groupBoxDocCoreProperties = new GroupBox();
-            fastObjectListViewRpdFixDocProperties = new BrightIdeasSoftware.FastObjectListView();
             checkBoxRpdFixByTemplate = new CheckBox();
             textBoxRpdFixFileTemplate = new TextBox();
             buttonRpdFixSelectTargetDir = new Button();
             textBoxRpdFixTargetDir = new TextBox();
             label13 = new Label();
             buttonRpdFix = new Button();
-            groupBox5 = new GroupBox();
-            checkBoxRpdFixFindAndReplace = new CheckBox();
-            fastObjectListViewRpdFixFindAndReplaceItems = new BrightIdeasSoftware.FastObjectListView();
-            buttonAddFindAndReplaceItem = new Button();
-            buttonRemoveFindAndReplaceItems = new Button();
             checkBoxRpdFixSummaryTableOfEduWorks = new CheckBox();
             checkBoxRpdFixTableOfCompetences = new CheckBox();
             fastObjectListViewRpdList = new BrightIdeasSoftware.FastObjectListView();
@@ -119,22 +111,15 @@
             splitContainerFos = new SplitContainer();
             groupBoxFosFix = new GroupBox();
             iconButtonDistribFiles = new FontAwesome.Sharp.IconButton();
-            checkBoxFosFixResetSelection = new CheckBox();
             checkBoxFosFixPassportTable = new CheckBox();
             checkBoxFosFixCompetenceIndicators = new CheckBox();
-            groupBox6 = new GroupBox();
-            fastObjectListViewFosFixDocProperties = new BrightIdeasSoftware.FastObjectListView();
             checkBox4 = new CheckBox();
             textBox1 = new TextBox();
             buttonFosFixSelectTargetDir = new Button();
             textBoxFosFixTargetDir = new TextBox();
             label1 = new Label();
             linkLabelFosFixSelectFilesToFix = new LinkLabel();
-            buttonFosFixAddFindAndReplaceItem = new Button();
-            buttonFosFixRemoveFindAndReplaceItem = new Button();
             buttonFosFixStart = new Button();
-            groupBox7 = new GroupBox();
-            fastObjectListViewFosFixFindAndReplace = new BrightIdeasSoftware.FastObjectListView();
             checkBoxFosFixCompetenceTable2 = new CheckBox();
             checkBoxFosFixCompetenceTable1 = new CheckBox();
             fastObjectListViewFosList = new BrightIdeasSoftware.FastObjectListView();
@@ -266,10 +251,6 @@
             groupBox8.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownRpdFixMaxCompetenceResultsCount).BeginInit();
-            groupBoxDocCoreProperties.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdFixDocProperties).BeginInit();
-            groupBox5.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdFixFindAndReplaceItems).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).BeginInit();
             tabPageFos.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerFos).BeginInit();
@@ -277,10 +258,6 @@
             splitContainerFos.Panel2.SuspendLayout();
             splitContainerFos.SuspendLayout();
             groupBoxFosFix.SuspendLayout();
-            groupBox6.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosFixDocProperties).BeginInit();
-            groupBox7.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosFixFindAndReplace).BeginInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).BeginInit();
             toolStrip2.SuspendLayout();
             tabPageReports.SuspendLayout();
@@ -536,7 +513,7 @@
             // 
             groupBoxDisciplines.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             groupBoxDisciplines.Controls.Add(fastObjectListViewDisciplines);
-            groupBoxDisciplines.Location = new Point(6, 396);
+            groupBoxDisciplines.Location = new Point(6, 397);
             groupBoxDisciplines.Name = "groupBoxDisciplines";
             groupBoxDisciplines.Size = new Size(1245, 277);
             groupBoxDisciplines.TabIndex = 3;
@@ -572,7 +549,7 @@
             fastObjectListViewCurricula.Location = new Point(6, 37);
             fastObjectListViewCurricula.Name = "fastObjectListViewCurricula";
             fastObjectListViewCurricula.ShowGroups = false;
-            fastObjectListViewCurricula.Size = new Size(1245, 353);
+            fastObjectListViewCurricula.Size = new Size(1245, 354);
             fastObjectListViewCurricula.TabIndex = 1;
             fastObjectListViewCurricula.UseFilterIndicator = true;
             fastObjectListViewCurricula.UseFiltering = true;
@@ -839,9 +816,9 @@
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
             splitContainerRpd.Size = new Size(1251, 640);
-            splitContainerRpd.SplitterDistance = 440;
+            splitContainerRpd.SplitterDistance = 400;
             splitContainerRpd.TabIndex = 7;
-            splitContainerRpd.Tag = "440";
+            splitContainerRpd.Tag = "400";
             // 
             // groupBox4
             // 
@@ -849,23 +826,20 @@
             groupBox4.Controls.Add(groupBox10);
             groupBox4.Controls.Add(groupBox8);
             groupBox4.Controls.Add(groupBox1);
-            groupBox4.Controls.Add(checkBoxRpdFixRemoveColorSelection);
             groupBox4.Controls.Add(checkBoxRpdFixSetPrevAndNextDisciplines);
-            groupBox4.Controls.Add(groupBoxDocCoreProperties);
             groupBox4.Controls.Add(checkBoxRpdFixByTemplate);
             groupBox4.Controls.Add(textBoxRpdFixFileTemplate);
             groupBox4.Controls.Add(buttonRpdFixSelectTargetDir);
             groupBox4.Controls.Add(textBoxRpdFixTargetDir);
             groupBox4.Controls.Add(label13);
             groupBox4.Controls.Add(buttonRpdFix);
-            groupBox4.Controls.Add(groupBox5);
             groupBox4.Controls.Add(checkBoxRpdFixSummaryTableOfEduWorks);
             groupBox4.Controls.Add(checkBoxRpdFixTableOfCompetences);
             groupBox4.Dock = DockStyle.Fill;
             groupBox4.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBox4.Location = new Point(0, 0);
             groupBox4.Name = "groupBox4";
-            groupBox4.Size = new Size(1251, 440);
+            groupBox4.Size = new Size(1251, 400);
             groupBox4.TabIndex = 0;
             groupBox4.TabStop = false;
             groupBox4.Text = "Режим коррекции РПД";
@@ -876,9 +850,9 @@
             groupBox10.Controls.Add(checkBoxRpdGenAbstractsReplaceMissedPropsForEllipsis);
             groupBox10.Controls.Add(iconButtonRpdGenAbstracts);
             groupBox10.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
-            groupBox10.Location = new Point(995, 205);
+            groupBox10.Location = new Point(995, 195);
             groupBox10.Name = "groupBox10";
-            groupBox10.Size = new Size(250, 198);
+            groupBox10.Size = new Size(250, 192);
             groupBox10.TabIndex = 26;
             groupBox10.TabStop = false;
             groupBox10.Text = "Генерация Аннотаций к РПД";
@@ -910,7 +884,7 @@
             iconButtonRpdGenAbstracts.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconButtonRpdGenAbstracts.IconSize = 24;
             iconButtonRpdGenAbstracts.ImageAlign = ContentAlignment.TopLeft;
-            iconButtonRpdGenAbstracts.Location = new Point(17, 145);
+            iconButtonRpdGenAbstracts.Location = new Point(17, 136);
             iconButtonRpdGenAbstracts.Name = "iconButtonRpdGenAbstracts";
             iconButtonRpdGenAbstracts.Size = new Size(208, 30);
             iconButtonRpdGenAbstracts.TabIndex = 23;
@@ -927,7 +901,7 @@
             groupBox8.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             groupBox8.Location = new Point(995, 17);
             groupBox8.Name = "groupBox8";
-            groupBox8.Size = new Size(250, 182);
+            groupBox8.Size = new Size(250, 172);
             groupBox8.TabIndex = 25;
             groupBox8.TabStop = false;
             groupBox8.Text = "Доп. средства";
@@ -957,7 +931,7 @@
             // linkLabelRpdFixSelectFilesToFix
             // 
             linkLabelRpdFixSelectFilesToFix.ActiveLinkColor = Color.Blue;
-            linkLabelRpdFixSelectFilesToFix.Location = new Point(15, 135);
+            linkLabelRpdFixSelectFilesToFix.Location = new Point(15, 125);
             linkLabelRpdFixSelectFilesToFix.Name = "linkLabelRpdFixSelectFilesToFix";
             linkLabelRpdFixSelectFilesToFix.Size = new Size(175, 37);
             linkLabelRpdFixSelectFilesToFix.TabIndex = 6;
@@ -983,7 +957,7 @@
             groupBox1.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
             groupBox1.Location = new Point(480, 17);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(509, 386);
+            groupBox1.Size = new Size(509, 370);
             groupBox1.TabIndex = 24;
             groupBox1.TabStop = false;
             groupBox1.Text = "Фикс таблиц содержания дисциплины (разделы и темы)";
@@ -1119,18 +1093,6 @@
             checkBoxRpdFixEduWorkTablesFixTime.UseVisualStyleBackColor = true;
             checkBoxRpdFixEduWorkTablesFixTime.CheckedChanged += checkBoxRpdFixFillEduWorkTables_CheckedChanged;
             // 
-            // checkBoxRpdFixRemoveColorSelection
-            // 
-            checkBoxRpdFixRemoveColorSelection.AutoSize = true;
-            checkBoxRpdFixRemoveColorSelection.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            checkBoxRpdFixRemoveColorSelection.Location = new Point(14, 100);
-            checkBoxRpdFixRemoveColorSelection.Name = "checkBoxRpdFixRemoveColorSelection";
-            checkBoxRpdFixRemoveColorSelection.Size = new Size(296, 18);
-            checkBoxRpdFixRemoveColorSelection.TabIndex = 23;
-            checkBoxRpdFixRemoveColorSelection.Text = "Убрать выделение цветом служебных отметок";
-            checkBoxRpdFixRemoveColorSelection.UseVisualStyleBackColor = true;
-            checkBoxRpdFixRemoveColorSelection.CheckedChanged += checkBoxRpdFixResetColorSelection_CheckedChanged;
-            // 
             // checkBoxRpdFixSetPrevAndNextDisciplines
             // 
             checkBoxRpdFixSetPrevAndNextDisciplines.AutoSize = true;
@@ -1143,34 +1105,6 @@
             toolTip1.SetToolTip(checkBoxRpdFixSetPrevAndNextDisciplines, "Задать списки предшествующих и последующих дисциплин");
             checkBoxRpdFixSetPrevAndNextDisciplines.UseVisualStyleBackColor = true;
             checkBoxRpdFixSetPrevAndNextDisciplines.CheckedChanged += checkBoxSetPrevAndNextDisciplines_CheckedChanged;
-            // 
-            // groupBoxDocCoreProperties
-            // 
-            groupBoxDocCoreProperties.Controls.Add(fastObjectListViewRpdFixDocProperties);
-            groupBoxDocCoreProperties.Font = new Font("Tahoma", 9F);
-            groupBoxDocCoreProperties.Location = new Point(9, 302);
-            groupBoxDocCoreProperties.Name = "groupBoxDocCoreProperties";
-            groupBoxDocCoreProperties.Size = new Size(450, 104);
-            groupBoxDocCoreProperties.TabIndex = 3;
-            groupBoxDocCoreProperties.TabStop = false;
-            groupBoxDocCoreProperties.Text = "Свойства документа";
-            // 
-            // fastObjectListViewRpdFixDocProperties
-            // 
-            fastObjectListViewRpdFixDocProperties.CellEditActivation = BrightIdeasSoftware.ObjectListView.CellEditActivateMode.SingleClickAlways;
-            fastObjectListViewRpdFixDocProperties.CheckBoxes = true;
-            fastObjectListViewRpdFixDocProperties.CheckedAspectName = "IsChecked";
-            fastObjectListViewRpdFixDocProperties.Dock = DockStyle.Fill;
-            fastObjectListViewRpdFixDocProperties.Font = new Font("Tahoma", 9F);
-            fastObjectListViewRpdFixDocProperties.GridLines = true;
-            fastObjectListViewRpdFixDocProperties.Location = new Point(3, 18);
-            fastObjectListViewRpdFixDocProperties.Name = "fastObjectListViewRpdFixDocProperties";
-            fastObjectListViewRpdFixDocProperties.ShowGroups = false;
-            fastObjectListViewRpdFixDocProperties.ShowImagesOnSubItems = true;
-            fastObjectListViewRpdFixDocProperties.Size = new Size(444, 83);
-            fastObjectListViewRpdFixDocProperties.TabIndex = 0;
-            fastObjectListViewRpdFixDocProperties.View = View.Details;
-            fastObjectListViewRpdFixDocProperties.VirtualMode = true;
             // 
             // checkBoxRpdFixByTemplate
             // 
@@ -1198,7 +1132,7 @@
             // buttonRpdFixSelectTargetDir
             // 
             buttonRpdFixSelectTargetDir.Font = new Font("Tahoma", 9F);
-            buttonRpdFixSelectTargetDir.Location = new Point(644, 411);
+            buttonRpdFixSelectTargetDir.Location = new Point(432, 205);
             buttonRpdFixSelectTargetDir.Name = "buttonRpdFixSelectTargetDir";
             buttonRpdFixSelectTargetDir.Size = new Size(32, 23);
             buttonRpdFixSelectTargetDir.TabIndex = 16;
@@ -1209,9 +1143,9 @@
             // textBoxRpdFixTargetDir
             // 
             textBoxRpdFixTargetDir.Font = new Font("Tahoma", 9F);
-            textBoxRpdFixTargetDir.Location = new Point(155, 412);
+            textBoxRpdFixTargetDir.Location = new Point(14, 205);
             textBoxRpdFixTargetDir.Name = "textBoxRpdFixTargetDir";
-            textBoxRpdFixTargetDir.Size = new Size(483, 22);
+            textBoxRpdFixTargetDir.Size = new Size(412, 22);
             textBoxRpdFixTargetDir.TabIndex = 15;
             textBoxRpdFixTargetDir.TextChanged += textBoxRpdFixTargetDir_TextChanged;
             // 
@@ -1219,7 +1153,7 @@
             // 
             label13.AutoSize = true;
             label13.Font = new Font("Tahoma", 9F);
-            label13.Location = new Point(18, 415);
+            label13.Location = new Point(14, 185);
             label13.Name = "label13";
             label13.Size = new Size(131, 14);
             label13.TabIndex = 14;
@@ -1227,7 +1161,7 @@
             // 
             // buttonRpdFix
             // 
-            buttonRpdFix.Location = new Point(808, 411);
+            buttonRpdFix.Location = new Point(280, 364);
             buttonRpdFix.Name = "buttonRpdFix";
             buttonRpdFix.Size = new Size(175, 23);
             buttonRpdFix.TabIndex = 3;
@@ -1235,77 +1169,6 @@
             toolTip1.SetToolTip(buttonRpdFix, "Запустить процедуру исправлений выделенных файлов РПД");
             buttonRpdFix.UseVisualStyleBackColor = true;
             buttonRpdFix.Click += buttonRpdFix_Click;
-            // 
-            // groupBox5
-            // 
-            groupBox5.Controls.Add(checkBoxRpdFixFindAndReplace);
-            groupBox5.Controls.Add(fastObjectListViewRpdFixFindAndReplaceItems);
-            groupBox5.Controls.Add(buttonAddFindAndReplaceItem);
-            groupBox5.Controls.Add(buttonRemoveFindAndReplaceItems);
-            groupBox5.Font = new Font("Tahoma", 9F);
-            groupBox5.Location = new Point(9, 156);
-            groupBox5.Name = "groupBox5";
-            groupBox5.Size = new Size(450, 140);
-            groupBox5.TabIndex = 2;
-            groupBox5.TabStop = false;
-            groupBox5.Text = "      Найти и заменить";
-            // 
-            // checkBoxRpdFixFindAndReplace
-            // 
-            checkBoxRpdFixFindAndReplace.AutoSize = true;
-            checkBoxRpdFixFindAndReplace.Location = new Point(13, 1);
-            checkBoxRpdFixFindAndReplace.Name = "checkBoxRpdFixFindAndReplace";
-            checkBoxRpdFixFindAndReplace.Size = new Size(15, 14);
-            checkBoxRpdFixFindAndReplace.TabIndex = 6;
-            checkBoxRpdFixFindAndReplace.UseVisualStyleBackColor = true;
-            checkBoxRpdFixFindAndReplace.CheckedChanged += checkBoxRpdFixFindAndReplace_CheckedChanged;
-            // 
-            // fastObjectListViewRpdFixFindAndReplaceItems
-            // 
-            fastObjectListViewRpdFixFindAndReplaceItems.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            fastObjectListViewRpdFixFindAndReplaceItems.CellEditActivation = BrightIdeasSoftware.ObjectListView.CellEditActivateMode.SingleClickAlways;
-            fastObjectListViewRpdFixFindAndReplaceItems.CheckBoxes = true;
-            fastObjectListViewRpdFixFindAndReplaceItems.CheckedAspectName = "IsChecked";
-            fastObjectListViewRpdFixFindAndReplaceItems.Enabled = false;
-            fastObjectListViewRpdFixFindAndReplaceItems.Font = new Font("Tahoma", 9F);
-            fastObjectListViewRpdFixFindAndReplaceItems.GridLines = true;
-            fastObjectListViewRpdFixFindAndReplaceItems.Location = new Point(3, 18);
-            fastObjectListViewRpdFixFindAndReplaceItems.Name = "fastObjectListViewRpdFixFindAndReplaceItems";
-            fastObjectListViewRpdFixFindAndReplaceItems.ShowGroups = false;
-            fastObjectListViewRpdFixFindAndReplaceItems.ShowImagesOnSubItems = true;
-            fastObjectListViewRpdFixFindAndReplaceItems.Size = new Size(410, 116);
-            fastObjectListViewRpdFixFindAndReplaceItems.TabIndex = 0;
-            fastObjectListViewRpdFixFindAndReplaceItems.View = View.Details;
-            fastObjectListViewRpdFixFindAndReplaceItems.VirtualMode = true;
-            fastObjectListViewRpdFixFindAndReplaceItems.CellEditFinished += fastObjectListViewRpdFixFindAndReplaceItems_CellEditFinished;
-            // 
-            // buttonAddFindAndReplaceItem
-            // 
-            buttonAddFindAndReplaceItem.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            buttonAddFindAndReplaceItem.Enabled = false;
-            buttonAddFindAndReplaceItem.Location = new Point(419, 111);
-            buttonAddFindAndReplaceItem.Name = "buttonAddFindAndReplaceItem";
-            buttonAddFindAndReplaceItem.Size = new Size(25, 23);
-            buttonAddFindAndReplaceItem.TabIndex = 5;
-            buttonAddFindAndReplaceItem.Text = "+";
-            toolTip1.SetToolTip(buttonAddFindAndReplaceItem, "Добавить новую строку");
-            buttonAddFindAndReplaceItem.UseVisualStyleBackColor = true;
-            buttonAddFindAndReplaceItem.Click += buttonAddFindAndReplaceItem_Click;
-            // 
-            // buttonRemoveFindAndReplaceItems
-            // 
-            buttonRemoveFindAndReplaceItems.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonRemoveFindAndReplaceItems.Enabled = false;
-            buttonRemoveFindAndReplaceItems.Location = new Point(419, 18);
-            buttonRemoveFindAndReplaceItems.Name = "buttonRemoveFindAndReplaceItems";
-            buttonRemoveFindAndReplaceItems.Padding = new Padding(2, 0, 0, 0);
-            buttonRemoveFindAndReplaceItems.Size = new Size(25, 25);
-            buttonRemoveFindAndReplaceItems.TabIndex = 4;
-            buttonRemoveFindAndReplaceItems.Text = "x";
-            buttonRemoveFindAndReplaceItems.TextAlign = ContentAlignment.TopCenter;
-            toolTip1.SetToolTip(buttonRemoveFindAndReplaceItems, "Удалить выделенные строки");
-            buttonRemoveFindAndReplaceItems.UseVisualStyleBackColor = true;
-            buttonRemoveFindAndReplaceItems.Click += buttonRemoveFindAndReplaceItems_Click;
             // 
             // checkBoxRpdFixSummaryTableOfEduWorks
             // 
@@ -1341,7 +1204,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 196);
+            fastObjectListViewRpdList.Size = new Size(1251, 236);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1360,10 +1223,10 @@
             // 
             tabPageFos.Controls.Add(splitContainerFos);
             tabPageFos.Controls.Add(toolStrip2);
-            tabPageFos.Location = new Point(4, 24);
+            tabPageFos.Location = new Point(4, 23);
             tabPageFos.Name = "tabPageFos";
             tabPageFos.Padding = new Padding(3);
-            tabPageFos.Size = new Size(1257, 676);
+            tabPageFos.Size = new Size(1257, 677);
             tabPageFos.TabIndex = 1;
             tabPageFos.Text = "   ФОС   ";
             tabPageFos.UseVisualStyleBackColor = true;
@@ -1385,36 +1248,31 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(1251, 638);
-            splitContainerFos.SplitterDistance = 280;
+            splitContainerFos.Size = new Size(1251, 641);
+            splitContainerFos.SplitterDistance = 180;
             splitContainerFos.TabIndex = 16;
-            splitContainerFos.Tag = "280";
+            splitContainerFos.Tag = "180";
             // 
             // groupBoxFosFix
             // 
             groupBoxFosFix.BackColor = Color.WhiteSmoke;
             groupBoxFosFix.Controls.Add(iconButtonDistribFiles);
-            groupBoxFosFix.Controls.Add(checkBoxFosFixResetSelection);
             groupBoxFosFix.Controls.Add(checkBoxFosFixPassportTable);
             groupBoxFosFix.Controls.Add(checkBoxFosFixCompetenceIndicators);
-            groupBoxFosFix.Controls.Add(groupBox6);
             groupBoxFosFix.Controls.Add(checkBox4);
             groupBoxFosFix.Controls.Add(textBox1);
             groupBoxFosFix.Controls.Add(buttonFosFixSelectTargetDir);
             groupBoxFosFix.Controls.Add(textBoxFosFixTargetDir);
             groupBoxFosFix.Controls.Add(label1);
             groupBoxFosFix.Controls.Add(linkLabelFosFixSelectFilesToFix);
-            groupBoxFosFix.Controls.Add(buttonFosFixAddFindAndReplaceItem);
-            groupBoxFosFix.Controls.Add(buttonFosFixRemoveFindAndReplaceItem);
             groupBoxFosFix.Controls.Add(buttonFosFixStart);
-            groupBoxFosFix.Controls.Add(groupBox7);
             groupBoxFosFix.Controls.Add(checkBoxFosFixCompetenceTable2);
             groupBoxFosFix.Controls.Add(checkBoxFosFixCompetenceTable1);
             groupBoxFosFix.Dock = DockStyle.Fill;
             groupBoxFosFix.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFosFix.Location = new Point(0, 0);
             groupBoxFosFix.Name = "groupBoxFosFix";
-            groupBoxFosFix.Size = new Size(1251, 280);
+            groupBoxFosFix.Size = new Size(1251, 180);
             groupBoxFosFix.TabIndex = 0;
             groupBoxFosFix.TabStop = false;
             groupBoxFosFix.Text = "Режим коррекции ФОС";
@@ -1426,25 +1284,13 @@
             iconButtonDistribFiles.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconButtonDistribFiles.IconSize = 24;
             iconButtonDistribFiles.ImageAlign = ContentAlignment.TopLeft;
-            iconButtonDistribFiles.Location = new Point(1045, 242);
+            iconButtonDistribFiles.Location = new Point(1057, 133);
             iconButtonDistribFiles.Name = "iconButtonDistribFiles";
             iconButtonDistribFiles.Size = new Size(174, 29);
             iconButtonDistribFiles.TabIndex = 24;
             iconButtonDistribFiles.Text = "Распределить файлы";
             iconButtonDistribFiles.TextAlign = ContentAlignment.MiddleRight;
             iconButtonDistribFiles.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxFosFixResetSelection
-            // 
-            checkBoxFosFixResetSelection.AutoSize = true;
-            checkBoxFosFixResetSelection.Font = new Font("Tahoma", 9F, FontStyle.Regular, GraphicsUnit.Point, 204);
-            checkBoxFosFixResetSelection.Location = new Point(14, 100);
-            checkBoxFosFixResetSelection.Name = "checkBoxFosFixResetSelection";
-            checkBoxFosFixResetSelection.Size = new Size(177, 18);
-            checkBoxFosFixResetSelection.TabIndex = 23;
-            checkBoxFosFixResetSelection.Text = "Убрать выделение цветом";
-            checkBoxFosFixResetSelection.UseVisualStyleBackColor = true;
-            checkBoxFosFixResetSelection.CheckedChanged += checkBoxFosFixResetSelection_CheckedChanged;
             // 
             // checkBoxFosFixPassportTable
             // 
@@ -1472,34 +1318,6 @@
             checkBoxFosFixCompetenceIndicators.UseVisualStyleBackColor = true;
             checkBoxFosFixCompetenceIndicators.CheckedChanged += checkBoxFosFixCompetenceIndicators_CheckedChanged;
             // 
-            // groupBox6
-            // 
-            groupBox6.Controls.Add(fastObjectListViewFosFixDocProperties);
-            groupBox6.Font = new Font("Tahoma", 9F);
-            groupBox6.Location = new Point(529, 123);
-            groupBox6.Name = "groupBox6";
-            groupBox6.Size = new Size(447, 113);
-            groupBox6.TabIndex = 3;
-            groupBox6.TabStop = false;
-            groupBox6.Text = "Свойства документа";
-            // 
-            // fastObjectListViewFosFixDocProperties
-            // 
-            fastObjectListViewFosFixDocProperties.CellEditActivation = BrightIdeasSoftware.ObjectListView.CellEditActivateMode.SingleClickAlways;
-            fastObjectListViewFosFixDocProperties.CheckBoxes = true;
-            fastObjectListViewFosFixDocProperties.CheckedAspectName = "IsChecked";
-            fastObjectListViewFosFixDocProperties.Dock = DockStyle.Fill;
-            fastObjectListViewFosFixDocProperties.Font = new Font("Tahoma", 9F);
-            fastObjectListViewFosFixDocProperties.GridLines = true;
-            fastObjectListViewFosFixDocProperties.Location = new Point(3, 18);
-            fastObjectListViewFosFixDocProperties.Name = "fastObjectListViewFosFixDocProperties";
-            fastObjectListViewFosFixDocProperties.ShowGroups = false;
-            fastObjectListViewFosFixDocProperties.ShowImagesOnSubItems = true;
-            fastObjectListViewFosFixDocProperties.Size = new Size(441, 92);
-            fastObjectListViewFosFixDocProperties.TabIndex = 0;
-            fastObjectListViewFosFixDocProperties.View = View.Details;
-            fastObjectListViewFosFixDocProperties.VirtualMode = true;
-            // 
             // checkBox4
             // 
             checkBox4.AutoSize = true;
@@ -1524,7 +1342,7 @@
             // buttonFosFixSelectTargetDir
             // 
             buttonFosFixSelectTargetDir.Font = new Font("Tahoma", 9F);
-            buttonFosFixSelectTargetDir.Location = new Point(634, 248);
+            buttonFosFixSelectTargetDir.Location = new Point(646, 139);
             buttonFosFixSelectTargetDir.Name = "buttonFosFixSelectTargetDir";
             buttonFosFixSelectTargetDir.Size = new Size(32, 23);
             buttonFosFixSelectTargetDir.TabIndex = 16;
@@ -1535,7 +1353,7 @@
             // textBoxFosFixTargetDir
             // 
             textBoxFosFixTargetDir.Font = new Font("Tahoma", 9F);
-            textBoxFosFixTargetDir.Location = new Point(145, 249);
+            textBoxFosFixTargetDir.Location = new Point(157, 140);
             textBoxFosFixTargetDir.Name = "textBoxFosFixTargetDir";
             textBoxFosFixTargetDir.Size = new Size(483, 22);
             textBoxFosFixTargetDir.TabIndex = 15;
@@ -1545,7 +1363,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Tahoma", 9F);
-            label1.Location = new Point(8, 252);
+            label1.Location = new Point(20, 143);
             label1.Name = "label1";
             label1.Size = new Size(131, 14);
             label1.TabIndex = 14;
@@ -1562,33 +1380,9 @@
             linkLabelFosFixSelectFilesToFix.Text = "Выделить ФОС, готовые к полноценному исправлению";
             toolTip1.SetToolTip(linkLabelFosFixSelectFilesToFix, "Имеются в виду ФОС, для которых загружены учебные планы, матрица компетенций и РПД");
             // 
-            // buttonFosFixAddFindAndReplaceItem
-            // 
-            buttonFosFixAddFindAndReplaceItem.Location = new Point(498, 210);
-            buttonFosFixAddFindAndReplaceItem.Name = "buttonFosFixAddFindAndReplaceItem";
-            buttonFosFixAddFindAndReplaceItem.Size = new Size(25, 23);
-            buttonFosFixAddFindAndReplaceItem.TabIndex = 5;
-            buttonFosFixAddFindAndReplaceItem.Text = "+";
-            toolTip1.SetToolTip(buttonFosFixAddFindAndReplaceItem, "Добавить новую строку");
-            buttonFosFixAddFindAndReplaceItem.UseVisualStyleBackColor = true;
-            buttonFosFixAddFindAndReplaceItem.Click += buttonFosFixAddFindAndReplaceItem_Click;
-            // 
-            // buttonFosFixRemoveFindAndReplaceItem
-            // 
-            buttonFosFixRemoveFindAndReplaceItem.Location = new Point(498, 141);
-            buttonFosFixRemoveFindAndReplaceItem.Name = "buttonFosFixRemoveFindAndReplaceItem";
-            buttonFosFixRemoveFindAndReplaceItem.Padding = new Padding(2, 0, 0, 0);
-            buttonFosFixRemoveFindAndReplaceItem.Size = new Size(25, 25);
-            buttonFosFixRemoveFindAndReplaceItem.TabIndex = 4;
-            buttonFosFixRemoveFindAndReplaceItem.Text = "x";
-            buttonFosFixRemoveFindAndReplaceItem.TextAlign = ContentAlignment.TopCenter;
-            toolTip1.SetToolTip(buttonFosFixRemoveFindAndReplaceItem, "Удалить выделенные строки");
-            buttonFosFixRemoveFindAndReplaceItem.UseVisualStyleBackColor = true;
-            buttonFosFixRemoveFindAndReplaceItem.Click += buttonFosFixRemoveFindAndReplaceItem_Click;
-            // 
             // buttonFosFixStart
             // 
-            buttonFosFixStart.Location = new Point(788, 242);
+            buttonFosFixStart.Location = new Point(800, 133);
             buttonFosFixStart.Name = "buttonFosFixStart";
             buttonFosFixStart.Size = new Size(185, 29);
             buttonFosFixStart.TabIndex = 3;
@@ -1596,34 +1390,6 @@
             toolTip1.SetToolTip(buttonFosFixStart, "Запустить процедуру коррекции выделенных файлов РПД");
             buttonFosFixStart.UseVisualStyleBackColor = true;
             buttonFosFixStart.Click += buttonFosFixStart_Click;
-            // 
-            // groupBox7
-            // 
-            groupBox7.Controls.Add(fastObjectListViewFosFixFindAndReplace);
-            groupBox7.Font = new Font("Tahoma", 9F);
-            groupBox7.Location = new Point(6, 123);
-            groupBox7.Name = "groupBox7";
-            groupBox7.Size = new Size(486, 113);
-            groupBox7.TabIndex = 2;
-            groupBox7.TabStop = false;
-            groupBox7.Text = "Найти и заменить";
-            // 
-            // fastObjectListViewFosFixFindAndReplace
-            // 
-            fastObjectListViewFosFixFindAndReplace.CellEditActivation = BrightIdeasSoftware.ObjectListView.CellEditActivateMode.SingleClickAlways;
-            fastObjectListViewFosFixFindAndReplace.CheckBoxes = true;
-            fastObjectListViewFosFixFindAndReplace.CheckedAspectName = "IsChecked";
-            fastObjectListViewFosFixFindAndReplace.Dock = DockStyle.Fill;
-            fastObjectListViewFosFixFindAndReplace.Font = new Font("Tahoma", 9F);
-            fastObjectListViewFosFixFindAndReplace.GridLines = true;
-            fastObjectListViewFosFixFindAndReplace.Location = new Point(3, 18);
-            fastObjectListViewFosFixFindAndReplace.Name = "fastObjectListViewFosFixFindAndReplace";
-            fastObjectListViewFosFixFindAndReplace.ShowGroups = false;
-            fastObjectListViewFosFixFindAndReplace.ShowImagesOnSubItems = true;
-            fastObjectListViewFosFixFindAndReplace.Size = new Size(480, 92);
-            fastObjectListViewFosFixFindAndReplace.TabIndex = 0;
-            fastObjectListViewFosFixFindAndReplace.View = View.Details;
-            fastObjectListViewFosFixFindAndReplace.VirtualMode = true;
             // 
             // checkBoxFosFixCompetenceTable2
             // 
@@ -1659,7 +1425,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(1251, 354);
+            fastObjectListViewFosList.Size = new Size(1251, 457);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -2376,10 +2142,10 @@
             tabPageFileFixer.Controls.Add(groupBoxFileFixerFiles);
             tabPageFileFixer.Controls.Add(groupBoxFileFixerSettings);
             tabPageFileFixer.Controls.Add(toolStrip3);
-            tabPageFileFixer.Location = new Point(4, 24);
+            tabPageFileFixer.Location = new Point(4, 23);
             tabPageFileFixer.Name = "tabPageFileFixer";
             tabPageFileFixer.Padding = new Padding(3);
-            tabPageFileFixer.Size = new Size(1257, 676);
+            tabPageFileFixer.Size = new Size(1257, 677);
             tabPageFileFixer.TabIndex = 7;
             tabPageFileFixer.Text = "  Коррекция файлов  ";
             tabPageFileFixer.UseVisualStyleBackColor = true;
@@ -2391,7 +2157,7 @@
             groupBoxFileFixerFiles.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFileFixerFiles.Location = new Point(3, 201);
             groupBoxFileFixerFiles.Name = "groupBoxFileFixerFiles";
-            groupBoxFileFixerFiles.Size = new Size(1251, 474);
+            groupBoxFileFixerFiles.Size = new Size(1251, 475);
             groupBoxFileFixerFiles.TabIndex = 18;
             groupBoxFileFixerFiles.TabStop = false;
             groupBoxFileFixerFiles.Text = "Файлы";
@@ -2405,7 +2171,7 @@
             fastObjectListViewFileFixerFiles.Location = new Point(3, 18);
             fastObjectListViewFileFixerFiles.Name = "fastObjectListViewFileFixerFiles";
             fastObjectListViewFileFixerFiles.ShowGroups = false;
-            fastObjectListViewFileFixerFiles.Size = new Size(1245, 453);
+            fastObjectListViewFileFixerFiles.Size = new Size(1245, 454);
             fastObjectListViewFileFixerFiles.TabIndex = 2;
             fastObjectListViewFileFixerFiles.UseFilterIndicator = true;
             fastObjectListViewFileFixerFiles.UseFiltering = true;
@@ -2459,9 +2225,9 @@
             checkBoxFileFixerDocPropsApply.AutoSize = true;
             checkBoxFileFixerDocPropsApply.Location = new Point(12, -2);
             checkBoxFileFixerDocPropsApply.Name = "checkBoxFileFixerDocPropsApply";
-            checkBoxFileFixerDocPropsApply.Size = new Size(141, 18);
+            checkBoxFileFixerDocPropsApply.Size = new Size(208, 18);
             checkBoxFileFixerDocPropsApply.TabIndex = 1;
-            checkBoxFileFixerDocPropsApply.Text = "Свойства документа";
+            checkBoxFileFixerDocPropsApply.Text = "Установить свойства документа";
             checkBoxFileFixerDocPropsApply.UseVisualStyleBackColor = true;
             checkBoxFileFixerDocPropsApply.CheckedChanged += checkBoxFileFixerDocPropsApply_CheckedChanged;
             // 
@@ -2807,11 +2573,6 @@
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownRpdFixMaxCompetenceResultsCount).EndInit();
-            groupBoxDocCoreProperties.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdFixDocProperties).EndInit();
-            groupBox5.ResumeLayout(false);
-            groupBox5.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdFixFindAndReplaceItems).EndInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewRpdList).EndInit();
             tabPageFos.ResumeLayout(false);
             tabPageFos.PerformLayout();
@@ -2821,10 +2582,6 @@
             splitContainerFos.ResumeLayout(false);
             groupBoxFosFix.ResumeLayout(false);
             groupBoxFosFix.PerformLayout();
-            groupBox6.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosFixDocProperties).EndInit();
-            groupBox7.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosFixFindAndReplace).EndInit();
             ((System.ComponentModel.ISupportInitialize)fastObjectListViewFosList).EndInit();
             toolStrip2.ResumeLayout(false);
             toolStrip2.PerformLayout();
@@ -2913,11 +2670,7 @@
         private GroupBox groupBox4;
         private CheckBox checkBoxRpdFixTableOfCompetences;
         private CheckBox checkBoxRpdFixSummaryTableOfEduWorks;
-        private GroupBox groupBox5;
-        private BrightIdeasSoftware.FastObjectListView fastObjectListViewRpdFixFindAndReplaceItems;
         private Button buttonRpdFix;
-        private Button buttonAddFindAndReplaceItem;
-        private Button buttonRemoveFindAndReplaceItems;
         private ToolTip toolTip1;
         private Button buttonCurriculumClearList;
         private TabControl tabControlReports;
@@ -2929,8 +2682,6 @@
         private TextBox textBoxRpdFixFileTemplate;
         private CheckBox checkBoxApplyLoadedRpd;
         private LinkLabel linkLabelSelectDesciplinesWithLoadedRpd;
-        private GroupBox groupBoxDocCoreProperties;
-        private BrightIdeasSoftware.FastObjectListView fastObjectListViewRpdFixDocProperties;
         private StatusStrip statusStrip1;
         private ToolStripStatusLabel toolStripStatusLabel1;
         private TabPage tabPageYaGPT;
@@ -2951,7 +2702,6 @@
         private CheckBox checkBoxRpdFixSetPrevAndNextDisciplines;
         private LinkLabel linkLabelRpdFixGenerateNextDisciplines;
         private LinkLabel linkLabelRpdFixGeneratePrevDisciplines;
-        private CheckBox checkBoxRpdFixRemoveColorSelection;
         private ToolStrip toolStripRpd;
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdOpen;
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonRpdReload;
@@ -2997,22 +2747,15 @@
         private FontAwesome.Sharp.IconToolStripButton iconToolStripButtonFosFixMode;
         private SplitContainer splitContainerFos;
         private GroupBox groupBoxFosFix;
-        private CheckBox checkBoxFosFixResetSelection;
         private CheckBox checkBoxFosFixPassportTable;
         private CheckBox checkBoxFosFixCompetenceIndicators;
-        private GroupBox groupBox6;
-        private BrightIdeasSoftware.FastObjectListView fastObjectListViewFosFixDocProperties;
         private CheckBox checkBox4;
         private TextBox textBox1;
         private Button buttonFosFixSelectTargetDir;
         private TextBox textBoxFosFixTargetDir;
         private Label label1;
         private LinkLabel linkLabelFosFixSelectFilesToFix;
-        private Button buttonFosFixAddFindAndReplaceItem;
-        private Button buttonFosFixRemoveFindAndReplaceItem;
         private Button buttonFosFixStart;
-        private GroupBox groupBox7;
-        private BrightIdeasSoftware.FastObjectListView fastObjectListViewFosFixFindAndReplace;
         private CheckBox checkBoxFosFixCompetenceTable2;
         private CheckBox checkBoxFosFixCompetenceTable1;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewFosList;
@@ -3030,7 +2773,6 @@
         private Label label21;
         private Label label20;
         private CheckedListBox checkedListBoxRpdFixEduWorkTablesEvalTools2ndStageItems;
-        private CheckBox checkBoxRpdFixFindAndReplace;
         private GroupBox groupBoxFileFixerSettings;
         private GroupBox groupBox12;
         private BrightIdeasSoftware.FastObjectListView fastObjectListViewFileFixerDocProperties;

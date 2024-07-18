@@ -2645,12 +2645,6 @@ namespace FosMan {
             if (!(m_config.Departments?.Any() ?? false)) {
                 m_config.Departments = Department.DefaultDepartments;
             }
-            if (!(m_config.RpdFixDocPropertyList?.Any() ?? false)) {
-                m_config.RpdFixDocPropertyList = DocProperty.DefaultProperties;
-            }
-            if (!(m_config.FosFixDocPropertyList?.Any() ?? false)) {
-                m_config.FosFixDocPropertyList = DocProperty.DefaultProperties;
-            }
             if (!(m_config.FileFixerDocProps?.Any() ?? false)) {
                 m_config.FileFixerDocProps = DocProperty.DefaultProperties;
             }
@@ -2695,9 +2689,6 @@ namespace FosMan {
                 if (Config.RpdFixSetPrevAndNextDisciplines) {
                     rep.Append("<li>Заполнение списков предыдущих и последующих дисциплин</li>");
                 }
-                if (Config.RpdFixRemoveColorSelections) {
-                    rep.Append("<li>Очистка цветных выделений для служебных областей</li>");
-                }
                 if (Config.RpdFixEduWorkTablesFullRecreate) {
                     rep.Append("<li>Таблицы содержания дисциплины: полное перестроение</li>");
                 }
@@ -2715,17 +2706,6 @@ namespace FosMan {
                 }
 
                 List<FindAndReplaceItem> findAndReplaceItems = new();
-                if (App.Config.RpdFixFindAndReplace) {
-                    findAndReplaceItems = Config.RpdFixFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
-                    if (App.Config.RpdFixFindAndReplace && findAndReplaceItems != null && findAndReplaceItems.Any()) {
-                        var tdStyle = "style='border: 1px solid;'";
-                        rep.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
-                        foreach (var item in findAndReplaceItems) {
-                            rep.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
-                        }
-                        rep.Append("</table></li>");
-                    }
-                }
                 rep.Append("</ul>");
 
                 foreach (var rpd in rpdList) {
@@ -2772,16 +2752,7 @@ namespace FosMan {
 
                             var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
 
-                            var setDocProperties = Config.RpdFixDocPropertyList?.Where(i => i.IsChecked).ToList();
-
                             using (var docx = DocX.Load(rpd.SourceFileName)) {
-                                if (setDocProperties?.Any() ?? false) {
-                                    foreach (var item in setDocProperties) {
-                                        ///docx.CoreProperties[item.Name] = item.Value;
-                                        docx.AddCoreProperty(item.Name, item.Value);
-                                    }
-                                }
-
                                 EEvaluationTool[] evalTools = null;
                                 string[][] studyResults = null;             //здесь будут формироваться значения для таблиц учебных работ по формам обучения
 
@@ -2848,7 +2819,7 @@ namespace FosMan {
                                     findAndReplaceItems.AddRange(extraReplaceItems);
                                 }
 
-                                if ((findAndReplaceItems?.Any() ?? false) || App.Config.RpdFixRemoveColorSelections) {
+                                if ((findAndReplaceItems?.Any() ?? false)) {
                                     foreach (var par in docx.Paragraphs) {
                                         //поиск и замена
                                         if (findAndReplaceItems?.Any() ?? false) {
@@ -2864,13 +2835,6 @@ namespace FosMan {
                                                     replaceCount++;
                                                 }
                                             }
-                                        }
-                                        //очистка цветных выделений
-                                        if (App.Config.RpdFixRemoveColorSelections) {
-                                            par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
-                                            par.Highlight(Highlight.none);
-                                            //par.lis
-                                            //docx.Lists.ForEach(l => l.sele)
                                         }
                                     }
                                     rep.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");
@@ -3083,18 +3047,7 @@ namespace FosMan {
                 if (Config.FosFixCompetenceIndicators) {
                     rep.Append("<li>Коррекция кодов индикаторов компетенций в таблицах описания оценочных средств</li>");
                 }
-                if (Config.FosFixResetSelection) {
-                    rep.Append("<li>Очистка цветных выделений для служебных областей</li>");
-                }
-                var findAndReplaceItems = Config.FosFixFindAndReplaceItems?.Where(i => i.IsChecked).ToList();
-                if (findAndReplaceItems != null && findAndReplaceItems.Any()) {
-                    var tdStyle = "style='border: 1px solid;'";
-                    rep.Append($"<li><table {tdStyle}><tr><th {tdStyle}><b>Найти</b></th><th {tdStyle}><b>Заменить на</b></th></tr>");
-                    foreach (var item in findAndReplaceItems) {
-                        rep.Append($"<tr><td {tdStyle}>{item.FindPattern}</td><td {tdStyle}>{item.ReplacePattern}</td></tr>");
-                    }
-                    rep.Append("</table></li>");
-                }
+                List<FindAndReplaceItem> findAndReplaceItems = null;
                 rep.Append("</ul>");
 
                 foreach (var fos in fosList) {
@@ -3146,16 +3099,7 @@ namespace FosMan {
 
                             //var eduSummaryTableIsFixed = false; //флаг, что в процессе работы была исправлена сводная таблица учебных работ
 
-                            var setDocProperties = Config.FosFixDocPropertyList?.Where(i => i.IsChecked).ToList();
-
                             using (var docx = DocX.Load(fos.SourceFileName)) {
-                                if (setDocProperties?.Any() ?? false) {
-                                    foreach (var item in setDocProperties) {
-                                        ///docx.CoreProperties[item.Name] = item.Value;
-                                        docx.AddCoreProperty(item.Name, item.Value);
-                                    }
-                                }
-
                                 var evalToolTables = new Dictionary<int, Table>();
                                 if (App.Config.FosFixCompetenceIndicators) {
                                     foreach (var item in fos.EvalTools) {
@@ -3268,7 +3212,7 @@ namespace FosMan {
                                 //обработка "найти и заменить"
                                 var replaceCount = 0;
 
-                                if ((findAndReplaceItems?.Any() ?? false) || App.Config.FosFixResetSelection) {
+                                if ((findAndReplaceItems?.Any() ?? false)) {
                                     foreach (var par in docx.Paragraphs) {
                                         //поиск и замена
                                         if (findAndReplaceItems?.Any() ?? false) {
@@ -3284,11 +3228,6 @@ namespace FosMan {
                                                     replaceCount++;
                                                 }
                                             }
-                                        }
-                                        //очистка цветных выделений
-                                        if (App.Config.FosFixResetSelection) {
-                                            par.ShadingPattern(new ShadingPattern() { Fill = Color.Transparent, StyleColor = Color.Transparent }, ShadingType.Paragraph);
-                                            par.Highlight(Highlight.none);
                                         }
                                     }
                                     rep.Append($"<div>Осуществлено замен в тексте: {replaceCount}</div>");

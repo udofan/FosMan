@@ -59,16 +59,6 @@ namespace FosMan {
         [JsonInclude]
         public bool RpdFixTableOfEduWorks { get; set; } = true;
         /// <summary>
-        /// Применять настройку "найти и заменить" для режима исправлений РПД
-        /// </summary>
-        [JsonInclude]
-        public bool RpdFixFindAndReplace { get; set; } = false;
-        /// <summary>
-        /// Элементы списка "найти и заменить" для режима исправлений РПД
-        /// </summary>
-        [JsonInclude]
-        public List<FindAndReplaceItem> RpdFixFindAndReplaceItems { get; set; } = [];
-        /// <summary>
         /// Целевая директория для генерируемых РПД
         /// </summary>
         [JsonInclude]
@@ -128,20 +118,10 @@ namespace FosMan {
         [JsonInclude]
         public bool RpdFixSetPrevAndNextDisciplines { get; set; }
         /// <summary>
-        /// Убирать выделение цветом служебных областей
-        /// </summary>
-        [JsonInclude]
-        public bool RpdFixRemoveColorSelections { get; set; }
-        /// <summary>
         /// Последняя выбранная локация файлов УП
         /// </summary>
         [JsonInclude]
         public string CurriculumLastLocation { get; set; }
-        /// <summary>
-        /// Список свойств документа РПД
-        /// </summary>
-        [JsonInclude]
-        public List<DocProperty> RpdFixDocPropertyList { get; set; }
         /// <summary>
         /// Коррекция РПД: брать оценочные средства из ФОС
         /// </summary>
@@ -209,11 +189,6 @@ namespace FosMan {
         [JsonInclude]
         public bool FosFixPassportTable { get; set; }
         /// <summary>
-        /// Сброс цветовых выделений
-        /// </summary>
-        [JsonInclude]
-        public bool FosFixResetSelection { get; set; }
-        /// <summary>
         /// Коррекция кодов индикаторов компетенций в таблицах описания оценочных средств
         /// </summary>
         [JsonInclude]
@@ -223,16 +198,6 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public string FosFixTargetDir { get; set; }
-        /// <summary>
-        /// Элементы списка "найти и заменить" для режима исправлений ФОС
-        /// </summary>
-        [JsonInclude]
-        public List<FindAndReplaceItem> FosFixFindAndReplaceItems { get; set; } = [];
-        /// <summary>
-        /// Список свойств документа ФОС
-        /// </summary>
-        [JsonInclude]
-        public List<DocProperty> FosFixDocPropertyList { get; set; }
         /// <summary>
         /// Последняя директория, откуда добавлялись файлы в режим коррекции файлов
         /// </summary>

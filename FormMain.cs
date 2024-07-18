@@ -557,10 +557,6 @@ namespace FosMan {
             TuneFosList(fastObjectListViewFosList);
             TuneDisciplineList(fastObjectListViewDisciplines, true);
             TuneDisciplineList(fastObjectListViewDisciplineListForGeneration, false);
-            TuneFindAndReplaceList(fastObjectListViewRpdFixFindAndReplaceItems);
-            TuneFindAndReplaceList(fastObjectListViewFosFixFindAndReplace);
-            TuneDocPropertiesList(fastObjectListViewRpdFixDocProperties);
-            TuneDocPropertiesList(fastObjectListViewFosFixDocProperties);
             TuneFileFixerFileList(fastObjectListViewFileFixerFiles);
 
             //список шаблонов
@@ -574,8 +570,6 @@ namespace FosMan {
             }
 
             //восстановим элементы из конфига
-            fastObjectListViewRpdFixFindAndReplaceItems.AddObjects(App.Config.RpdFixFindAndReplaceItems);
-            fastObjectListViewRpdFixDocProperties.AddObjects(App.Config.RpdFixDocPropertyList);
             m_matrixFileName = App.Config.CompetenceMatrixFileName ?? "";
             ShowHideFixMode(fastObjectListViewRpdList, splitContainerRpd, false);
             ShowHideFixMode(fastObjectListViewFosList, splitContainerFos, false);
@@ -597,19 +591,14 @@ namespace FosMan {
             textBoxRpdFixFileTemplate.Text = App.Config.RpdFixTemplateFileName;
             checkBoxRpdFixByTemplate.Checked = App.Config.RpdFixByTemplate;
             checkBoxRpdFixSetPrevAndNextDisciplines.Checked = App.Config.RpdFixSetPrevAndNextDisciplines;
-            checkBoxRpdFixRemoveColorSelection.Checked = App.Config.RpdFixRemoveColorSelections;
-            checkBoxRpdFixFindAndReplace.Checked = App.Config.RpdFixFindAndReplace;
             checkBoxRpdFixEduWorkTablesFullRecreate.Checked = App.Config.RpdFixEduWorkTablesFullRecreate;
             checkBoxRpdFixEduWorksEvalToolsTakeFromFos.Checked = App.Config.RpdFixEduWorkTablesTakeEvalToolsFromFos;
 
             checkBoxFosFixCompetenceTable1.Checked = App.Config.FosFixCompetenceTable1;
             checkBoxFosFixCompetenceTable2.Checked = App.Config.FosFixCompetenceTable2;
             checkBoxFosFixPassportTable.Checked = App.Config.FosFixPassportTable;
-            checkBoxFosFixResetSelection.Checked = App.Config.FosFixResetSelection;
             checkBoxFosFixCompetenceIndicators.Checked = App.Config.FosFixCompetenceIndicators;
             textBoxFosFixTargetDir.Text = App.Config.FosFixTargetDir;
-            fastObjectListViewFosFixFindAndReplace.AddObjects(App.Config.FosFixFindAndReplaceItems);
-            fastObjectListViewFosFixDocProperties.AddObjects(App.Config.FosFixDocPropertyList);
 
             toolStripTextBoxFileFixerTargetDir.Text = App.Config.FileFixerLastDirectory;
             toolStripTextBoxFileFixerFind.Text = App.Config.FileFixerFindText;
@@ -1434,34 +1423,8 @@ namespace FosMan {
             ShowHideFixMode(fastObjectListViewRpdList, splitContainerRpd, splitContainerRpd.SplitterDistance == 0);
         }
 
-        private void buttonAddFindAndReplaceItem_Click(object sender, EventArgs e) {
-            var newItem = new FindAndReplaceItem();
-            fastObjectListViewRpdFixFindAndReplaceItems.AddObject(newItem);
-            fastObjectListViewRpdFixFindAndReplaceItems.FocusedObject = newItem;
-            fastObjectListViewRpdFixFindAndReplaceItems.EnsureModelVisible(newItem);
-            fastObjectListViewRpdFixFindAndReplaceItems.EditModel(newItem);
-            fastObjectListViewRpdFixFindAndReplaceItems.CheckObject(newItem);
-
-            App.Config.RpdFixFindAndReplaceItems.Add(newItem);
-        }
-
         private void fastObjectListViewRpdFixFindAndReplaceItems_CellEditFinished(object sender, CellEditEventArgs e) {
             App.SaveConfig();
-        }
-
-        private void buttonRemoveFindAndReplaceItems_Click(object sender, EventArgs e) {
-            if (fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects.Count > 0) {
-                var ret = MessageBox.Show($"Вы уверены, что хотите удалить выделенные элементы ({fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects.Count} шт.)?",
-                    "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-                if (ret == DialogResult.Yes) {
-                    foreach (var item in fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects) {
-                        App.Config.RpdFixFindAndReplaceItems.Remove(item as FindAndReplaceItem);
-                    }
-                    App.SaveConfig();
-
-                    fastObjectListViewRpdFixFindAndReplaceItems.RemoveObjects(fastObjectListViewRpdFixFindAndReplaceItems.SelectedObjects);
-                }
-            }
         }
 
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e) {
@@ -1831,11 +1794,6 @@ namespace FosMan {
             else {
                 MessageBox.Show("Необходимо выделить файлы, к которым требуется применить функцию.", "Генерация списка дисциплин", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
-        }
-
-        private void checkBoxRpdFixResetColorSelection_CheckedChanged(object sender, EventArgs e) {
-            App.Config.RpdFixRemoveColorSelections = checkBoxRpdFixRemoveColorSelection.Checked;
-            App.SaveConfig();
         }
 
         private void iconButtonRpdRefresh_Click(object sender, EventArgs e) {
@@ -2243,11 +2201,6 @@ namespace FosMan {
             App.SaveConfig();
         }
 
-        private void checkBoxFosFixResetSelection_CheckedChanged(object sender, EventArgs e) {
-            App.Config.FosFixResetSelection = checkBoxFosFixResetSelection.Checked;
-            App.SaveConfig();
-        }
-
         private void textBoxFosFixTargetDir_TextChanged(object sender, EventArgs e) {
             App.Config.FosFixTargetDir = textBoxFosFixTargetDir.Text;
             App.SaveConfig();
@@ -2262,34 +2215,8 @@ namespace FosMan {
             }
         }
 
-        private void buttonFosFixAddFindAndReplaceItem_Click(object sender, EventArgs e) {
-            var newItem = new FindAndReplaceItem();
-            fastObjectListViewFosFixFindAndReplace.AddObject(newItem);
-            fastObjectListViewFosFixFindAndReplace.FocusedObject = newItem;
-            fastObjectListViewFosFixFindAndReplace.EnsureModelVisible(newItem);
-            fastObjectListViewFosFixFindAndReplace.EditModel(newItem);
-            fastObjectListViewFosFixFindAndReplace.CheckObject(newItem);
-
-            App.Config.FosFixFindAndReplaceItems.Add(newItem);
-        }
-
         private void iconToolStripButtonFosFixMode_Click(object sender, EventArgs e) {
             ShowHideFixMode(fastObjectListViewFosList, splitContainerFos, splitContainerFos.SplitterDistance == 0);
-        }
-
-        private void buttonFosFixRemoveFindAndReplaceItem_Click(object sender, EventArgs e) {
-            if (fastObjectListViewFosFixFindAndReplace.SelectedObjects.Count > 0) {
-                var ret = MessageBox.Show($"Вы уверены, что хотите удалить выделенные элементы ({fastObjectListViewFosFixFindAndReplace.SelectedObjects.Count} шт.)?",
-                    "Внимание", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-                if (ret == DialogResult.Yes) {
-                    foreach (var item in fastObjectListViewFosFixFindAndReplace.SelectedObjects) {
-                        App.Config.FosFixFindAndReplaceItems.Remove(item as FindAndReplaceItem);
-                    }
-                    App.SaveConfig();
-
-                    fastObjectListViewFosFixFindAndReplace.RemoveObjects(fastObjectListViewFosFixFindAndReplace.SelectedObjects);
-                }
-            }
         }
 
         private void buttonFosFixStart_Click(object sender, EventArgs e) {
@@ -2345,15 +2272,6 @@ namespace FosMan {
 
             App.Config.RpdFixEduWorkTablesEvalTools2ndStageItems = checkedTools;
             App.SaveConfig();
-        }
-
-        private void checkBoxRpdFixFindAndReplace_CheckedChanged(object sender, EventArgs e) {
-            App.Config.RpdFixFindAndReplace = checkBoxRpdFixFindAndReplace.Checked;
-            App.SaveConfig();
-
-            buttonAddFindAndReplaceItem.Enabled = checkBoxRpdFixFindAndReplace.Checked;
-            buttonRemoveFindAndReplaceItems.Enabled = checkBoxRpdFixFindAndReplace.Checked;
-            fastObjectListViewRpdFixFindAndReplaceItems.Enabled = checkBoxRpdFixFindAndReplace.Checked;
         }
 
         private void checkBoxRpdFixEduWorkTablesFixComptenceResults_CheckedChanged(object sender, EventArgs e) {
