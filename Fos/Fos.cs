@@ -123,7 +123,15 @@ namespace FosMan {
         /// Таблица паспорта
         /// </summary>
         [JsonIgnore]
-        public Table TableOfPassport{ get; set; }
+        public Table TableOfPassport { get; set; }
+
+        public Fos() {
+        }
+
+        public Fos(string sourceFile) {
+            Clear();
+            SourceFileName = sourceFile;
+        }
 
         /// <summary>
         /// Очистка ФОС
@@ -153,9 +161,7 @@ namespace FosMan {
         /// </summary>
         /// <param name="fileName"></param>
         public static Fos LoadFromFile(string fileName, Fos fos = null) {
-            fos ??= new();
-            fos.Clear();
-            fos.SourceFileName = fileName;
+            fos ??= new(fileName);
 
             try {
                 if (!DocParser.TryParse(fileName, fos, FosParser.Rules, out var errorList)) {

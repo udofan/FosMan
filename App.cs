@@ -1581,7 +1581,11 @@ namespace FosMan {
                         File.Copy(fosTemplate, targetFile, true);
 
                         using (var docx = DocX.Load(targetFile)) {
-                            //docx.InsertTableOfSummarys()
+                            var templateFos = new Fos(fosTemplate);
+                            if (!DocParser.TryParse(fosTemplate, templateFos, FosParser.Rules, out var errorList, docx)) {
+                                throw new Exception("Не удалось распарсить шаблон ФОС.");
+                            }
+
                             //этап 1. подстановка полей {...}
                             foreach (var par in docx.Paragraphs.ToList()) {
                                 var replaceOptions = new FunctionReplaceTextOptions() {
@@ -1627,6 +1631,42 @@ namespace FosMan {
                                     if (CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Fos22) {
                                         RecreateFosTableOfCompetences2(table, rpd, false);
                                         competenceTable22IsOk = true;
+                                    }
+                                }
+                            }
+                            if (!passportTableIsOk) {
+                                rep.AddError("Не удалось сформировать паспорт ФОС");
+                            }
+                            if (!competenceTable21IsOk) {
+                                rep.AddError("Не удалось сформировать таблицу компетенций 2.2");
+                            }
+                            if (!competenceTable22IsOk) {
+                                rep.AddError("Не удалось сформировать таблицу компетенций 2.1");
+                            }
+
+                            //этап 3. вставка компетенций в таблицы оценочных средств
+                            var allCodes = rpd.CompetenceMatrix.GetAllAchievementCodes().ToList();
+
+                            foreach (var item in templateFos.EvalTools) {
+                                var indicatorCodes = new List<string>();
+                                foreach (var m in rpd.EducationalWorks[EFormOfStudy.FullTime].Modules) {
+                                    if (m.EvaluationTools.Contains(item.Key)) {
+                                        var topicIndicators = rpd.CompetenceMatrix.GetAchievements(m.CompetenceResultCodes);
+                                        indicatorCodes.AddRange(topicIndicators.Select(achi => achi.Code));
+                                    }
+                                }
+                                if (indicatorCodes.Any()) {
+                                    var codes = indicatorCodes.ToHashSet().ToList();
+                                    codes.Sort((x1, x2) => allCodes.IndexOf(x1) - allCodes.IndexOf(x2));
+                                    foreach (var tool in item.Value) {
+                                        if (tool.Table.RowCount > 1) {
+                                            tool.Table.Rows[1].Cells[tool.TableColIndexCompetenceIndicators].SetTextFormatted(string.Join("\n", codes));
+                                        }
+                                        else {
+                                            errorCount++;
+                                            rep.AddError($"В таблице оценочного средства {item.Key.GetDescription()} должно быть не менее двух рядов");
+                                        }
+                                        //rep.Append($"<div style='color: green'>В таблицу оценочного средства [{item.Key.GetDescription()}] добавлены индикаторы компетенций.</div>");
                                     }
                                 }
                             }
@@ -1902,6 +1942,24 @@ namespace FosMan {
                             currPar = currPar.InsertParagraphAfterSelf("");
                             currPar.IndentationFirstLine = 35;
                             currPar.Append($"{++newParCount}. {questionText}").FontSize(14).ShadingPattern(shadingPattern, ShadingType.Paragraph);
+                        }
+                        result = true;
+                    }
+                    if (propName.Equals("QuestionsFos", StringComparison.CurrentCultureIgnoreCase) &&
+                        (rpd.QuestionList?.Any() ?? false)) {
+                        replaceValue = "";
+                        //var numberedList = docX.AddList(new ListOptions());
+                        //numberedList.
+                        var currPar = par;
+                        var shadingPattern = new ShadingPattern() { Fill = Color.Yellow };
+                        foreach (var questionText in rpd.QuestionList) {
+                            currPar = currPar.InsertParagraphAfterSelf("");
+                            currPar.SetLineSpacing(LineSpacingType.Line, 12);
+                            currPar.SetLineSpacing(LineSpacingType.Before, 0);
+                            currPar.SetLineSpacing(LineSpacingType.After, 0);
+                            currPar.Alignment = Alignment.left;
+                            currPar.IndentationFirstLine = 0.1f;
+                            currPar.Append($"{++newParCount}. {questionText}").FontSize(12).ShadingPattern(shadingPattern, ShadingType.Paragraph);
                         }
                         result = true;
                     }

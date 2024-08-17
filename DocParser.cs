@@ -36,7 +36,7 @@ namespace FosMan {
         /// <param name="fileName"></param>
         /// <param name="targetObj">целевой объект</param>
         /// <param name="rules"></param>
-        public static bool TryParse<T>(string fileName, T targetObj, IEnumerable<IDocParseRule<T>> rules, out ErrorList errors) where T : BaseObj {
+        public static bool TryParse<T>(string fileName, T targetObj, IEnumerable<IDocParseRule<T>> rules, out ErrorList errors, DocX docx = null) where T : BaseObj {
             var result = false;
             errors = new();
 
@@ -46,74 +46,75 @@ namespace FosMan {
                 //foreach (var rule in rules) rule.Disabled = false;
 
                 if (File.Exists(fileName)) {
-                    using (var docx = DocX.Load(fileName)) {
+                    if (docx == null) {
+                        using (docx = DocX.Load(fileName)) ;
+                    }
 
-                        IDocParseRule<T> catchingRule = null;
-                        StringBuilder catchingValue = new();
+                    IDocParseRule<T> catchingRule = null;
+                    StringBuilder catchingValue = new();
                         
-                        //цикл по параграфам
-                        foreach (var par in docx.Paragraphs) {
-                            var text = par.GetText(docx).Trim(' ', '\r', '\n', '\t');
-                            //if (par.IsListItem) {
-                            //    //var tt = par.GetListItemNumber();
-                            //    if (!string.IsNullOrEmpty(text) && par.GetListItemNumber() != null) {
-                            //        var tt = par.GetText(docx);     //отладка
-                            //    }
-                            //}
+                    //цикл по параграфам
+                    foreach (var par in docx.Paragraphs) {
+                        var text = par.GetText(docx).Trim(' ', '\r', '\n', '\t');
+                        //if (par.IsListItem) {
+                        //    //var tt = par.GetListItemNumber();
+                        //    if (!string.IsNullOrEmpty(text) && par.GetListItemNumber() != null) {
+                        //        var tt = par.GetText(docx);     //отладка
+                        //    }
+                        //}
 
-                            if (catchingRule != null) { //если в режиме отлова строк для правила catchingRule
-                                if (catchingRule.StopMarkers == null) {
-                                    //errors.Add($"Для правила {catchingRule.PropertyName} с типом {catchingRule.Type} не заданы StopMarkers");
-                                    errors.Add(EErrorType.ParseRuleMissingStopMarkers, $"правило {catchingRule.PropertyName}");
-                                    catchingRule = null; //сброс захвата
-                                    continue;
-                                }
-                                //var stopCatch = catchingRule.StopMarkers.Any(r => r.IsMatch(text));
-                                (Regex regex, Match match, int idx) m = catchingRule.StopMarkers.Select(x => (x.marker, x.marker.Match(text), x.catchGroupIdx)).FirstOrDefault(x => x.Item2.Success);
-                                if (m.match != null) {
-                                    if (m.idx >= 0) { //требуется захват значения, где сработал маркер останова
-                                        if (!string.IsNullOrEmpty(catchingRule.MultilineConcatValue) && catchingValue.Length > 0) {
-                                            catchingValue.Append(catchingRule.MultilineConcatValue);
-                                        }
-                                        catchingValue.Append(m.match.Groups[m.idx].Value);
-                                    }
-                                    //захват будем считать завершенным, когда было захвачено значение
-                                    if (catchingValue.Length > 0) {
-                                        ApplyValue(catchingRule, null, targetObj, text, catchingValue.ToString(), par, docx, errors);
-                                        catchingValue.Clear();
-                                        catchingRule = null; //сброс правила-ловца строк
-                                    }
-                                }
-                                else { //продолжаем захват
+                        if (catchingRule != null) { //если в режиме отлова строк для правила catchingRule
+                            if (catchingRule.StopMarkers == null) {
+                                //errors.Add($"Для правила {catchingRule.PropertyName} с типом {catchingRule.Type} не заданы StopMarkers");
+                                errors.Add(EErrorType.ParseRuleMissingStopMarkers, $"правило {catchingRule.PropertyName}");
+                                catchingRule = null; //сброс захвата
+                                continue;
+                            }
+                            //var stopCatch = catchingRule.StopMarkers.Any(r => r.IsMatch(text));
+                            (Regex regex, Match match, int idx) m = catchingRule.StopMarkers.Select(x => (x.marker, x.marker.Match(text), x.catchGroupIdx)).FirstOrDefault(x => x.Item2.Success);
+                            if (m.match != null) {
+                                if (m.idx >= 0) { //требуется захват значения, где сработал маркер останова
                                     if (!string.IsNullOrEmpty(catchingRule.MultilineConcatValue) && catchingValue.Length > 0) {
                                         catchingValue.Append(catchingRule.MultilineConcatValue);
                                     }
-                                    catchingValue.Append(text);
+                                    catchingValue.Append(m.match.Groups[m.idx].Value);
+                                }
+                                //захват будем считать завершенным, когда было захвачено значение
+                                if (catchingValue.Length > 0) {
+                                    ApplyValue(catchingRule, null, targetObj, text, catchingValue.ToString(), par, docx, errors);
+                                    catchingValue.Clear();
+                                    catchingRule = null; //сброс правила-ловца строк
                                 }
                             }
-                            else { //отлова нет
-                                if (string.IsNullOrWhiteSpace(text)) {
-                                    continue; //пустые строки пропускаем
+                            else { //продолжаем захват
+                                if (!string.IsNullOrEmpty(catchingRule.MultilineConcatValue) && catchingValue.Length > 0) {
+                                    catchingValue.Append(catchingRule.MultilineConcatValue);
                                 }
-                                foreach (var rule in activeRules.ToHashSet()) {
-                                    (Regex regex, Match match, int idx) m = rule.StartMarkers.Select(x => (x.marker, x.marker.Match(text), x.catchGroupIdx)).FirstOrDefault(x => x.Item2.Success);
-                                    if (m.match != null) {
-                                        if (!rule.MultyApply) {
-                                            activeRules.Remove(rule);   //правило сработало - отключаем
-                                        }
-                                        //инлайн поиск значения
-                                        if (rule.Type == EParseType.Inline) {
-                                            ApplyValue(rule, m, targetObj, text, null, par, docx, errors);
-                                        }
-                                        else if (rule.Type == EParseType.Multiline) {
-                                            catchingValue.Clear();
-                                            if (m.idx >= 0) { //требуется захват с маркера начала
-                                                catchingValue.Append(m.match.Groups[m.idx].Value);
-                                            }
-                                            catchingRule = rule;
-                                        }
-                                        break;
+                                catchingValue.Append(text);
+                            }
+                        }
+                        else { //отлова нет
+                            if (string.IsNullOrWhiteSpace(text)) {
+                                continue; //пустые строки пропускаем
+                            }
+                            foreach (var rule in activeRules.ToHashSet()) {
+                                (Regex regex, Match match, int idx) m = rule.StartMarkers.Select(x => (x.marker, x.marker.Match(text), x.catchGroupIdx)).FirstOrDefault(x => x.Item2.Success);
+                                if (m.match != null) {
+                                    if (!rule.MultyApply) {
+                                        activeRules.Remove(rule);   //правило сработало - отключаем
                                     }
+                                    //инлайн поиск значения
+                                    if (rule.Type == EParseType.Inline) {
+                                        ApplyValue(rule, m, targetObj, text, null, par, docx, errors);
+                                    }
+                                    else if (rule.Type == EParseType.Multiline) {
+                                        catchingValue.Clear();
+                                        if (m.idx >= 0) { //требуется захват с маркера начала
+                                            catchingValue.Append(m.match.Groups[m.idx].Value);
+                                        }
+                                        catchingRule = rule;
+                                    }
+                                    break;
                                 }
                             }
                         }

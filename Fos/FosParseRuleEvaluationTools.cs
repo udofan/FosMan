@@ -29,7 +29,7 @@ namespace FosMan {
             (new(@"([\d+\.]*\d+)\.\s*(деловая\s+игра)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
             (new(@"([\d+\.]*\d+)\.\s*(эссе)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
             (new(@"([\d+\.]*\d+)\.\s*(реферат)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
-            (new(@"([\d+\.]*\d+)\.\s*(эссе[,\.]\s*реферат)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
+            (new(@"([\d+\.]*\d+)\.\s*(эссе[,\.\/]\s*реферат)\s*[\.]*$", RegexOptions.Compiled | RegexOptions.IgnoreCase), 2),
         ];
         public List<(Regex marker, int catchGroupIdx)> StopMarkers { get; set; } = null;
         public char[] TrimChars { get; set; } = null;
