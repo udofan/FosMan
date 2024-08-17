@@ -1527,6 +1527,146 @@ namespace FosMan {
 
             return files;
         }
+        
+        /// <summary>
+        /// Генерация ФОСов по списку РПД
+        /// </summary>
+        /// <param name="rpdList"></param>
+        /// <param name="targetDir"></param>
+        /// <param name="fileNameTemplate"></param>
+        /// <param name="htmlReport"></param>
+        public static void GenerateFosFiles(List<Rpd> rpdList, string targetDir, string fileNameTemplate,
+                                            Action<int, CurriculumDiscipline> progressAction, 
+                                            out string htmlReport) {
+            htmlReport = string.Empty;
+
+            StringBuilder html = new("<html><body><h2>Отчёт по генерации ФОС</h2>");
+            StringBuilder toc = new("<div><ul>");
+            StringBuilder rep = new("<div>");
+            var sw = Stopwatch.StartNew();
+            List<string> fosList = new();
+
+            if (!Directory.Exists(targetDir)) {
+                Directory.CreateDirectory(targetDir);
+            }
+
+            var idx = 0;
+            foreach (var rpd in rpdList) {
+                var anchor = $"rpd{idx}";
+                idx++;
+                rpd.ExtraErrors = new();
+                var errorCount = 0;
+
+                rep.Append($"<div id='{anchor}' style='width: 100%;'><h3 style='background-color: lightsteelblue'>{rpd.DisciplineName ?? "?"}</h3>");
+                rep.Append("<div style='padding-left: 30px'>");
+                rep.AddFileLink($"Файл РПД:", rpd.SourceFileName);
+                var swFile = Stopwatch.StartNew();
+                try {
+                    //получим целевой шаблон ФОС
+                    var fosTemplate = Templates.GetFosTemplate(rpd);
+
+                    if (!string.IsNullOrEmpty(fosTemplate)) {
+                        rep.AddFileLink($"Шаблон ФОС:", fosTemplate);
+
+                        progressAction?.Invoke(idx, rpd.Discipline);
+                        string fileName;
+                        if (!string.IsNullOrEmpty(fileNameTemplate)) {
+                            fileName = Regex.Replace(fileNameTemplate, @"({[^}]+})", (m) => rpd.GetProperty(m.Value.Trim('{', '}'))?.ToString() ?? m.Value);
+                        }
+                        else {  //если шаблон имени файла не задан
+                            fileName = $"ФОС_{rpd.Discipline.Index}_{rpd.Discipline.Name}.docx";
+                        }
+                        //создание файла
+                        var targetFile = Path.Combine(targetDir, fileName);
+                        File.Copy(fosTemplate, targetFile, true);
+
+                        using (var docx = DocX.Load(targetFile)) {
+                            //docx.InsertTableOfSummarys()
+                            //этап 1. подстановка полей {...}
+                            foreach (var par in docx.Paragraphs.ToList()) {
+                                var replaceOptions = new FunctionReplaceTextOptions() {
+                                    ContainerLocation = ReplaceTextContainer.All,
+                                    FindPattern = "{[^}]+}",
+                                    RegexMatchHandler = m => {
+                                        var replaceValue = m;
+                                        var propName = m.Trim('{', '}');
+                                        var prop = rpd?.GetProperty(propName) ?? rpd.Discipline?.GetProperty(propName);
+                                        if (prop != null) {
+                                            replaceValue = prop.ToString();
+                                        }
+                                        else if (TryProcessRpdSpecialField(propName, docx, par, null, null, rpd,
+                                                                           null,
+                                                                           out var specialValue, out var newParCount)) {
+                                            replaceValue = specialValue;
+                                        }
+                                        return replaceValue;
+                                    }
+                                };
+                                par.ReplaceText(replaceOptions);
+                            }
+                            var passportTableIsOk = false;
+                            var competenceTable21IsOk = false;
+                            var competenceTable22IsOk = false;
+
+                            //этап 2. заполнение/исправление таблиц
+                            foreach (var table in docx.Tables.ToList()) {
+                                if (!passportTableIsOk) {
+                                    //заполнение паспорта
+                                    if (TestTableForFosPassport(table, out _, out _)) {
+                                        RecreateFosTableOfPassport(table, rpd, true);
+                                        passportTableIsOk = true;
+                                    }
+                                }
+                                if (!competenceTable21IsOk) {
+                                    if (CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Fos21) {
+                                        RecreateFosTableOfCompetences1(table, rpd, false);
+                                        competenceTable21IsOk = true;
+                                    }
+                                }
+                                if (!competenceTable22IsOk) {
+                                    if (CompetenceMatrix.TestTable(table, out var format) && format == ECompetenceMatrixFormat.Fos22) {
+                                        RecreateFosTableOfCompetences2(table, rpd, false);
+                                        competenceTable22IsOk = true;
+                                    }
+                                }
+                            }
+                            //docx.UpdateFields();
+                            docx.Save();
+                        }
+
+                        fosList.Add(targetFile);
+                        rep.AddFileLink($"Итоговый файл:", targetFile);
+                        rep.AddDiv($"Время работы: {swFile.Elapsed}");
+                    }
+                    else {
+                        errorCount++;
+                        rep.AddError("Не удалось найти шаблон для ФОС. Генерация ФОС невозможна.");
+                    }
+                    if (errorCount == 0) {
+                        //rep.AddDiv("Ошибок не обнаружено.");
+                    }
+                }
+                catch (Exception ex) {
+                    errorCount++;
+                    rep.AddError($"ОШИБКА: {ex.Message}");
+                    rep.AddError($"Стек: {ex.StackTrace}");
+                }
+                rep.Append("</div></div>");
+
+                toc.AddTocElement(rpd.DisciplineName ?? "?", anchor, errorCount);
+            }
+            rep.Append("</div>");
+            toc.Append("</ul></div>");
+            html.AddDiv($"Дата генерации: {DateTime.Now}");
+            html.AddDiv($"Исходных РПД: {rpdList.Count}");
+            html.AddDiv($"Создано ФОС: {fosList.Count}");
+            html.AddDiv($"Время работы: {sw.Elapsed}");
+            html.Append("<p />");
+            html.AddDiv($"<b>Список исходных РПД:</b>");
+            html.Append(toc).Append(rep).Append("</body></html>");
+
+            htmlReport = html.ToString();
+        }
 
         /// Computes and returns the Damerau-Levenshtein edit distance between two strings, 
         /// i.e. the number of insertion, deletion, sustitution, and transposition edits
@@ -1706,7 +1846,8 @@ namespace FosMan {
         /// <param name="par"></param>
         /// <returns></returns>
         private static bool TryProcessRpdSpecialField(string propName, DocX docX, Paragraph par,
-                                                      CurriculumGroup curriculumGroup, CurriculumDiscipline discipline,
+                                                      CurriculumGroup curriculumGroup, 
+                                                      CurriculumDiscipline discipline,
                                                       Rpd rpd,
                                                       string replacementForMissedProps,
                                                       out string replaceValue,
@@ -1719,7 +1860,7 @@ namespace FosMan {
 
             //проверка на поле типа {FullTime.TotalHours} для таблиц времен учебных работ
             var parts = propName.Split('.');
-            if (parts.Length == 2) {
+            if (parts.Length == 2 && curriculumGroup != null) {
                 if (Enum.TryParse(parts[0], true, out EFormOfStudy formOfStudy)) {
                     var curriculum = curriculumGroup.Curricula.Values.FirstOrDefault(c => c.FormOfStudy == formOfStudy);
                     if (curriculum != null) {
@@ -4127,7 +4268,7 @@ namespace FosMan {
             try {
                 //ожидаем колонки
                 //№ п/п	- Контролируемые модули, разделы (темы) дисциплины - Код контролируемого индикатора достижения компетенции - Наименование оценочного средства
-                if (table.RowCount > 2 && table.Rows[0].Cells.Count >= 4) {
+                if (table.RowCount > 0 && table.Rows[0].Cells.Count >= 4) {
                     var headerRow = table.Rows[0];
                     var header1 = headerRow.Cells[1].GetText(); //Контролируемые модули, разделы (темы) дисциплины?
                     var header2 = headerRow.Cells[2].GetText(); //Код контролируемого индикатора достижения компетенции?

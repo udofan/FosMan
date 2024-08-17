@@ -44,6 +44,27 @@
     <None Update="Templates\РПД_шаблон_магистр_2024.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Templates\ФОС_оценочное_средство_доклад.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\ФОС_шаблон_Essay_Paper_PracticalWork_Testing_Exam.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\ФОС_шаблон_Essay_Paper_PracticalWork_Testing_Test.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\ФОС_шаблон_Essay_Paper_PracticalWork_Testing_TestWithAGrade.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\ФОС_шаблон_Survey_Paper_PracticalWork_Testing_ControlWork_Exam.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\ФОС_шаблон_Survey_Paper_PracticalWork_Testing_ControlWork_Test.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\ФОС_шаблон_Survey_Paper_PracticalWork_Testing_ControlWork_TestWithAGrade_ОЦ.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

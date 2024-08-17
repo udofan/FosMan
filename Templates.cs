@@ -39,6 +39,7 @@ namespace FosMan {
         /// </summary>
         /// <param name="eduWork"></param>
         /// <param name="workTable"></param>
+        /// <remarks>МЕТОД ДОЛЖЕН БЫТЬ доработан после изменения шаблона TEMPLATE_RPD_TABLE_EDU_WORK</remarks>
         internal static void AdoptEduWorkForTemplateTable(EducationalWork eduWork, Table workTable, int topicCount) {
             //МЕТОД ДОЛЖЕН БЫТЬ доработан после изменения шаблона TEMPLATE_RPD_TABLE_EDU_WORK
             eduWork.TableTopicStartRow = 3;
@@ -50,6 +51,25 @@ namespace FosMan {
             eduWork.TableTopicLastRow = eduWork.TableTopicStartRow + topicCount - 1;
             eduWork.TableControlRow = eduWork.TableTopicLastRow + 1;
             eduWork.TableStartNumCol = 1;
+        }
+
+        /// <summary>
+        /// Получить шаблон для ФОС по указанному РПД
+        /// </summary>
+        /// <param name="rpd"></param>
+        /// <returns></returns>
+        internal static string GetFosTemplate(Rpd rpd) {
+            var file = string.Empty;
+
+            foreach (var item in m_files) {
+                if (rpd.EvalTools.All(et => item.Key.Contains($"{et}_")) &&
+                    item.Key.Contains($"{rpd.ControlForm}.")) {
+                    file = item.Value;
+                    break;
+                }
+            }
+
+            return file;
         }
     }
 }

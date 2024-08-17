@@ -350,6 +350,14 @@ namespace FosMan {
                 AspectGetter = (x) => (x as Rpd)?.CompetenceMatrix?.Items?.Any() ?? false
             };
             list.Columns.Add(olvColumnCompetenceMatrix);
+            //оценочные средства
+            list.Columns.Add(new OLVColumn("Оценочные средства", nameof(Rpd.EvalTools)) {
+                Width = 120,
+                IsEditable = false,
+                AspectGetter = (x) => {
+                    return string.Join(", ", (x as Rpd).EvalTools.Select(t => t.GetAttribute<EvaluationToolAttribute>()?.ShortDescription ?? t.GetDescription()));
+                }
+            });
             //объем дисциплины (часы по формам обучения)
             var olvColumnEducationWork = new OLVColumn("Объем", nameof(Rpd.EducationalWorks)) {
                 Width = 60,
@@ -2690,7 +2698,7 @@ namespace FosMan {
                 var report = App.FindTextInFiles(toolStripTextBoxFileFixerFind.Text, files);
 
                 AddReport("Поиск текста в файлах", report);
-                
+
                 StopProcess("Поиск файлов завершен.");
             }
         }
@@ -2707,7 +2715,7 @@ namespace FosMan {
                 AddReport("Коррекция файлов", htmlReport);
             }
             else {
-                MessageBox.Show("Необходимо выделить файлы, которые требуется скорректировать.", "Коррекция файлов", 
+                MessageBox.Show("Необходимо выделить файлы, которые требуется скорректировать.", "Коррекция файлов",
                                 MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
@@ -2813,10 +2821,32 @@ namespace FosMan {
                     RecurseSubdirectories = true,
                     MaxRecursionDepth = 100
                 }).Except(oldFiles);
-                
+
                 if (files.Any()) {
                     AddFilesToFileFixerMode(files);
                 }
+            }
+        }
+
+        private void iconButtonRpdGenFos_Click(object sender, EventArgs e) {
+            var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
+            if (rpdList.Any()) {
+                App.GenerateFosFiles(
+                    rpdList, 
+                    App.Config.RpdFixTargetDir, 
+                    "",
+                    (int idx, CurriculumDiscipline discipline) => {
+                        this.Invoke(new MethodInvoker(() => {
+                            labelRpdGenStatus.Text = $"Генерация ФОС для дисциплины\r\n[{discipline.Name}]\r\n" +
+                                                     $"({idx} из {rpdList.Count})... ";
+                            Application.DoEvents();
+                        }));
+                    }, out var htmlReport);
+                AddReport("Генерация ФОС", htmlReport);
+            }
+            else {
+                MessageBox.Show("Перед генерацией ФОС выберите исходные РПД", "Генерация ФОС", 
+                                MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }

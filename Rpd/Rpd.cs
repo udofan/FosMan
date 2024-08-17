@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 using static FosMan.Enums;
@@ -211,6 +212,15 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public List<EFormOfStudy> FormsOfStudy { get; set; }
+        [JsonIgnore]
+        public string FormsOfStudyList {
+            get {
+                var forms = FormsOfStudy.ToList();
+                forms.Sort((x1, x2) => (int)x1 - (int)x2);
+                return string.Join(", ", forms.Select(f => f.GetDescription())).ToLower();
+            }
+            //set => m_formsOfStudyList = value;
+        }
         /// <summary>
         /// Матрица компетенций (п. 1 в РПД)
         /// </summary>
@@ -327,6 +337,37 @@ namespace FosMan {
         /// </summary>
         [JsonInclude]
         public List<string> ReferencesExtra { get; set; }
+        /// <summary>
+        /// Оценочные средства в виде списка
+        /// </summary>
+        [JsonIgnore]
+        public List<EEvaluationTool> EvalTools {
+            get {
+                var list = new List<EEvaluationTool>();
+                if ((EducationalWorks?.TryGetValue(EFormOfStudy.FullTime, out var eduWork) ?? false) &&
+                    eduWork.Modules != null) {
+                    foreach (var m in eduWork.Modules) {
+                        list.AddRange(m.EvaluationTools ?? []); //.Select(t => t.GetAttribute<EvaluationToolAttribute>()?.ShortDescription ?? t.GetDescription()));
+                    }
+                    list = list.Distinct().Order().ToList();
+                    //list = string.Join(", ", evalTools.ToHashSet());
+                }
+                return list;
+            }
+        }
+        /// <summary>
+        /// Форма контроля
+        /// </summary>
+        [JsonIgnore]
+        public EControlForm ControlForm {
+            get {
+                var form = EControlForm.Unknown;
+                if (EducationalWorks?.TryGetValue(EFormOfStudy.FullTime, out var eduWork) ?? false) {
+                    form = eduWork.ControlForm;
+                }
+                return form;
+            }
+        }
 
         /// <summary>
         /// Очистка РПД

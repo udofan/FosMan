@@ -100,7 +100,7 @@ namespace FosMan {
             Test,           //зачет
             [Description("Зачет с оценкой")]
             TestWithAGrade, //зачет с оценкой
-            [Description("Контрольная работа")]
+            [Description("Курсовая работа")]
             CourseWork,     //курсовая работа
             [Description("НЕИЗВЕСТНО")]
             Unknown         //определить НЕ УДАЛОСЬ

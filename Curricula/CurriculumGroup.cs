@@ -63,9 +63,12 @@ namespace FosMan {
         /// </summary>
         public string FormsOfStudyList {
             get {
-                var forms = FormsOfStudy.ToList();
-                forms.Sort((x1, x2) => (int)x1 - (int)x2);
-                return string.Join(", ", forms.Select(f => f.GetDescription())).ToLower();
+                if (m_formsOfStudyList == null) {
+                    var forms = FormsOfStudy.ToList();
+                    forms.Sort((x1, x2) => (int)x1 - (int)x2);
+                    m_formsOfStudyList = string.Join(", ", forms.Select(f => f.GetDescription())).ToLower();
+                }
+                return m_formsOfStudyList;
             }
             set => m_formsOfStudyList = value;
         }
