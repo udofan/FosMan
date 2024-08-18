@@ -1590,6 +1590,34 @@ namespace FosMan {
                                 throw new Exception("Не удалось распарсить шаблон ФОС.");
                             }
 
+                            //вставка компетенций в таблицы оценочных средств
+                            //(этап 1, т.к. используются свойства с запомненными таблицами)
+                            var allCodes = rpd.CompetenceMatrix.GetAllAchievementCodes().ToList();
+
+                            foreach (var item in templateFos.EvalTools) {
+                                var indicatorCodes = new List<string>();
+                                foreach (var m in rpd.EducationalWorks[EFormOfStudy.FullTime].Modules) {
+                                    if (m.EvaluationTools.Contains(item.Key)) {
+                                        var topicIndicators = rpd.CompetenceMatrix.GetAchievements(m.CompetenceResultCodes);
+                                        indicatorCodes.AddRange(topicIndicators.Select(achi => achi.Code));
+                                    }
+                                }
+                                if (indicatorCodes.Any()) {
+                                    var codes = indicatorCodes.ToHashSet().ToList();
+                                    codes.Sort((x1, x2) => allCodes.IndexOf(x1) - allCodes.IndexOf(x2));
+                                    foreach (var tool in item.Value) {
+                                        if (tool.Table.RowCount > 1) {
+                                            tool.Table.Rows[1].Cells[tool.TableColIndexCompetenceIndicators].SetTextFormatted(string.Join("\n", codes));
+                                        }
+                                        else {
+                                            errorCount++;
+                                            rep.AddError($"В таблице оценочного средства {item.Key.GetDescription()} должно быть не менее двух рядов");
+                                        }
+                                        //rep.Append($"<div style='color: green'>В таблицу оценочного средства [{item.Key.GetDescription()}] добавлены индикаторы компетенций.</div>");
+                                    }
+                                }
+                            }
+
                             //подстановка полей {<PropName>}
                             foreach (var par in docx.Paragraphs.ToList()) {
                                 var replaceOptions = new FunctionReplaceTextOptions() {
@@ -1620,12 +1648,18 @@ namespace FosMan {
                             string propValue = null;
                             bool keepBlock = false;
 
-                            foreach (var par in docx.Paragraphs.ToList()) {
-                                var text = par.Text.Trim();
+                            Paragraph p = docx.Paragraphs.First();
+
+                            while (true) {
+                                if (p == null) {
+                                    break;
+                                }
+                            //foreach (var par in docx.Paragraphs.ToList()) {
+                                var text = p.Text.Trim();
                                 if (condParStart == null) { //если не в условном блоке
                                     var match = m_regexCondBlockStart.Match(text);
                                     if (match.Success) {
-                                        condParStart = par;
+                                        condParStart = p;
                                         condParEnd = null;
                                         keepBlock = false;
                                         propName = match.Groups[1].Value.Trim();
@@ -1659,14 +1693,24 @@ namespace FosMan {
                                             keepBlock = false;
                                         }
                                     }
+                                    p = p.NextParagraph;
                                 }
                                 else { //в условном блоке
                                     //проверим на конец условного блока
                                     var match = m_regexCondBlockEnd.Match(text);
                                     if (match.Success) {
-                                        condParEnd = par;
+                                        //проверка на корректный блок
+                                        if (propName != match.Groups[1].Value.Trim() || propValue != match.Groups[2].Value.Trim()) {
+                                            rep.AddError($"Не найден закрывающий тэг для условного блока {{{propName}={propValue}}}");
+                                            condParStart = null;
+                                            p = p.NextParagraph;
+                                            continue;
+                                        }
+                                        condParEnd = p;
                                         if (keepBlock) {
                                             //надо удалить только параграфы отметок начала и конца блока
+                                            p = condParEnd.NextParagraph;
+
                                             condParStart.Remove(false);
                                             condParEnd.Remove(false);
                                         }
@@ -1678,14 +1722,25 @@ namespace FosMan {
                                                     //docx.Lists[0].r 
                                                 //}
                                                 var nextPar = currPar?.NextParagraph;
-                                                currPar?.Remove(false);
-                                                if (stop) break;
+                                                try {
+                                                    currPar?.Remove(true);
+                                                }
+                                                catch (Exception exx) {
+                                                    var ttt = 0;
+                                                }
+                                                if (stop) {
+                                                    p = nextPar;
+                                                    break;
+                                                }
 
                                                 currPar = nextPar;
                                             }
                                         }
                                         condParStart = null;
                                         condParEnd = null;
+                                    }
+                                    else {
+                                        p = p.NextParagraph;
                                     }
                                 }
                             }
@@ -1726,32 +1781,6 @@ namespace FosMan {
                                 rep.AddError("Не удалось сформировать таблицу компетенций 2.1");
                             }
 
-                            //вставка компетенций в таблицы оценочных средств
-                            var allCodes = rpd.CompetenceMatrix.GetAllAchievementCodes().ToList();
-
-                            foreach (var item in templateFos.EvalTools) {
-                                var indicatorCodes = new List<string>();
-                                foreach (var m in rpd.EducationalWorks[EFormOfStudy.FullTime].Modules) {
-                                    if (m.EvaluationTools.Contains(item.Key)) {
-                                        var topicIndicators = rpd.CompetenceMatrix.GetAchievements(m.CompetenceResultCodes);
-                                        indicatorCodes.AddRange(topicIndicators.Select(achi => achi.Code));
-                                    }
-                                }
-                                if (indicatorCodes.Any()) {
-                                    var codes = indicatorCodes.ToHashSet().ToList();
-                                    codes.Sort((x1, x2) => allCodes.IndexOf(x1) - allCodes.IndexOf(x2));
-                                    foreach (var tool in item.Value) {
-                                        if (tool.Table.RowCount > 1) {
-                                            tool.Table.Rows[1].Cells[tool.TableColIndexCompetenceIndicators].SetTextFormatted(string.Join("\n", codes));
-                                        }
-                                        else {
-                                            errorCount++;
-                                            rep.AddError($"В таблице оценочного средства {item.Key.GetDescription()} должно быть не менее двух рядов");
-                                        }
-                                        //rep.Append($"<div style='color: green'>В таблицу оценочного средства [{item.Key.GetDescription()}] добавлены индикаторы компетенций.</div>");
-                                    }
-                                }
-                            }
                             //docx.UpdateFields();
                             docx.Save();
                         }
