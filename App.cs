@@ -78,8 +78,11 @@ namespace FosMan {
         //static Regex m_regexTestTableEduWorks = new(@"Наименован.*раздел.*тем", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         //для выявления раздела
         static Regex m_regexRpdChapter = new(@"^(\d+).\s+(.+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        //старт условного блока
+        static Regex m_regexCondBlockStart = new(@"{([^=]+)=([^:]+)::start");
+        static Regex m_regexCondBlockEnd = new(@"{([^=]+)=([^:]+)::end");
 
-        //выражения для проверка заголовков таблиц учебных работ (содержания) по формам обучения
+        //выражения для проверки заголовков таблиц учебных работ (содержания) по формам обучения
         static Dictionary<EFormOfStudy, Regex> m_eduWorkTableHeaders = new() {
             [EFormOfStudy.FullTime] = new(@"^очная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
             [EFormOfStudy.MixedTime] = new(@"^очно-заочная\s+форма($|\s+)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -1563,7 +1566,8 @@ namespace FosMan {
                 var swFile = Stopwatch.StartNew();
                 try {
                     //получим целевой шаблон ФОС
-                    var fosTemplate = Templates.GetFosTemplate(rpd);
+                    Templates.Items.TryGetValue(Templates.TEMPLATE_FOS, out var fosTemplate);
+                    //var fosTemplate = Templates.GetFosTemplate(rpd);
 
                     if (!string.IsNullOrEmpty(fosTemplate)) {
                         rep.AddFileLink($"Шаблон ФОС:", fosTemplate);
@@ -1586,7 +1590,7 @@ namespace FosMan {
                                 throw new Exception("Не удалось распарсить шаблон ФОС.");
                             }
 
-                            //этап 1. подстановка полей {...}
+                            //подстановка полей {<PropName>}
                             foreach (var par in docx.Paragraphs.ToList()) {
                                 var replaceOptions = new FunctionReplaceTextOptions() {
                                     ContainerLocation = ReplaceTextContainer.All,
@@ -1608,11 +1612,89 @@ namespace FosMan {
                                 };
                                 par.ReplaceText(replaceOptions);
                             }
+
+                            //обработка условных блоков {<PropName>=<PropValue>::start} ... {<PropName>=<PropValue>::end}
+                            Paragraph condParStart = null;
+                            Paragraph condParEnd = null;
+                            string propName = null;
+                            string propValue = null;
+                            bool keepBlock = false;
+
+                            foreach (var par in docx.Paragraphs.ToList()) {
+                                var text = par.Text.Trim();
+                                if (condParStart == null) { //если не в условном блоке
+                                    var match = m_regexCondBlockStart.Match(text);
+                                    if (match.Success) {
+                                        condParStart = par;
+                                        condParEnd = null;
+                                        keepBlock = false;
+                                        propName = match.Groups[1].Value.Trim();
+                                        propValue = match.Groups[2].Value.Trim();
+                                        var prop = rpd.GetProperty(propName) ?? rpd.Discipline?.GetProperty(propName);
+                                        if (prop != null) {
+                                            //если св-во список, надо проверить все его значения
+                                            if (prop is IList list &&
+                                                list.Count > 0 &&
+                                                list[0] is Enum firstValueAsEnum &&
+                                                Enum.TryParse(firstValueAsEnum.GetType(), propValue, true, out var testEnumValue)) {
+                                                foreach (var value in list) {
+                                                    if (value.Equals(testEnumValue)) {
+                                                        keepBlock = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            //св-во - Enum
+                                            else if (prop is Enum propValueAsEnum) {
+                                                if (Enum.TryParse(propValueAsEnum.GetType(), propValue, true, out var enumValue)) {
+                                                    keepBlock = prop.Equals(enumValue);
+                                                }
+                                            }
+                                            //св-во - строка
+                                            else if (prop is string propValueAsString) {
+                                                keepBlock = propValueAsString.Equals(propValue);
+                                            }
+                                        }
+                                        else {
+                                            keepBlock = false;
+                                        }
+                                    }
+                                }
+                                else { //в условном блоке
+                                    //проверим на конец условного блока
+                                    var match = m_regexCondBlockEnd.Match(text);
+                                    if (match.Success) {
+                                        condParEnd = par;
+                                        if (keepBlock) {
+                                            //надо удалить только параграфы отметок начала и конца блока
+                                            condParStart.Remove(false);
+                                            condParEnd.Remove(false);
+                                        }
+                                        else {
+                                            Paragraph currPar = condParStart;
+                                            while (true) {
+                                                var stop = currPar == null || currPar == condParEnd;
+                                                //if (currPar != null && currPar.IsListItem) {
+                                                    //docx.Lists[0].r 
+                                                //}
+                                                var nextPar = currPar?.NextParagraph;
+                                                currPar?.Remove(false);
+                                                if (stop) break;
+
+                                                currPar = nextPar;
+                                            }
+                                        }
+                                        condParStart = null;
+                                        condParEnd = null;
+                                    }
+                                }
+                            }
+
+                            //заполнение/исправление таблиц
                             var passportTableIsOk = false;
                             var competenceTable21IsOk = false;
                             var competenceTable22IsOk = false;
 
-                            //этап 2. заполнение/исправление таблиц
                             foreach (var table in docx.Tables.ToList()) {
                                 if (!passportTableIsOk) {
                                     //заполнение паспорта
@@ -1644,7 +1726,7 @@ namespace FosMan {
                                 rep.AddError("Не удалось сформировать таблицу компетенций 2.1");
                             }
 
-                            //этап 3. вставка компетенций в таблицы оценочных средств
+                            //вставка компетенций в таблицы оценочных средств
                             var allCodes = rpd.CompetenceMatrix.GetAllAchievementCodes().ToList();
 
                             foreach (var item in templateFos.EvalTools) {

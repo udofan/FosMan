@@ -47,6 +47,9 @@
     <None Update="Templates\ФОС_оценочное_средство_доклад.docx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Templates\ФОС_шаблон.docx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Templates\ФОС_шаблон_Essay_Paper_PracticalWork_Testing_Exam.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

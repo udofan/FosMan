@@ -14,6 +14,7 @@ namespace FosMan {
         public const string TEMPLATE_RPD_TABLE_EDU_WORK = "РПД_таблица_содержания_дисциплины.docx";
         public const string TEMPLATE_ABSTRACT_FOR_DISCIPLINE = "АННОТАЦИЯ_к_дисциплине.docx";
         public const string TEMPLATE_ABSTRACTS_FOR_RPD = "АННОТАЦИИ_к_РПД.docx";
+        public const string TEMPLATE_FOS = "ФОС_шаблон.docx";
 
         static Dictionary<string, string> m_files = [];
 
