@@ -1649,6 +1649,7 @@ namespace FosMan {
                             bool keepBlock = false;
                             List<Paragraph> paragraphsToRemove = new();
                             HashSet<Paragraph> keyParagraphs = new();
+                            HashSet<EEvaluationTool> fosEvalTools = rpd.EvalTools.ToHashSet();
 
                             foreach (var par in docx.Paragraphs.ToList()) {
                                 var text = par.Text.Trim();
@@ -1673,11 +1674,18 @@ namespace FosMan {
                                                         break;
                                                     }
                                                 }
+                                                if (typeof(EEvaluationTool) == firstValueAsEnum.GetType()) {
+                                                    fosEvalTools.Remove((EEvaluationTool)testEnumValue);
+                                                }
                                             }
                                             //св-во - Enum
                                             else if (prop is Enum propValueAsEnum) {
                                                 if (Enum.TryParse(propValueAsEnum.GetType(), propValue, true, out var enumValue)) {
                                                     keepBlock = prop.Equals(enumValue);
+                                                    
+                                                    if (typeof(EEvaluationTool) == enumValue.GetType()) {
+                                                        fosEvalTools.Remove((EEvaluationTool)enumValue);
+                                                    }
                                                 }
                                             }
                                             //св-во - строка
@@ -1724,6 +1732,9 @@ namespace FosMan {
                                         condParEnd = null;
                                     }
                                 }
+                            }
+                            if (fosEvalTools.Count > 0) {
+                                rep.AddError($"В шаблоне не найдены блоки для оценочных средств: {string.Join(", ", fosEvalTools.Select(t => t.GetDescription()))}");
                             }
 
                             if (paragraphsToRemove.Count > 0) {
@@ -1780,6 +1791,17 @@ namespace FosMan {
                             }
                             if (!competenceTable22IsOk) {
                                 rep.AddError("Не удалось сформировать таблицу компетенций 2.1");
+                            }
+
+                            //доп. проверка, не осталось ли спец ключей {...}
+                            foreach (var par in docx.Paragraphs) {
+                                var text = par.Text;
+                                if (!string.IsNullOrEmpty(text)) {
+                                    var match = Regex.Match(text, "({[^}]+})");
+                                    if (match.Success) {
+                                        rep.AddError($"Обнаружено незаполненное поле {match.Groups[1].Value}");
+                                    }
+                                }
                             }
 
                             //docx.UpdateFields();
