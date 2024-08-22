@@ -349,7 +349,7 @@ namespace FosMan {
                 FindPattern = @"^.*$",
                 ContainerLocation = ReplaceTextContainer.All,
                 RegexMatchHandler = m => string.Empty,
-                RemoveEmptyParagraph = true, 
+                RemoveEmptyParagraph = true,
                 TrackChanges = true
             };
             cell.ReplaceText(replaceTextOptions);
@@ -379,9 +379,9 @@ namespace FosMan {
                 $" style='text-decoration: underline; cursor: hand; color: blue'>{fileName}</span></div>");
         }
 
-        static internal void AddTocElement(this StringBuilder toc, string element, string anchor, int count, 
-                                           bool boldIfNonZero = false, 
-                                           string colorIfZero = "green", 
+        static internal void AddTocElement(this StringBuilder toc, string element, string anchor, int count,
+                                           bool boldIfNonZero = false,
+                                           string colorIfZero = "green",
                                            string colorIfNonZero = "red",
                                            string countName = "ошибок") {
             var color = count > 0 ? colorIfNonZero : colorIfZero;
@@ -439,7 +439,7 @@ namespace FosMan {
         /// <param name="discipline"></param>
         /// <param name="repTable"></param>
         static bool ApplyFosCheck(Fos fos, Rpd rpd, StringBuilder repTable,
-                                  ref int pos, ref int errorCount, string description, 
+                                  ref int pos, ref int errorCount, string description,
                                   Func<Fos, Rpd, (bool result, string msg)> func) {
             pos++;
             (bool result, string msg) ret = (false, "?");
@@ -953,7 +953,7 @@ namespace FosMan {
                     });
                     ApplyFosCheck(fos, rpd, table, ref checkPos, ref errorCount, "Формы обучения", (fos, rpd) => {
                         var result = !fos.FormsOfStudy.Except(rpd.FormsOfStudy).Any() && !rpd.FormsOfStudy.Except(fos.FormsOfStudy).Any();
-                        var msg = result ? "": $"Обнаружено различие в формах обучения " +
+                        var msg = result ? "" : $"Обнаружено различие в формах обучения " +
                                                $"[ФОС: <b>{string.Join(", ", fos.FormsOfStudy.Select(f => f.GetDescription()))}</b>], " +
                                                $"[РПД: <b>{string.Join(", ", rpd.FormsOfStudy.Select(f => f.GetDescription()))}</b>]";
                         return (result, msg);
@@ -1160,7 +1160,7 @@ namespace FosMan {
             StringBuilder html = new("<html><body><h2>Отчёт по проверке РПД</h2>");
             StringBuilder toc = new("<div><ul>");
             StringBuilder rep = new("<div>");
-            
+
             var idx = 0;
             var anchors = new Dictionary<string, string>();
             foreach (var curriculum in curricula) {
@@ -1297,10 +1297,10 @@ namespace FosMan {
         /// <param name="applyStarts"></param>
         /// <param name="typoCount"></param>
         /// <returns></returns>
-        public static bool EqualsSmart(this string source, 
-                                       string target, 
+        public static bool EqualsSmart(this string source,
+                                       string target,
                                        bool sourceIsNormalized = true,
-                                       bool targetIsNormalized = true, 
+                                       bool targetIsNormalized = true,
                                        bool applyStarts = false,
                                        int typoCount = STRING_COMPARE_ALLOWED_TYPO_COUNT) {
             if (source == null || target == null) {
@@ -1530,7 +1530,7 @@ namespace FosMan {
 
             return files;
         }
-        
+
         /// <summary>
         /// Генерация ФОСов по списку РПД
         /// </summary>
@@ -1539,7 +1539,7 @@ namespace FosMan {
         /// <param name="fileNameTemplate"></param>
         /// <param name="htmlReport"></param>
         public static void GenerateFosFiles(List<Rpd> rpdList, string targetDir, string fileNameTemplate,
-                                            Action<int, CurriculumDiscipline> progressAction, 
+                                            Action<int, CurriculumDiscipline> progressAction,
                                             out string htmlReport) {
             htmlReport = string.Empty;
 
@@ -1647,19 +1647,15 @@ namespace FosMan {
                             string propName = null;
                             string propValue = null;
                             bool keepBlock = false;
+                            List<Paragraph> paragraphsToRemove = new();
+                            HashSet<Paragraph> keyParagraphs = new();
 
-                            Paragraph p = docx.Paragraphs.First();
-
-                            while (true) {
-                                if (p == null) {
-                                    break;
-                                }
-                            //foreach (var par in docx.Paragraphs.ToList()) {
-                                var text = p.Text.Trim();
+                            foreach (var par in docx.Paragraphs.ToList()) {
+                                var text = par.Text.Trim();
                                 if (condParStart == null) { //если не в условном блоке
                                     var match = m_regexCondBlockStart.Match(text);
                                     if (match.Success) {
-                                        condParStart = p;
+                                        condParStart = par;
                                         condParEnd = null;
                                         keepBlock = false;
                                         propName = match.Groups[1].Value.Trim();
@@ -1693,7 +1689,6 @@ namespace FosMan {
                                             keepBlock = false;
                                         }
                                     }
-                                    p = p.NextParagraph;
                                 }
                                 else { //в условном блоке
                                     //проверим на конец условного блока
@@ -1703,45 +1698,51 @@ namespace FosMan {
                                         if (propName != match.Groups[1].Value.Trim() || propValue != match.Groups[2].Value.Trim()) {
                                             rep.AddError($"Не найден закрывающий тэг для условного блока {{{propName}={propValue}}}");
                                             condParStart = null;
-                                            p = p.NextParagraph;
                                             continue;
                                         }
-                                        condParEnd = p;
+                                        condParEnd = par;
                                         if (keepBlock) {
                                             //надо удалить только параграфы отметок начала и конца блока
-                                            p = condParEnd.NextParagraph;
-
-                                            condParStart.Remove(false);
-                                            condParEnd.Remove(false);
+                                            paragraphsToRemove.Add(condParStart);
+                                            paragraphsToRemove.Add(condParEnd);
                                         }
-                                        else {
+                                        else { //удаление блока целиком
+                                            keyParagraphs.Add(condParStart);
+                                            keyParagraphs.Add(condParEnd);
                                             Paragraph currPar = condParStart;
                                             while (true) {
                                                 var stop = currPar == null || currPar == condParEnd;
-                                                //if (currPar != null && currPar.IsListItem) {
-                                                    //docx.Lists[0].r 
-                                                //}
                                                 var nextPar = currPar?.NextParagraph;
-                                                try {
-                                                    currPar?.Remove(true);
-                                                }
-                                                catch (Exception exx) {
-                                                    var ttt = 0;
-                                                }
+                                                paragraphsToRemove.Add(currPar);
                                                 if (stop) {
-                                                    p = nextPar;
                                                     break;
                                                 }
-
                                                 currPar = nextPar;
                                             }
                                         }
                                         condParStart = null;
                                         condParEnd = null;
                                     }
-                                    else {
-                                        p = p.NextParagraph;
+                                }
+                            }
+
+                            if (paragraphsToRemove.Count > 0) {
+                                //выявление таблиц/рядов, в которых есть удаляемые параграфы - такие ряды удаляем
+                                var rowsToRemove = new HashSet<Row>();
+                                foreach (var par in keyParagraphs) {
+                                    if (GetParentTableRowAndCell(docx, par, out var parentTable, out var parentRow, out _)) {
+                                        if (!rowsToRemove.Any(r => r.Paragraphs[0].StartIndex == parentRow.Paragraphs[0].StartIndex)) {
+                                            rowsToRemove.Add(parentRow);
+                                        }
                                     }
+                                }
+                                //удаление параграфов
+                                foreach (var par in paragraphsToRemove.FastReverse()) {
+                                    par.Remove(false);
+                                }
+                                //удаление рядов
+                                foreach (var item in rowsToRemove) {
+                                    item.Remove();
                                 }
                             }
 
@@ -1817,6 +1818,52 @@ namespace FosMan {
             html.Append(toc).Append(rep).Append("</body></html>");
 
             htmlReport = html.ToString();
+        }
+
+        public static IEnumerable<T> FastReverse<T>(this IList<T> items) {
+            for (int i = items.Count - 1; i >= 0; i--) {
+                yield return items[i];
+            }
+        }
+
+        public static string GetAllText(this Row row, string delim = " | ") {
+            var text = "";
+            if (row.Paragraphs != null) {
+                foreach (var par in row.Paragraphs) {
+                    if (text.Length > 0) text += delim;
+                    text += par.Text;
+                }
+            }
+            return text;
+        }
+
+        /// <summary>
+        /// Получить родительскую таблицу, ряд и ячейку
+        /// </summary>
+        /// <param name="docX"></param>
+        /// <param name="par"></param>
+        /// <param name="parentTable"></param>
+        /// <param name="parentRow"></param>
+        /// <param name="parentCell"></param>
+        public static bool GetParentTableRowAndCell(this DocX docX, Paragraph par, out Table parentTable, out Row parentRow, out Cell parentCell) {
+            parentCell = null;
+            parentRow = null;
+            parentTable = null;
+            if (par.ParentContainer == ContainerType.Cell || par.ParentContainer == ContainerType.Table) {
+                foreach (var table in docX.Tables) {
+                    foreach (var row in table.Rows) {
+                        foreach (var cell in row.Cells) {
+                            if (cell.Paragraphs.FirstOrDefault(p => p == par || p.StartIndex == par.StartIndex) != null) {
+                                parentCell = cell;
+                                parentRow = row;
+                                parentTable = table;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         /// Computes and returns the Damerau-Levenshtein edit distance between two strings, 
