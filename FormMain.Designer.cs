@@ -100,6 +100,7 @@
             checkBoxRpdFixSummaryTableOfEduWorks = new CheckBox();
             checkBoxRpdFixTableOfCompetences = new CheckBox();
             groupBox5 = new GroupBox();
+            iconButtonRpdGenSelectFoslessRpd = new FontAwesome.Sharp.IconButton();
             iconButtonRpdGenFos = new FontAwesome.Sharp.IconButton();
             groupBox10 = new GroupBox();
             textBoxRpdGenAbstractsReplacementForMissedProps = new TextBox();
@@ -823,7 +824,7 @@
             // splitContainerRpd.Panel2
             // 
             splitContainerRpd.Panel2.Controls.Add(fastObjectListViewRpdList);
-            splitContainerRpd.Size = new Size(1251, 691);
+            splitContainerRpd.Size = new Size(1251, 698);
             splitContainerRpd.SplitterDistance = 400;
             splitContainerRpd.TabIndex = 7;
             splitContainerRpd.Tag = "400";
@@ -1128,6 +1129,7 @@
             // groupBox5
             // 
             groupBox5.BackColor = Color.WhiteSmoke;
+            groupBox5.Controls.Add(iconButtonRpdGenSelectFoslessRpd);
             groupBox5.Controls.Add(iconButtonRpdGenFos);
             groupBox5.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBox5.Location = new Point(0, 273);
@@ -1137,6 +1139,23 @@
             groupBox5.TabStop = false;
             groupBox5.Text = "Генерация ФОС";
             // 
+            // iconButtonRpdGenSelectFoslessRpd
+            // 
+            iconButtonRpdGenSelectFoslessRpd.IconChar = FontAwesome.Sharp.IconChar.FaceFrown;
+            iconButtonRpdGenSelectFoslessRpd.IconColor = Color.DarkBlue;
+            iconButtonRpdGenSelectFoslessRpd.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            iconButtonRpdGenSelectFoslessRpd.IconSize = 24;
+            iconButtonRpdGenSelectFoslessRpd.ImageAlign = ContentAlignment.TopLeft;
+            iconButtonRpdGenSelectFoslessRpd.Location = new Point(17, 33);
+            iconButtonRpdGenSelectFoslessRpd.Name = "iconButtonRpdGenSelectFoslessRpd";
+            iconButtonRpdGenSelectFoslessRpd.Size = new Size(208, 30);
+            iconButtonRpdGenSelectFoslessRpd.TabIndex = 24;
+            iconButtonRpdGenSelectFoslessRpd.Text = "      Выделить РПД без ФОСов";
+            iconButtonRpdGenSelectFoslessRpd.TextAlign = ContentAlignment.MiddleLeft;
+            toolTip1.SetToolTip(iconButtonRpdGenSelectFoslessRpd, "Запустить режим генерации Аннотаций к РПД");
+            iconButtonRpdGenSelectFoslessRpd.UseVisualStyleBackColor = true;
+            iconButtonRpdGenSelectFoslessRpd.Click += iconButtonRpdGenSelectFoslessRpd_Click;
+            // 
             // iconButtonRpdGenFos
             // 
             iconButtonRpdGenFos.IconChar = FontAwesome.Sharp.IconChar.ClipboardList;
@@ -1144,9 +1163,9 @@
             iconButtonRpdGenFos.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconButtonRpdGenFos.IconSize = 24;
             iconButtonRpdGenFos.ImageAlign = ContentAlignment.TopLeft;
-            iconButtonRpdGenFos.Location = new Point(17, 57);
+            iconButtonRpdGenFos.Location = new Point(17, 79);
             iconButtonRpdGenFos.Name = "iconButtonRpdGenFos";
-            iconButtonRpdGenFos.Size = new Size(196, 30);
+            iconButtonRpdGenFos.Size = new Size(208, 30);
             iconButtonRpdGenFos.TabIndex = 23;
             iconButtonRpdGenFos.Text = "      Генерация ФОС...";
             iconButtonRpdGenFos.TextAlign = ContentAlignment.MiddleLeft;
@@ -1261,7 +1280,7 @@
             fastObjectListViewRpdList.Location = new Point(0, 0);
             fastObjectListViewRpdList.Name = "fastObjectListViewRpdList";
             fastObjectListViewRpdList.ShowGroups = false;
-            fastObjectListViewRpdList.Size = new Size(1251, 287);
+            fastObjectListViewRpdList.Size = new Size(1251, 294);
             fastObjectListViewRpdList.TabIndex = 4;
             fastObjectListViewRpdList.UseFilterIndicator = true;
             fastObjectListViewRpdList.UseFiltering = true;
@@ -1280,10 +1299,10 @@
             // 
             tabPageFos.Controls.Add(splitContainerFos);
             tabPageFos.Controls.Add(toolStrip2);
-            tabPageFos.Location = new Point(4, 24);
+            tabPageFos.Location = new Point(4, 23);
             tabPageFos.Name = "tabPageFos";
             tabPageFos.Padding = new Padding(3);
-            tabPageFos.Size = new Size(1257, 676);
+            tabPageFos.Size = new Size(1257, 677);
             tabPageFos.TabIndex = 1;
             tabPageFos.Text = "   ФОС   ";
             tabPageFos.UseVisualStyleBackColor = true;
@@ -1305,7 +1324,7 @@
             // splitContainerFos.Panel2
             // 
             splitContainerFos.Panel2.Controls.Add(fastObjectListViewFosList);
-            splitContainerFos.Size = new Size(1251, 643);
+            splitContainerFos.Size = new Size(1251, 644);
             splitContainerFos.SplitterDistance = 180;
             splitContainerFos.TabIndex = 16;
             splitContainerFos.Tag = "180";
@@ -1348,6 +1367,7 @@
             iconButtonDistribFiles.Text = "Распределить файлы";
             iconButtonDistribFiles.TextAlign = ContentAlignment.MiddleRight;
             iconButtonDistribFiles.UseVisualStyleBackColor = true;
+            iconButtonDistribFiles.Click += iconButtonDistribFiles_Click;
             // 
             // checkBoxFosFixPassportTable
             // 
@@ -1482,7 +1502,7 @@
             fastObjectListViewFosList.Location = new Point(0, 0);
             fastObjectListViewFosList.Name = "fastObjectListViewFosList";
             fastObjectListViewFosList.ShowGroups = false;
-            fastObjectListViewFosList.Size = new Size(1251, 459);
+            fastObjectListViewFosList.Size = new Size(1251, 460);
             fastObjectListViewFosList.TabIndex = 4;
             fastObjectListViewFosList.UseFilterIndicator = true;
             fastObjectListViewFosList.UseFiltering = true;
@@ -2199,10 +2219,10 @@
             tabPageFileFixer.Controls.Add(groupBoxFileFixerFiles);
             tabPageFileFixer.Controls.Add(groupBoxFileFixerSettings);
             tabPageFileFixer.Controls.Add(toolStrip3);
-            tabPageFileFixer.Location = new Point(4, 24);
+            tabPageFileFixer.Location = new Point(4, 23);
             tabPageFileFixer.Name = "tabPageFileFixer";
             tabPageFileFixer.Padding = new Padding(3);
-            tabPageFileFixer.Size = new Size(1257, 676);
+            tabPageFileFixer.Size = new Size(1257, 677);
             tabPageFileFixer.TabIndex = 7;
             tabPageFileFixer.Text = "  Коррекция файлов  ";
             tabPageFileFixer.UseVisualStyleBackColor = true;
@@ -2214,7 +2234,7 @@
             groupBoxFileFixerFiles.Font = new Font("Tahoma", 9F, FontStyle.Bold, GraphicsUnit.Point, 204);
             groupBoxFileFixerFiles.Location = new Point(3, 201);
             groupBoxFileFixerFiles.Name = "groupBoxFileFixerFiles";
-            groupBoxFileFixerFiles.Size = new Size(1251, 475);
+            groupBoxFileFixerFiles.Size = new Size(1251, 476);
             groupBoxFileFixerFiles.TabIndex = 18;
             groupBoxFileFixerFiles.TabStop = false;
             groupBoxFileFixerFiles.Text = "Файлы";
@@ -2228,7 +2248,7 @@
             fastObjectListViewFileFixerFiles.Location = new Point(3, 18);
             fastObjectListViewFileFixerFiles.Name = "fastObjectListViewFileFixerFiles";
             fastObjectListViewFileFixerFiles.ShowGroups = false;
-            fastObjectListViewFileFixerFiles.Size = new Size(1245, 454);
+            fastObjectListViewFileFixerFiles.Size = new Size(1245, 455);
             fastObjectListViewFileFixerFiles.TabIndex = 2;
             fastObjectListViewFileFixerFiles.UseFilterIndicator = true;
             fastObjectListViewFileFixerFiles.UseFiltering = true;
@@ -2889,5 +2909,6 @@
         private SplitContainer splitContainer1;
         private GroupBox groupBox5;
         private FontAwesome.Sharp.IconButton iconButtonRpdGenFos;
+        private FontAwesome.Sharp.IconButton iconButtonRpdGenSelectFoslessRpd;
     }
 }

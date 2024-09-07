@@ -834,11 +834,17 @@ namespace FosMan {
                                                     msg += $"Тема <b>{module.Topic}</b>: не указаны коды результатов индикаторов компетенции [{item.Key.GetDescription()}]";
                                                 }
                                                 else { //проверка компетенций по матрице
-                                                    var results = rpd.CompetenceMatrix.GetAllResultCodes();
-                                                    foreach (var code in module.CompetenceResultCodes) {
-                                                        if (!results.Contains(code)) {
-                                                            if (msg.Length > 0) msg += "<br />";
-                                                            msg += $"Тема <b>{module.Topic}</b>: указанный код индикатора компетенции [{code}] не найден в матрице";
+                                                    if (rpd.CompetenceMatrix == null) {
+                                                        if (msg.Length > 0) msg += "<br />";
+                                                        msg += $"Матрица компетенций не найдена";
+                                                    }
+                                                    else {
+                                                        var results = rpd.CompetenceMatrix.GetAllResultCodes();
+                                                        foreach (var code in module.CompetenceResultCodes) {
+                                                            if (!results.Contains(code)) {
+                                                                if (msg.Length > 0) msg += "<br />";
+                                                                msg += $"Тема <b>{module.Topic}</b>: указанный код индикатора компетенции [{code}] не найден в матрице";
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -990,7 +996,7 @@ namespace FosMan {
                         var msg = result ? "" : $"В ФОС не обнаружена матрица компетенций.";
                         if (result && !fos.CompetenceMatrix.Errors.IsEmpty) {
                             msg = "В матрице обнаружены ошибки:<br />";
-                            msg += string.Join("<br />", rpd.CompetenceMatrix.Errors.Items.Select(e => $"{e}"));
+                            msg += string.Join("<br />", fos.CompetenceMatrix.Errors.Items.Select(e => $"{e}"));
                             result = false;
                         }
                         if (!result) {
@@ -2139,7 +2145,7 @@ namespace FosMan {
                             currPar.SetLineSpacing(LineSpacingType.After, 0);
                             currPar.Alignment = Alignment.left;
                             currPar.IndentationFirstLine = 0.1f;
-                            currPar.Append($"{++newParCount}. {questionText}").FontSize(12).ShadingPattern(shadingPattern, ShadingType.Paragraph);
+                            currPar.Append($"{++newParCount}. {questionText}").FontSize(12);//.ShadingPattern(shadingPattern, ShadingType.Paragraph);
                         }
                         result = true;
                     }

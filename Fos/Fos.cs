@@ -125,6 +125,12 @@ namespace FosMan {
         [JsonIgnore]
         public Table TableOfPassport { get; set; }
 
+        /// <summary>
+        /// Имя корневой директории для режима распределения файлов (в реж. коррекции файлов)
+        /// </summary>
+        [JsonIgnore]
+        public string RootDir => $"{DirectionCode}_{DirectionName}_{Profile}";
+
         public Fos() {
         }
 

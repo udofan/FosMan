@@ -370,6 +370,12 @@ namespace FosMan {
         }
 
         /// <summary>
+        /// Имя корневой директории для режима распределения файлов (в реж. коррекции файлов)
+        /// </summary>
+        [JsonIgnore]
+        public string RootDir => $"{DirectionCode}_{DirectionName}_{Profile}";
+
+        /// <summary>
         /// Очистка РПД
         /// </summary>
         public void Clear() {

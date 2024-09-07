@@ -2507,7 +2507,7 @@ namespace FosMan {
             foreach (var file in files) {
                 if (file.Type == EFileType.Rpd) {
                     if (file.Rpd != null) {
-                        roots.Add($"{file.Rpd.DirectionCode}_{file.Rpd.DirectionName}_{file.Rpd.Profile}");
+                        roots.Add($"{file.Rpd.RootDir}");
                     }
                     else {
                         errorList.AddSimple($"{file.FullFileName} - РПД не загружен");
@@ -2515,7 +2515,7 @@ namespace FosMan {
                 }
                 if (file.Type == EFileType.Fos) {
                     if (file.Fos != null) {
-                        roots.Add($"{file.Fos.DirectionCode}_{file.Fos.DirectionName}_{file.Fos.Profile}");
+                        roots.Add($"{file.Fos.RootDir}");
                     }
                     else {
                         errorList.AddSimple($"{file.FullFileName} - ФОС не загружен");
@@ -2568,19 +2568,23 @@ namespace FosMan {
                 foreach (var f in files) {
                     try {
                         if (f.Type == EFileType.Rpd) {
-                            var disc = FindDiscipline(f.Rpd);
-                            if (disc != null && disc.Type.HasValue) {
-                                var newFileName = Path.Combine(rpdDirs[disc.Type.Value], f.FileName);
-                                File.Copy(f.FullFileName, newFileName, true);
-                                count++;
+                            if (f.Rpd.RootDir.Equals(root)) {
+                                var disc = FindDiscipline(f.Rpd);
+                                if (disc != null && disc.Type.HasValue) {
+                                    var newFileName = Path.Combine(rpdDirs[disc.Type.Value], f.FileName);
+                                    File.Copy(f.FullFileName, newFileName, true);
+                                    count++;
+                                }
                             }
                         }
                         if (f.Type == EFileType.Fos) {
-                            var disc = FindDiscipline(f.Fos);
-                            if (disc != null && disc.Type.HasValue) {
-                                var newFileName = Path.Combine(fosDirs[disc.Type.Value], f.FileName);
-                                File.Copy(f.FullFileName, newFileName, true);
-                                count++;
+                            if (f.Fos.RootDir.Equals(root)) {
+                                var disc = FindDiscipline(f.Fos);
+                                if (disc != null && disc.Type.HasValue) {
+                                    var newFileName = Path.Combine(fosDirs[disc.Type.Value], f.FileName);
+                                    File.Copy(f.FullFileName, newFileName, true);
+                                    count++;
+                                }
                             }
                         }
                     }
@@ -2832,22 +2836,39 @@ namespace FosMan {
             var rpdList = fastObjectListViewRpdList.SelectedObjects?.Cast<Rpd>().ToList();
             if (rpdList.Any()) {
                 App.GenerateFosFiles(
-                    rpdList, 
-                    App.Config.RpdFixTargetDir, 
+                    rpdList,
+                    App.Config.RpdFixTargetDir,
                     "",
                     (int idx, CurriculumDiscipline discipline) => {
                         this.Invoke(new MethodInvoker(() => {
-                            labelRpdGenStatus.Text = $"Генерация ФОС для дисциплины\r\n[{discipline.Name}]\r\n" +
-                                                     $"({idx} из {rpdList.Count})... ";
+                            StatusMessage($"Генерация ФОС для дисциплины [{discipline.Name}] ({idx} из {rpdList.Count})... ");
                             Application.DoEvents();
                         }));
                     }, out var htmlReport);
                 AddReport("Генерация ФОС", htmlReport);
             }
             else {
-                MessageBox.Show("Перед генерацией ФОС выберите исходные РПД", "Генерация ФОС", 
+                MessageBox.Show("Перед генерацией ФОС выберите исходные РПД", "Генерация ФОС",
                                 MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+        }
+
+        private void iconButtonRpdGenSelectFoslessRpd_Click(object sender, EventArgs e) {
+            fastObjectListViewRpdList.DeselectAll();
+
+            var selectRpdList = new List<Rpd>();
+            foreach (var obj in fastObjectListViewRpdList.Objects) {
+                var rpd = obj as Rpd;
+                if (rpd != null && App.FindFos(rpd) == null) {
+                    selectRpdList.Add(rpd);
+                }
+            }
+            fastObjectListViewRpdList.SelectObjects(selectRpdList);
+            StatusMessage($"Выделено РПД: {fastObjectListViewRpdList.SelectedObjects.Count} шт.");
+        }
+
+        private void iconButtonDistribFiles_Click(object sender, EventArgs e) {
+
         }
     }
 }
